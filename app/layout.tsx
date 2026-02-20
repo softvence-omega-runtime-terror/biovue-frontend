@@ -21,7 +21,7 @@ const roboto = Roboto({
 export const metadata: Metadata = {
   title: "Bio Vue - Digital Wellness",
   description:
-    "Bio Vue is a digital wellness platform that helps you understand and manage your online presence. It provides insights into your digital footprint, allowing you to make informed decisions about your online activities and maintain a healthy digital lifestyle.",
+    "Bio Vue is a digital wellness platform that helps you understand and manage your online presence. It provides insights into your digital footprint, allowing you to make informed decisions about your online activities and maintain a healthy digital lifestyle",
 };
 
 export default function RootLayout({
