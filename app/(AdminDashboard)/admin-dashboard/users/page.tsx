@@ -65,7 +65,7 @@ export default function UsersPage() {
   });
 
   return (
-    <div className="flex flex-col lg:flex-row gap-6 min-h-screen  p-4 sm:p-6">
+    <div className="flex flex-col lg:flex-row gap-6 min-h-screen ">
       {/* Main Content */}
       <div className="flex-1">
         {/* Header */}
