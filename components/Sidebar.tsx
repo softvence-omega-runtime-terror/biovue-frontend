@@ -19,14 +19,17 @@ export default function Sidebar({ role }: SidebarProps) {
   return (
     <aside className="w-65 min-h-screen bg-white  flex flex-col px-6 py-8">
       {/* Logo */}
-      <div className=" w-26 h-14 mb-5">
-        <Image
-          src="/images/logo.png"
-          alt="BioVue"
-          width={99}
-          height={56}
-          className="w-full h-full"
-        />
+    
+      <div className="w-26 h-14 mb-5">
+        <Link href="/">
+          <Image
+            src="/images/logo.png"
+            alt="BioVue"
+            width={99}
+            height={56}
+            className="w-full h-full cursor-pointer"
+          />
+        </Link>
       </div>
 
       {/* Menu */}
@@ -39,10 +42,10 @@ export default function Sidebar({ role }: SidebarProps) {
             <Link
               key={item.label}
               href={item.href}
-              className={`flex items-center gap-3  py-2.5 rounded-lg text-sm font-medium transition
+              className={`flex items-center gap-3 px-2 py-2.5 rounded-lg text-sm font-medium transition
                 ${
                   isActive
-                    ? "bg-blue-100 text-blue-600"
+                    ? "bg-[rgba(58,134,255,0.25)] text-[#3A86FF]"
                     : "text-gray-600 hover:bg-gray-100"
                 }`}
             >
