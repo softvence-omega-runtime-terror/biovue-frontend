@@ -1,10 +1,15 @@
 "use client";
 
+import DashboardHeading from "@/components/common/DashboardHeading";
+
 export default function AdminOverviewPage() {
   return (
     <div className="flex flex-col gap-6">
       {/* Page title */}
-      <h2 className="text-lg font-semibold">Admin Overview</h2>
+      <DashboardHeading
+        heading="Overview"
+        subheading="Your coaching activity at a glance"
+      />
 
       {/* Stat cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
