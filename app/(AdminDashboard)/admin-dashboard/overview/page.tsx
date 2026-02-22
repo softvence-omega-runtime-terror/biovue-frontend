@@ -50,7 +50,7 @@ export default function AdminOverviewPage() {
       </div>
 
       {/* Tables */}
-      <div className="flex gap-6">
+      <div className="flex flex-col md:flex-row gap-6">
         <div className="w-full md:w-2/3">
           <PlanSummaryTable />
         </div>
