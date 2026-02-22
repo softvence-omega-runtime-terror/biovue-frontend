@@ -46,7 +46,7 @@ const HeroSection = () => {
 
       {/* Right Decoration - Desktop Only */}
       <div className="hidden lg:block absolute right-4 xl:right-8 top-1/3 -translate-y-1/2 pointer-events-none scale-x-[-1]">
-        <DecorationSVG className="opacity-40 xl:opacity-60 w-[250px] xl:w-[400px] h-auto" />
+        <DecorationSVG className="opacity-40 xl:opacity-60 w-[400px] xl:w-[500px] h-auto" />
       </div>
 
 
