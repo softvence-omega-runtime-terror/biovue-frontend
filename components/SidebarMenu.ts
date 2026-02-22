@@ -11,7 +11,7 @@ import {
   FileText,
   Image,
   CreditCard,
-  LogOut,
+  
 } from "lucide-react";
 
 export const SIDEBAR_MENU = {
