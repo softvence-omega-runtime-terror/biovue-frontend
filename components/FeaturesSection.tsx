@@ -80,7 +80,7 @@ const FeaturesSection = () => {
         {features.map((feature, index) => (
           <div 
             key={index} 
-            className="bg-white p-8 rounded-xl border-2 border-white border-r-[#0FA4A9] border-b-[#0FA4A9] shadow-[0_2px_12px_rgba(0,0,0,0.02)] hover:shadow-[0_8px_30px_rgba(0,0,0,0.04)] transition-all duration-300 group"
+            className="bg-white p-8 rounded-xl border border-white border-r-[#0FA4A9] border-b-[#0FA4A9] shadow-[0_2px_12px_rgba(0,0,0,0.02)] hover:shadow-[0_8px_30px_rgba(0,0,0,0.04)] transition-all duration-300 group"
           >
             <div className={`${feature.iconBg} w-12 h-12 rounded-full flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300`}>
               {feature.icon}
