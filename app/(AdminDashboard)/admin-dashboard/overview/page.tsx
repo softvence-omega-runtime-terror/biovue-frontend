@@ -1,5 +1,9 @@
 "use client";
 
+import OverviewCharts from "@/components/AdminDashboard/Overview/OverViewCharts";
+import PlanSummaryTable from "@/components/AdminDashboard/Overview/PlanSummeryTable";
+import StatCard from "@/components/AdminDashboard/Overview/StatCard";
+import SystemStatus from "@/components/AdminDashboard/Overview/SystemStatus";
 import DashboardHeading from "@/components/common/DashboardHeading";
 
 export default function AdminOverviewPage() {
@@ -41,94 +45,20 @@ export default function AdminOverviewPage() {
       </div>
 
       {/* Charts */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <ChartCard title="User Growth" />
-        <ChartCard title="Revenue Trend" />
+      <div className="">
+        <OverviewCharts />
       </div>
 
       {/* Tables */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <PlanSummaryTable />
-        <SystemStatus />
-      </div>
-    </div>
-  );
-}
-
-/* ---------- Small Components ---------- */
-
-function StatCard({
-  title,
-  value,
-  sub,
-}: {
-  title: string;
-  value: string;
-  sub: string;
-}) {
-  return (
-    <div className="bg-white rounded-xl border p-4">
-      <p className="text-sm text-gray-500">{title}</p>
-      <p className="text-xl font-semibold mt-1">{value}</p>
-      <p className="text-xs text-gray-400 mt-1">{sub}</p>
-    </div>
-  );
-}
-
-function ChartCard({ title }: { title: string }) {
-  return (
-    <div className="bg-white rounded-xl border p-4 h-64">
-      <p className="text-sm font-medium mb-2">{title}</p>
-      <div className="h-full flex items-center justify-center text-gray-400 text-sm">
-        Chart placeholder
-      </div>
-    </div>
-  );
-}
-
-function PlanSummaryTable() {
-  return (
-    <div className="bg-white rounded-xl border p-4">
-      <p className="text-sm font-medium mb-4">Plan Wise Summary</p>
-
-      <table className="w-full text-sm">
-        <thead className="text-gray-400">
-          <tr>
-            <th className="text-left py-2">Plan</th>
-            <th>Subscribers</th>
-            <th className="text-right">Revenue</th>
-          </tr>
-        </thead>
-        <tbody>
-          {[
-            ["Free Trial", "3,200", "$0"],
-            ["Plus", "1,400", "$33,600"],
-            ["Premium", "820", "$28,700"],
-            ["Trainer Pro", "110", "$5,500"],
-          ].map(([name, users, rev]) => (
-            <tr key={name} className="border-t">
-              <td className="py-2">{name}</td>
-              <td className="text-center">{users}</td>
-              <td className="text-right">{rev}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
-  );
-}
-
-function SystemStatus() {
-  return (
-    <div className="bg-white rounded-xl border p-4">
-      <p className="text-sm font-medium mb-4">Plan Wise Summary</p>
-
-      {["Subscription Billing", "Payments", "Data Sync"].map((item) => (
-        <div key={item} className="flex justify-between py-2 border-t text-sm">
-          <span>{item}</span>
-          <span className="text-green-500">OPERATIONAL</span>
+      <div className="flex gap-6">
+        <div className="w-full md:w-2/3">
+          <PlanSummaryTable />
         </div>
-      ))}
+        <div className="w-full md:w-1/3">
+          <SystemStatus />
+        </div>
+      </div>
     </div>
   );
 }
+
