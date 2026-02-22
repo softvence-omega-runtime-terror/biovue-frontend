@@ -26,20 +26,32 @@ export const SIDEBAR_MENU = {
   ],
 
   trainer: [
-    { label: "Overview", icon: LayoutGrid, href: "/trainer/overview" },
-    { label: "Clients", icon: Users, href: "/trainer/clients" },
-    { label: "Programs", icon: FileText, href: "/trainer/programs" },
-    { label: "Messages", icon: Mail, href: "/trainer/messages" },
-    { label: "Calendar", icon: Calendar, href: "/trainer/calendar" },
-    { label: "Settings", icon: Settings, href: "/trainer/settings" },
+    {
+      label: "Overview",
+      icon: LayoutGrid,
+      href: "/trainer-dashboard/overview",
+    },
+    { label: "Clients", icon: Users, href: "/trainer-dashboard/clients" },
+    { label: "Programs", icon: FileText, href: "/trainer-dashboard/programs" },
+    { label: "Messages", icon: Mail, href: "/trainer-dashboard/messages" },
+    { label: "Calendar", icon: Calendar, href: "/trainer-dashboard/calendar" },
+    { label: "Settings", icon: Settings, href: "/trainer-dashboard/settings" },
   ],
 
   admin: [
-    { label: "Overview", icon: LayoutGrid, href: "/admin/overview" },
-    { label: "Users", icon: Users, href: "/admin/users" },
-    { label: "Subscription Plans", icon: CreditCard, href: "/admin/plans" },
-    { label: "Reports", icon: FileText, href: "/admin/reports" },
-    { label: "Banner Management", icon: Image, href: "/admin/banners" },
-    { label: "Settings", icon: Settings, href: "/admin/settings" },
+    { label: "Overview", icon: LayoutGrid, href: "/admin-dashboard/overview" },
+    { label: "Users", icon: Users, href: "/admin-dashboard/users" },
+    {
+      label: "Subscription Plans",
+      icon: CreditCard,
+      href: "/admin-dashboard/plans",
+    },
+    { label: "Reports", icon: FileText, href: "/admin-dashboard/reports" },
+    {
+      label: "Banner Management",
+      icon: Image,
+      href: "/admin-dashboard/banners",
+    },
+    { label: "Settings", icon: Settings, href: "/admin-dashboard/settings" },
   ],
 };
