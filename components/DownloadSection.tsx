@@ -17,10 +17,8 @@ const DownloadSection = () => {
           <div className="flex flex-col items-center text-center">
             {/* Title */}
             <h2 
-              className="font-roboto font-medium tracking-[-2px] mb-12 max-w-6xl"
+              className="font-roboto font-medium tracking-[-2px] mb-12 max-w-6xl text-3xl sm:text-4xl md:text-5xl lg:text-[60px] leading-tight md:leading-[84px]"
               style={{
-                fontSize: "60px",
-                lineHeight: "84px",
                 textAlign: "center",
                 background: "linear-gradient(270deg, #4F6BFF 0%, #7B3FE4 100%)",
                 WebkitBackgroundClip: "text",

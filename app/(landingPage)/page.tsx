@@ -5,6 +5,8 @@ import HowItWorks from "@/components/HowItWorks";
 import ProfessionalsSection from "@/components/ProfessionalsSection";
 import FAQSection from "@/components/FAQSection";
 import DownloadSection from "@/components/DownloadSection";
+import TransformSection from "@/components/TransformSection";
+import Footer from "@/components/Footer";
 
 export default function LandingPage() {
   return (
@@ -18,6 +20,8 @@ export default function LandingPage() {
         <ProfessionalsSection />
         <FAQSection />
         <DownloadSection />
+        <TransformSection />
+        <Footer />
       </main>
     </div>
   );

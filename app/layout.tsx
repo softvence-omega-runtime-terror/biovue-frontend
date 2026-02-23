@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono, Roboto } from "next/font/google";
+import { Geist, Geist_Mono, Roboto, Inter } from "next/font/google";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -18,6 +18,11 @@ const roboto = Roboto({
   weight: ["400", "500", "700"],
 });
 
+const inter = Inter({
+  variable: "--font-inter",
+  subsets: ["latin"],
+});
+
 export const metadata: Metadata = {
   title: "Bio Vue - Digital Wellness",
   description:
@@ -32,7 +37,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} ${roboto.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} ${roboto.variable} ${inter.variable} antialiased`}
       >
         {children}
       </body>

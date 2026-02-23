@@ -43,7 +43,7 @@ const ProfessionalsSection = () => {
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight mb-4 whitespace-nowrap"
+              className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold leading-tight mb-4"
               style={{
                 background: "linear-gradient(270deg, #4F6BFF 0%, #7B3FE4 100%)",
                 WebkitBackgroundClip: "text",

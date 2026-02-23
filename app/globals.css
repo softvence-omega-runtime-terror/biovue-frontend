@@ -4,6 +4,7 @@
   --background: #ffffff;
   --foreground: #1F2D2E;
   --primary: #0FA4A9;
+  --accent: #0D9488;
   --landing: #F4FBFA;
   --Main-Text-Clor: #1F2D2E;
   --para-text-clor: #5F6F73;
@@ -13,6 +14,7 @@
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-primary: var(--primary);
+  --color-accent: var(--accent);
   --color-landing: var(--landing);
   --color-main-text: var(--Main-Text-Clor);
   --color-para-text: var(--para-text-clor);
