@@ -11,7 +11,6 @@ import {
   FileText,
   Image,
   CreditCard,
-  
 } from "lucide-react";
 
 export const SIDEBAR_MENU = {
@@ -44,7 +43,17 @@ export const SIDEBAR_MENU = {
     {
       label: "Subscription Plans",
       icon: CreditCard,
-      href: "/admin-dashboard/plans",
+      href: "/admin-dashboard/subscription-plans",
+      children: [
+        {
+          label: "Individual Plans",
+          href: "/admin-dashboard/subscription-plans?type=individual",
+        },
+        {
+          label: "Professional Plans",
+          href: "/admin-dashboard/subscription-plans?type=professional",
+        },
+      ],
     },
     { label: "Reports", icon: FileText, href: "/admin-dashboard/reports" },
     {

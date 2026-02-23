@@ -68,7 +68,7 @@
 import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import { LogOut, Menu, X } from "lucide-react";
 import { SIDEBAR_MENU } from "./SidebarMenu";
 
@@ -80,9 +80,12 @@ interface SidebarProps {
 
 export default function Sidebar({ role }: SidebarProps) {
   const pathname = usePathname();
+  const searchParams = useSearchParams();
   const menu = SIDEBAR_MENU[role];
   const [isExpanded, setIsExpanded] = useState(false);
-
+  const isChildActive =
+    pathname === "/admin-dashboard/subscription-plans" &&
+    searchParams.get("type") === "individual";
   return (
     <>
       {/* Hamburger Menu Button - Visible on md and sm screens */}
@@ -132,7 +135,7 @@ export default function Sidebar({ role }: SidebarProps) {
 
         {/* Menu */}
         <nav className="flex flex-col gap-1 flex-1">
-          {menu.map((item) => {
+          {/* {menu.map((item) => {
             const isActive = pathname === item.href;
             const Icon = item.icon;
 
@@ -150,6 +153,37 @@ export default function Sidebar({ role }: SidebarProps) {
                       ? "bg-[rgba(58,134,255,0.25)] text-[#3A86FF]"
                       : "text-gray-600 hover:bg-gray-100"
                   }`}
+                title={isExpanded ? "" : item.label}
+              >
+                <Icon size={24} className="flex-shrink-0" />
+                {isExpanded && <span>{item.label}</span>}
+                <span className="hidden md:inline">
+                  {!isExpanded && item.label}
+                </span>
+              </Link>
+            );
+          })} */}
+          {menu.map((item) => {
+            const Icon = item.icon;
+
+            // use isChildActive for specific routes
+            const isActive =
+              pathname === item.href ||
+              (item.href === "/admin-dashboard/subscription-plans" &&
+                isChildActive);
+
+            return (
+              <Link
+                key={item.label}
+                href={item.href}
+                onClick={() => setIsExpanded(false)}
+                className={`flex items-center gap-3 px-2 py-2.5 rounded-lg text-sm font-medium transition-all duration-300 whitespace-nowrap
+        ${isExpanded ? "px-2" : "px-1 justify-center md:px-2 md:justify-start"}
+        ${
+          isActive
+            ? "bg-[rgba(58,134,255,0.25)] text-[#3A86FF]"
+            : "text-gray-600 hover:bg-gray-100"
+        }`}
                 title={isExpanded ? "" : item.label}
               >
                 <Icon size={24} className="flex-shrink-0" />
