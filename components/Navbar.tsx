@@ -9,7 +9,7 @@ const Navbar = () => {
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-transparent mt-6">
-      <div className="container mx-auto px-4 md:px-8 py-4 flex items-center justify-between">
+      <div className="container mx-auto px-4 py-4 flex items-center justify-between">
         <div className="flex items-center">
           <Image
             src="/images/logo.png"
@@ -52,9 +52,9 @@ const Navbar = () => {
         <div className="md:hidden">
           <button
             onClick={() => setIsMenuOpen(!isMenuOpen)}
-            className="text-main-text focus:outline-none"
+            className="bg-white text-main-text w-10 h-10 rounded-full flex items-center justify-center shadow-md border border-gray-100 hover:bg-gray-50 transition-all focus:outline-none"
           >
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
               {isMenuOpen ? <path d="M18 6L6 18M6 6l12 12" /> : <path d="M4 6h16M4 12h16M4 18h16" />}
             </svg>
           </button>
