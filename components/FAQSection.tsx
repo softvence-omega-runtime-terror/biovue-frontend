@@ -109,9 +109,8 @@ const FAQSection = () => {
               initial={{ opacity: 0, x: -20 }}
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
-              className="font-roboto font-medium leading-[72px] tracking-[-2px] mb-6"
+              className="font-roboto font-medium text-4xl sm:text-5xl md:text-6xl lg:text-[64px] leading-tight md:leading-[72px] tracking-[-2px] mb-6"
               style={{
-                fontSize: "64px",
                 background: "linear-gradient(270deg, #4F6BFF 0%, #7B3FE4 100%)",
                 WebkitBackgroundClip: "text",
                 WebkitTextFillColor: "transparent",
@@ -125,9 +124,8 @@ const FAQSection = () => {
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
               transition={{ delay: 0.2 }}
-              className="font-roboto font-normal leading-[34px] max-w-md"
+              className="font-roboto font-normal text-lg sm:text-xl md:text-2xl leading-relaxed md:leading-[34px] max-w-md"
               style={{
-                fontSize: "24px",
                 color: "#5F6F73"
               }}
             >
