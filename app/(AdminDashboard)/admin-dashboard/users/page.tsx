@@ -302,7 +302,7 @@ export default function UsersPage() {
       {/* details Modal */}
       {selectedUser && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-          <Card className="w-full max-w-md mx-4 shadow-xl rounded-lg relative p-4">
+          <Card className="w-full max-w-md shadow-xl rounded-xl relative p-6">
             {/* Header */}
             <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle className="text-lg font-semibold">
@@ -319,7 +319,7 @@ export default function UsersPage() {
             </CardHeader>
 
             {/* Content */}
-            <CardContent className="space-y-6 ">
+            <CardContent className="space-y-6">
               {/* Avatar */}
               <div className="flex items-center gap-4 pb-3 border-b">
                 <div className="w-12 h-12 rounded-full bg-linear-to-br from-blue-400 to-blue-600 flex items-center justify-center">
