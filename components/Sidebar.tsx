@@ -108,7 +108,7 @@ export default function Sidebar({ role }: SidebarProps) {
 
       {/* Sidebar */}
       <aside
-        className={`fixed md:static top-0 left-0 h-screen z-40 bg-white flex flex-col px-3 py-8 md:px-6 transition-all duration-300 ease-in-out
+        className={`fixed top-0 left-0 h-screen z-40 bg-white flex flex-col px-3 py-8 md:px-6 transition-all duration-300 ease-in-out
           ${isExpanded ? "w-65 translate-x-0" : "w-20 -translate-x-full md:translate-x-0 md:w-65"}
         `}
       >
@@ -147,7 +147,7 @@ export default function Sidebar({ role }: SidebarProps) {
                   ${isExpanded ? "px-2" : "px-1 justify-center md:px-2 md:justify-start"}
                   ${
                     isActive
-                      ? "bg-[rgba(58,134,255,0.25)] text-[#3A86FF]"
+                      ? "bg-[#E4EFFF] text-[#3A86FF]"
                       : "text-gray-600 hover:bg-gray-100"
                   }`}
                 title={isExpanded ? "" : item.label}

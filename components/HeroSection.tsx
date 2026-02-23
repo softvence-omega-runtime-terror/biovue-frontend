@@ -1,4 +1,9 @@
+"use client";
+
 import Link from "next/link";
+import Image from "next/image";
+import { useState } from "react";
+import { X, ExternalLink } from "lucide-react";
 
 const DecorationSVG = ({ className }: { className?: string }) => (
   <svg
@@ -34,52 +39,118 @@ const DecorationSVG = ({ className }: { className?: string }) => (
 );
 
 const HeroSection = () => {
-  return (
-    <section className="relative flex flex-col items-center justify-center text-center px-4 pt-12 pb-16 md:pb-24 overflow-hidden min-h-screen  bg-white">
+  const [bannerVisible, setBannerVisible] = useState(true);
+  const [activeDot, setActiveDot] = useState(0);
 
-      {/* Background Decor */}
-      {/* <div className="absolute inset-0 -z-10 bg-[linear-gradient(to_right,#f0f0f0_1px,transparent_1px),linear-gradient(to_bottom,#f0f0f0_1px,transparent_1px)] bg-[size:6rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)] opacity-20"></div> */}
+  return (
+    <section className="relative flex flex-col items-center justify-center text-center pt-28 sm:pt-32 pb-16 md:pb-24 overflow-hidden min-h-screen bg-white">
 
       {/* Left Decoration - Desktop Only */}
-      <div className="hidden lg:block absolute left-0  top-1/3 -translate-y-1/2 pointer-events-none">
+      <div className="hidden lg:block absolute left-0 top-1/4 -translate-y-1/2 pointer-events-none">
         <DecorationSVG className="opacity-40 xl:opacity-60 w-[350px] xl:w-[500px] h-auto" />
       </div>
 
       {/* Right Decoration - Desktop Only */}
-      <div className="hidden lg:block absolute right-0  top-1/3 -translate-y-1/2 pointer-events-none scale-x-[-1]">
+      <div className="hidden lg:block absolute right-0 top-1/4 -translate-y-1/2 pointer-events-none scale-x-[-1]">
         <DecorationSVG className="opacity-40 xl:opacity-60 w-[350px] xl:w-[500px] h-auto" />
       </div>
 
+      {/* Promotional Banner */}
+      {bannerVisible && (
+        <div className="container mx-auto px-4 w-full mb-8 sm:mb-10">
+          <div className="relative rounded-2xl overflow-hidden shadow-2xl">
+            {/* Banner Image Background */}
+            <div className="relative w-full h-[180px] sm:h-[260px] md:h-[320px] lg:h-[380px]">
+              <Image
+                src="/images/landing/banner.png"
+                alt="Summer Wellness Sale 50% Off"
+                fill
+                className="object-cover object-center"
+                priority
+              />
+              {/* Overlay with content */}
+              <div className="absolute inset-0 flex items-center px-4 sm:px-8 md:px-10">
+                <div className="flex flex-col items-start gap-3 sm:gap-5">
+                  <h2
+                    style={{
+                      color: "#FFF",
+                      fontFamily: "'Clash Display', sans-serif",
+                      fontStyle: "normal",
+                      fontWeight: 600,
+                    }}
+                    className="drop-shadow-lg text-left text-xl sm:text-3xl md:text-4xl lg:text-[46px] leading-tight lg:leading-[46px]"
+                  >
+                    Summer Wellness Sale: 50% Off
+                  </h2>
+                  <Link
+                    href="/pricing"
+                    style={{ gap: "10px" }}
+                    className="inline-flex items-center justify-center bg-white text-[#1A1A1A] text-xs sm:text-sm font-bold px-4 sm:px-5 py-2 sm:py-3 rounded-full hover:bg-gray-100 transition-all shadow-md whitespace-nowrap min-w-[120px] sm:min-w-[150px] md:min-w-[175px]"
+                  >
+                    Shop Now
+                    <ExternalLink size={12} className="sm:w-[14px] sm:h-[14px]" />
+                  </Link>
+                </div>
+              </div>
+
+              {/* Close Button */}
+              <button
+                onClick={() => setBannerVisible(false)}
+                className="absolute top-2 right-2 sm:top-3 sm:right-3 w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center text-white hover:bg-white/40 transition-all border border-white/30"
+                aria-label="Close banner"
+              >
+                <X size={14} className="sm:w-[16px] sm:h-[16px]" />
+              </button>
+
+              {/* Dot Indicators */}
+              <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex items-center gap-2">
+                {[0, 1, 2].map((dot) => (
+                  <button
+                    key={dot}
+                    onClick={() => setActiveDot(dot)}
+                    className={`transition-all rounded-full ${
+                      activeDot === dot
+                        ? "w-5 h-1.5 sm:w-6 sm:h-2 bg-white"
+                        : "w-1.5 h-1.5 sm:w-2 sm:h-2 bg-white/50"
+                    }`}
+                    aria-label={`Slide ${dot + 1}`}
+                  />
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Badge */}
-      <div className="mb-6 md:mb-8 inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white border border-[#E5E9EA] shadow-[0_2px_8px_rgba(0,0,0,0.04)] text-xs md:text-sm font-medium text-main-text">
+      <div className="mb-5 md:mb-8 inline-flex items-center gap-2 px-3 sm:px-4 py-1.5 rounded-full bg-white border border-[#E5E9EA] shadow-[0_2px_8px_rgba(0,0,0,0.04)] text-xs md:text-sm font-medium text-main-text">
         <span className="text-[#D9F500]">✦</span>
         AI-Powered Health Transformation
       </div>
 
       {/* Heading */}
-      <h1 className="max-w-5xl font-sans text-4xl sm:text-6xl md:text-7xl lg:text-[96px] leading-tight md:leading-[94px] font-medium text-main-text mb-6 tracking-tight px-2">
+      <h1 className="max-w-5xl font-sans text-3xl sm:text-5xl md:text-7xl lg:text-[96px] leading-tight md:leading-[94px] font-medium text-main-text mb-4 sm:mb-6 tracking-tight px-4">
         See Your Future. <br className="hidden sm:block" />
         <span className="text-[#7C5CFF]">Change Your Path.</span>
       </h1>
 
       {/* Paragraph */}
-      <p className="max-w-5xl text-para-text text-base sm:text-lg md:text-[24px] leading-relaxed font-normal mb-10 md:mb-12 px-4">
+      <p className="max-w-2xl md:max-w-5xl text-para-text text-sm sm:text-base md:text-[24px] leading-relaxed font-normal mb-8 md:mb-12 px-4">
         Transform your wellness journey with AI-powered body projections.
         See your future self and get personalized insights to achieve your health goals.
       </p>
 
       {/* CTA Buttons */}
-      <div className="flex flex-col sm:flex-row items-center gap-4 mb-10 w-full sm:w-auto px-6">
+      <div className="flex flex-col sm:flex-row items-center gap-3 sm:gap-4 mb-8 sm:mb-10 w-full sm:w-auto px-6">
         <Link
           href="/start"
-          className="w-full sm:w-auto bg-primary text-white px-6 md:px-8 py-2 md:py-3 rounded-lg font-semibold text-base md:text-lg hover:bg-opacity-90 transition-all shadow-[0_4px_14px_0_rgba(15,164,169,0.39)]"
+          className="w-full sm:w-auto bg-primary text-white px-6 md:px-8 py-2.5 md:py-3 rounded-lg font-semibold text-sm md:text-lg hover:bg-opacity-90 transition-all shadow-[0_4px_14px_0_rgba(15,164,169,0.39)] text-center"
         >
           Start your journey
         </Link>
         <Link
           href="/pricing"
-          className="w-full sm:w-auto bg-white text-main-text border border-[#E5E9EA] px-6 md:px-10 py-2 md:py-3 rounded-lg font-semibold text-base md:text-lg flex items-center justify-center gap-2 hover:bg-gray-50 transition-all"
+          className="w-full sm:w-auto bg-white text-main-text border border-[#E5E9EA] px-6 md:px-10 py-2.5 md:py-3 rounded-lg font-semibold text-sm md:text-lg flex items-center justify-center gap-2 hover:bg-gray-50 transition-all"
         >
           <span className="text-gray-400">$</span>
           View Pricing
@@ -87,7 +158,7 @@ const HeroSection = () => {
       </div>
 
       {/* Features */}
-      <div className="flex flex-col sm:flex-row flex-wrap justify-center gap-4 sm:gap-8 text-main-text font-medium text-sm md:text-base">
+      <div className="flex flex-col sm:flex-row flex-wrap justify-center gap-3 sm:gap-8 text-main-text font-medium text-sm md:text-base px-4">
         <div className="flex items-center gap-2">
           <div className="w-5 h-5 md:w-6 md:h-6 rounded-full border border-[#041228] flex items-center justify-center flex-shrink-0">
             <svg width="10" height="10" className="md:w-3.5 md:h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">

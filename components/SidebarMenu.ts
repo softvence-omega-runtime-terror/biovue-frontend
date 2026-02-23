@@ -16,13 +16,13 @@ import {
 
 export const SIDEBAR_MENU = {
   user: [
-    { label: "Dashboard", icon: LayoutGrid, href: "/dashboard" },
-    { label: "Projections", icon: TrendingUp, href: "/projections" },
-    { label: "Insights", icon: Brain, href: "/insights" },
-    { label: "Habits", icon: Repeat, href: "/habits" },
-    { label: "Support", icon: HeartHandshake, href: "/support" },
-    { label: "Message", icon: Mail, href: "/messages" },
-    { label: "Settings", icon: Settings, href: "/settings" },
+    { label: "Dashboard", icon: LayoutGrid, href: "/user-dashboard" },
+    { label: "Projections", icon: TrendingUp, href: "/user-dashboard/projections" },
+    { label: "Insights", icon: Brain, href: "/user-dashboard/insights" },
+    { label: "Habits", icon: Repeat, href: "/user-dashboard/habits" },
+    { label: "Support", icon: HeartHandshake, href: "/user-dashboard/support" },
+    { label: "Message", icon: Mail, href: "/user-dashboard/messages" },
+    { label: "Settings", icon: Settings, href: "/user-dashboard/settings" },
   ],
 
   trainer: [
