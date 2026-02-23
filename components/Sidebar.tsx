@@ -152,7 +152,7 @@ export default function Sidebar({ role }: SidebarProps) {
                   }`}
                 title={isExpanded ? "" : item.label}
               >
-                <Icon size={24} className="flex-shrink-0" />
+                <Icon size={24} className="shrink-0" />
                 {isExpanded && <span>{item.label}</span>}
                 <span className="hidden md:inline">
                   {!isExpanded && item.label}
@@ -168,7 +168,7 @@ export default function Sidebar({ role }: SidebarProps) {
             ${isExpanded ? "" : "justify-center px-2 md:px-4 md:justify-start"}`}
           title={isExpanded ? "" : "Sign Out"}
         >
-          <LogOut size={18} className="flex-shrink-0" />
+          <LogOut size={18} className="shrink-0" />
           {isExpanded && <span>Sign Out</span>}
           <span className="hidden md:inline">{!isExpanded && "Sign Out"}</span>
         </button>
