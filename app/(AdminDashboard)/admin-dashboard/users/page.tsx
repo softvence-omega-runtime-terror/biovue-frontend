@@ -254,7 +254,7 @@ export default function UsersPage() {
                         <DropdownMenuItem
                           onClick={(e) => {
                             e.stopPropagation();
-                            setSelectedUser(user); // ✅ OPEN PROFILE
+                            setSelectedUser(user); // OPEN PROFILE
                           }}
                         >
                           View Details
@@ -299,12 +299,12 @@ export default function UsersPage() {
         </div>
       </div>
 
-      {/* Center Modal */}
+      {/* details Modal */}
       {selectedUser && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-          <Card className="w-full max-w-md mx-4 shadow-xl rounded-lg relative">
+          <Card className="w-full max-w-md mx-4 shadow-xl rounded-lg relative p-4">
             {/* Header */}
-            <CardHeader className="flex flex-row items-center justify-between border-b">
+            <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle className="text-lg font-semibold">
                 User Profile
               </CardTitle>
@@ -319,9 +319,9 @@ export default function UsersPage() {
             </CardHeader>
 
             {/* Content */}
-            <CardContent className="space-y-6 pt-6">
+            <CardContent className="space-y-6 ">
               {/* Avatar */}
-              <div className="flex items-center gap-4">
+              <div className="flex items-center gap-4 pb-3 border-b">
                 <div className="w-12 h-12 rounded-full bg-linear-to-br from-blue-400 to-blue-600 flex items-center justify-center">
                   <User className="w-6 h-6 text-white" />
                 </div>
@@ -333,26 +333,32 @@ export default function UsersPage() {
                 </div>
               </div>
 
-              <div className="space-y-2">
-                <p className="text-xs text-gray-500 uppercase">User Type</p>
-                <p className="text-sm">{selectedUser.type}</p>
+              <div className="flex flex-col md:flex-row justify-between">
+                <div className="space-y-2">
+                  <p className="text-sm text-black uppercase">User Type</p>
+                  <p className="text-sm text-[#5F6F73]">{selectedUser.type}</p>
+                </div>
+                <div className="space-y-2">
+                  <p className="text-sm text-black uppercase">Status</p>
+                  <p className="text-sm text-[#5F6F73]">
+                    {selectedUser.status}
+                  </p>
+                </div>
               </div>
+              <div className="flex flex-col md:flex-row justify-between">
+                <div className="space-y-2">
+                  <p className="text-sm text-black uppercase">Subscription</p>
+                  <p className="text-sm text-[#5F6F73]">
+                    {selectedUser.subscription}
+                  </p>
+                </div>
 
-              <div className="space-y-2">
-                <p className="text-xs text-gray-500 uppercase">Subscription</p>
-                <p className="text-sm">{selectedUser.subscription}</p>
-              </div>
-
-              <div className="space-y-2">
-                <p className="text-xs text-gray-500 uppercase">Status</p>
-                <p className="text-sm text-green-600">
-                  ● {selectedUser.status}
-                </p>
-              </div>
-
-              <div className="space-y-2">
-                <p className="text-xs text-gray-500 uppercase">Joined</p>
-                <p className="text-sm">{selectedUser.joinedDate}</p>
+                <div className="space-y-2">
+                  <p className="text-sm text-black uppercase">Member Since</p>
+                  <p className="text-sm text-[#5F6F73]">
+                    {selectedUser.joinedDate}
+                  </p>
+                </div>
               </div>
             </CardContent>
           </Card>
