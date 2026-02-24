@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { Plus, Filter } from "lucide-react";
 import {
   mockPlans,
@@ -10,19 +11,40 @@ import SubscriptionPlansTable from "@/components/AdminDashboard/subscription-pla
 import AddPlanModal from "@/components/AdminDashboard/subscription-plans/AddPlanModal";
 import EditPlanModal from "@/components/AdminDashboard/subscription-plans/EditPlanModal";
 import Toast from "@/components/AdminDashboard/subscription-plans/Toast";
+import DashboardHeading from "@/components/common/DashboardHeading";
 
 export default function SubscriptionPlansPage() {
+  const searchParams = useSearchParams();
+  const planType = searchParams.get("type"); // individual | professional | null
+
   const [plans, setPlans] = useState<SubscriptionPlan[]>(mockPlans);
+  const [billingCycle, setBillingCycle] = useState<
+    "All" | "Monthly" | "Yearly"
+  >("All");
+
   const [showAddModal, setShowAddModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState<SubscriptionPlan | null>(
     null,
   );
-  const [filterType, setFilterType] = useState("All");
+
   const [toast, setToast] = useState<{
     message: string;
     type: "success" | "error";
   } | null>(null);
+
+  /* ---------------- FILTER LOGIC ---------------- */
+
+  const filteredPlans = plans.filter((plan) => {
+    const matchType = planType ? plan.type.toLowerCase() === planType : true;
+
+    const matchBilling =
+      billingCycle === "All" ? true : plan.billingCycle === billingCycle;
+
+    return matchType && matchBilling;
+  });
+
+  /* ---------------- CRUD ---------------- */
 
   const handleAddPlan = (
     newPlan: Omit<SubscriptionPlan, "id" | "createdDate" | "users">,
@@ -31,16 +53,16 @@ export default function SubscriptionPlansPage() {
       ...newPlan,
       id: Date.now().toString(),
       createdDate: new Date().toISOString().split("T")[0],
-      users: Math.floor(Math.random() * 1000),
+      users: Math.floor(Math.random() * 1000).toString(),
     };
-    setPlans([...plans, plan]);
+    setPlans((prev) => [...prev, plan]);
     setShowAddModal(false);
     setToast({ message: "Plan added successfully!", type: "success" });
   };
 
   const handleEditPlan = (updatedPlan: SubscriptionPlan) => {
-    setPlans(
-      plans.map((plan) => (plan.id === updatedPlan.id ? updatedPlan : plan)),
+    setPlans((prev) =>
+      prev.map((plan) => (plan.id === updatedPlan.id ? updatedPlan : plan)),
     );
     setShowEditModal(false);
     setSelectedPlan(null);
@@ -48,62 +70,52 @@ export default function SubscriptionPlansPage() {
   };
 
   const handleDeletePlan = (id: string) => {
-    setPlans(plans.filter((plan) => plan.id !== id));
+    setPlans((prev) => prev.filter((plan) => plan.id !== id));
     setToast({ message: "Plan deleted successfully!", type: "success" });
   };
 
-  const handleEditClick = (plan: SubscriptionPlan) => {
-    setSelectedPlan(plan);
-    setShowEditModal(true);
-  };
-
-  const filteredPlans =
-    filterType === "All"
-      ? plans
-      : plans.filter((plan) => plan.type === filterType);
+  /* ---------------- UI ---------------- */
 
   return (
-    <div className="min-h-screen bg-gray-100 p-6">
-      <div className="max-w-7xl mx-auto">
-        {/* Header Section */}
-        <div className="mb-8">
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">
-                Subscription Plans
-              </h1>
-              <p className="text-gray-600 mt-1">
-                View and manage all platform users
-              </p>
-            </div>
-            <button
-              onClick={() => setShowAddModal(true)}
-              className="flex items-center gap-2 px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors w-fit"
+    <div className="min-h-screen">
+      <div className="mx-auto">
+        {/* Header */}
+        <div className="mb-6 flex justify-end items-center">
+          <button
+            onClick={() => setShowAddModal(true)}
+            className="flex items-center gap-2 px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700"
+          >
+            <Plus size={18} />
+            Add New Plan
+          </button>
+        </div>
+
+        <div className="mb-7 flex justify-between items-center">
+          <div>
+            <DashboardHeading
+              heading="Subscription Plans"
+              subheading="View and manage subscription plans"
+            />
+          </div>
+          {/* Billing Cycle Filter */}
+          <div className="mb-6 flex text-center  items-center gap-3">
+            <Filter size={18} className="text-gray-600" />
+            <select
+              value={billingCycle}
+              onChange={(e) => setBillingCycle(e.target.value as any)}
+              className="px-6 py-2 border cursor-pointer rounded-lg text-sm"
             >
-              <Plus size={20} />
-              Add New Plan
-            </button>
+              <option value="All">All</option>
+              <option value="Monthly">Monthly</option>
+              <option value="Yearly">Yearly</option>
+            </select>
           </div>
         </div>
 
-        {/* Filter Section */}
-        <div className="mb-6 flex items-center gap-3">
-          <Filter size={20} className="text-gray-600" />
-          <select
-            value={filterType}
-            onChange={(e) => setFilterType(e.target.value)}
-            className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
-          >
-            <option value="All">All</option>
-            <option value="Individual">Individual</option>
-            <option value="Professional">Professional</option>
-          </select>
-        </div>
-
-        {/* Table Section */}
+        {/* Table */}
         <SubscriptionPlansTable
           plans={filteredPlans}
-          onEdit={handleEditClick}
+          onEdit={setSelectedPlan}
           onDelete={handleDeletePlan}
         />
       </div>
@@ -116,16 +128,12 @@ export default function SubscriptionPlansPage() {
       />
 
       <EditPlanModal
-        isOpen={showEditModal}
+        isOpen={!!selectedPlan}
         plan={selectedPlan}
-        onClose={() => {
-          setShowEditModal(false);
-          setSelectedPlan(null);
-        }}
+        onClose={() => setSelectedPlan(null)}
         onSave={handleEditPlan}
       />
 
-      {/* Toast Notification */}
       {toast && (
         <Toast
           message={toast.message}

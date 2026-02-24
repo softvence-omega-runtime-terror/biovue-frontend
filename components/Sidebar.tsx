@@ -1,75 +1,10 @@
-// "use client";
-
-// import Image from "next/image";
-// import Link from "next/link";
-// import { usePathname } from "next/navigation";
-// import { LogOut } from "lucide-react";
-// import { SIDEBAR_MENU } from "./SidebarMenu";
-
-// type Role = "user" | "trainer" | "admin";
-
-// interface SidebarProps {
-//   role: Role;
-// }
-
-// export default function Sidebar({ role }: SidebarProps) {
-//   const pathname = usePathname();
-//   const menu = SIDEBAR_MENU[role];
-
-//   return (
-//     <aside className="w-65 min-h-screen bg-white  flex flex-col px-6 py-8">
-//       {/* Logo */}
-//       <div className="w-26 h-14 mb-5">
-//         <Link href="/">
-//           <Image
-//             src="/images/logo.png"
-//             alt="BioVue"
-//             width={99}
-//             height={56}
-//             className="w-full h-full cursor-pointer"
-//           />
-//         </Link>
-//       </div>
-
-//       {/* Menu */}
-//       <nav className="flex flex-col gap-1 flex-1">
-//         {menu.map((item) => {
-//           const isActive = pathname === item.href;
-//           const Icon = item.icon;
-
-//           return (
-//             <Link
-//               key={item.label}
-//               href={item.href}
-//               className={`flex items-center gap-3 px-2 py-2.5 rounded-lg text-sm font-medium transition
-//                 ${
-//                   isActive
-//                     ? "bg-[rgba(58,134,255,0.25)] text-[#3A86FF]"
-//                     : "text-gray-600 hover:bg-gray-100"
-//                 }`}
-//             >
-//               <Icon size={24} />
-//               {item.label}
-//             </Link>
-//           );
-//         })}
-//       </nav>
-
-//       {/* Sign out */}
-//       <button className="flex items-center gap-3 text-gray-600 px-4 py-2 rounded-lg hover:bg-gray-100">
-//         <LogOut size={18} />
-//         Sign Out
-//       </button>
-//     </aside>
-//   );
-// }
 "use client";
 
 import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { usePathname, useSearchParams } from "next/navigation";
-import { LogOut, Menu, X } from "lucide-react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { LogOut, Menu, X, ChevronDown } from "lucide-react";
 import { SIDEBAR_MENU } from "./SidebarMenu";
 
 type Role = "user" | "trainer" | "admin";
@@ -81,21 +16,24 @@ interface SidebarProps {
 export default function Sidebar({ role }: SidebarProps) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const router = useRouter();
   const menu = SIDEBAR_MENU[role];
+
   const [isExpanded, setIsExpanded] = useState(false);
-  const isChildActive =
-    pathname === "/admin-dashboard/subscription-plans" &&
-    searchParams.get("type") === "individual";
+  const [isSubmenuExpanded, setIsSubmenuExpanded] = useState(false);
+
+  const currentType = searchParams.get("type") || "all";
+
   return (
     <>
-      {/* Hamburger Menu Button - Visible on md and sm screens */}
+      {/* Hamburger Menu Button - Visible on mobile */}
       <button
         onClick={() => setIsExpanded(!isExpanded)}
         className="fixed top-4 left-4 z-50 md:hidden p-2 rounded-lg hover:bg-gray-100"
         aria-label="Toggle sidebar"
       >
         {isExpanded ? (
-          <X size={24} className="fixed right-40" />
+          <X size={24} className="fixed right-45" />
         ) : (
           <Menu size={24} />
         )}
@@ -111,15 +49,16 @@ export default function Sidebar({ role }: SidebarProps) {
 
       {/* Sidebar */}
       <aside
-        className={`fixed md:static top-0 left-0 h-screen z-40 bg-white flex flex-col px-3 py-8 md:px-6 transition-all duration-300 ease-in-out
-          ${isExpanded ? "w-65 translate-x-0" : "w-20 -translate-x-full md:translate-x-0 md:w-65"}
-        `}
+        className={`fixed md:static top-0 left-0 h-screen z-40 bg-white flex flex-col px-3 py-8 md:px-6 transition-all duration-300 ease-in-out border-r border-gray-200 ${
+          isExpanded
+            ? "w-65 translate-x-0"
+            : "w-20 -translate-x-full md:translate-x-0 md:w-65"
+        }`}
       >
         {/* Logo */}
         <div
-          className={`mb-5 transition-all duration-300 flex items-center justify-center md:block
-            ${isExpanded || "md:w-26 md:h-14"}
-            ${isExpanded ? "w-26 h-14" : "w-16 h-16"}`}
+          className={`mb-8 transition-all duration-300 flex items-center justify-center md:block 
+             w-26 h-14`}
         >
           <Link href="/" className="block">
             <Image
@@ -127,82 +66,96 @@ export default function Sidebar({ role }: SidebarProps) {
               alt="BioVue"
               width={99}
               height={56}
-              className={`transition-all duration-300
-                ${isExpanded ? "w-full h-full" : "w-12 h-12 md:w-full md:h-full"}`}
+              className={`object-contain w-full h-full`}
             />
           </Link>
         </div>
 
         {/* Menu */}
         <nav className="flex flex-col gap-1 flex-1">
-          {/* {menu.map((item) => {
-            const isActive = pathname === item.href;
-            const Icon = item.icon;
-
-            return (
-              <Link
-                key={item.label}
-                href={item.href}
-                onClick={() => {
-                  setIsExpanded(false);
-                }}
-                className={`flex items-center gap-3 px-2 py-2.5 rounded-lg text-sm font-medium transition-all duration-300 whitespace-nowrap
-                  ${isExpanded ? "px-2" : "px-1 justify-center md:px-2 md:justify-start"}
-                  ${
-                    isActive
-                      ? "bg-[rgba(58,134,255,0.25)] text-[#3A86FF]"
-                      : "text-gray-600 hover:bg-gray-100"
-                  }`}
-                title={isExpanded ? "" : item.label}
-              >
-                <Icon size={24} className="flex-shrink-0" />
-                {isExpanded && <span>{item.label}</span>}
-                <span className="hidden md:inline">
-                  {!isExpanded && item.label}
-                </span>
-              </Link>
-            );
-          })} */}
           {menu.map((item) => {
             const Icon = item.icon;
+            const isSubscription =
+              item.href === "/admin-dashboard/subscription-plans";
 
-            // use isChildActive for specific routes
-            const isActive =
-              pathname === item.href ||
-              (item.href === "/admin-dashboard/subscription-plans" &&
-                isChildActive);
-
+            const isActive = isSubscription
+              ? pathname === item.href && !searchParams.get("type")
+              : pathname === item.href;
             return (
-              <Link
-                key={item.label}
-                href={item.href}
-                onClick={() => setIsExpanded(false)}
-                className={`flex items-center gap-3 px-2 py-2.5 rounded-lg text-sm font-medium transition-all duration-300 whitespace-nowrap
-        ${isExpanded ? "px-2" : "px-1 justify-center md:px-2 md:justify-start"}
-        ${
-          isActive
-            ? "bg-[rgba(58,134,255,0.25)] text-[#3A86FF]"
-            : "text-gray-600 hover:bg-gray-100"
-        }`}
-                title={isExpanded ? "" : item.label}
-              >
-                <Icon size={24} className="flex-shrink-0" />
-                {isExpanded && <span>{item.label}</span>}
-                <span className="hidden md:inline">
-                  {!isExpanded && item.label}
-                </span>
-              </Link>
+              <div key={item.label}>
+                {/* Parent Menu Item */}
+                <button
+                  onClick={() => {
+                    if (isSubscription) {
+                      router.push(item.href);
+                      setIsSubmenuExpanded(true);
+                      setIsExpanded(true);
+                    } else {
+                      router.push(item.href);
+                      setIsExpanded(false);
+                    }
+                  }}
+                  className={`w-full cursor-pointer flex items-center gap-3 px-2 py-2.5 rounded-lg text-sm font-medium transition-all duration-300 whitespace-nowrap ${
+                    isActive
+                      ? "bg-blue-50 text-blue-600"
+                      : "text-gray-600 hover:bg-gray-100"
+                  }`}
+                >
+                  <Icon size={20} className="shrink-0" />
+                  {isExpanded && <span>{item.label}</span>}
+                  {!isExpanded && (
+                    <span className="hidden md:inline">{item.label}</span>
+                  )}
+
+                  {isSubscription && (
+                    <ChevronDown
+                      size={18}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setIsSubmenuExpanded((prev) => !prev);
+                      }}
+                      className={`ml-auto transition-transform ${
+                        isSubmenuExpanded ? "rotate-180" : ""
+                      }`}
+                    />
+                  )}
+                </button>
+
+                {/* Submenu */}
+                {isSubscription && isSubmenuExpanded && (
+                  <div className="ml-9 mt-1 flex flex-col gap-1 animate-in fade-in slide-in-from-top-1">
+                    {[
+                      { label: "Individual", type: "individual" },
+                      { label: "Professional", type: "professional" },
+                    ].map((sub) => (
+                      <Link
+                        key={sub.type}
+                        href={`/admin-dashboard/subscription-plans?type=${sub.type}`}
+                        onClick={() => setIsExpanded(false)}
+                        className={`text-sm px-3 py-1.5 rounded-md transition-colors ${
+                          currentType === sub.type
+                            ? "bg-blue-100 text-blue-600 font-medium"
+                            : "text-gray-500 hover:bg-gray-100"
+                        }`}
+                      >
+                        - {sub.label}
+                      </Link>
+                    ))}
+                  </div>
+                )}
+              </div>
             );
           })}
         </nav>
 
-        {/* Sign out */}
+        {/* Sign Out Button */}
         <button
-          className={`flex items-center gap-3 text-gray-600 px-4 py-2 rounded-lg hover:bg-gray-100 transition-all duration-300 whitespace-nowrap
-            ${isExpanded ? "" : "justify-center px-2 md:px-4 md:justify-start"}`}
+          className={`flex items-center gap-3 text-gray-600 px-4 py-2 rounded-lg hover:bg-gray-100 transition-all duration-300 whitespace-nowrap ${
+            isExpanded ? "" : "justify-center px-2 md:px-4 md:justify-start"
+          }`}
           title={isExpanded ? "" : "Sign Out"}
         >
-          <LogOut size={18} className="flex-shrink-0" />
+          <LogOut size={18} className="shrink-0" />
           {isExpanded && <span>Sign Out</span>}
           <span className="hidden md:inline">{!isExpanded && "Sign Out"}</span>
         </button>
