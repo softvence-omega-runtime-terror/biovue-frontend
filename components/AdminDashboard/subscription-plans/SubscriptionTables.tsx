@@ -3,6 +3,7 @@
 import { AlertCircleIcon, Edit2, MoreVertical, Trash2 } from "lucide-react";
 import { SubscriptionPlan } from "./MockData";
 import { useState } from "react";
+import ViewPlanDetailsModal from "./view-details";
 
 interface SubscriptionPlansTableProps {
   plans: SubscriptionPlan[];
@@ -16,7 +17,10 @@ export default function SubscriptionPlansTable({
   onDelete,
 }: SubscriptionPlansTableProps) {
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
-
+  const [selectedPlan, setSelectedPlan] = useState<SubscriptionPlan | null>(
+    null,
+  );
+  const [isViewOpen, setIsViewOpen] = useState(false);
   const getTypeColor = (type: string) => {
     if (type === "Individual") {
       return "bg-[#8746E726] text-[#8746E7] border-[#8746E7]";
@@ -25,7 +29,7 @@ export default function SubscriptionPlansTable({
   };
 
   return (
-    <div className=" rounded-lg shadow overflow-hidden">
+    <div className=" rounded-lg shadow overflow-visible">
       <table className="w-full">
         <thead className="bg-[#0FA4A91A] border-b border-gray-200">
           <tr>
@@ -88,7 +92,7 @@ export default function SubscriptionPlansTable({
                     onClick={() =>
                       setOpenMenuId(openMenuId === plan.id ? null : plan.id)
                     }
-                    className="p-2 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100"
+                    className="p-2 cursor-pointer text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100"
                   >
                     <MoreVertical size={18} />
                   </button>
@@ -96,8 +100,12 @@ export default function SubscriptionPlansTable({
                   {openMenuId === plan.id && (
                     <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg z-10 border border-gray-200">
                       <button
-                        onClick={() => setOpenMenuId(null)}
-                        className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
+                        onClick={() => {
+                          setSelectedPlan(plan);
+                          setIsViewOpen(true);
+                          setOpenMenuId(null);
+                        }}
+                        className="w-full cursor-pointer text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
                       >
                         <AlertCircleIcon />
                         View Details
@@ -107,7 +115,7 @@ export default function SubscriptionPlansTable({
                           onEdit(plan);
                           setOpenMenuId(null);
                         }}
-                        className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
+                        className="w-full cursor-pointer text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
                       >
                         <Edit2 /> Edit Plan
                       </button>
@@ -116,7 +124,7 @@ export default function SubscriptionPlansTable({
                           onDelete(plan.id);
                           setOpenMenuId(null);
                         }}
-                        className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 flex items-center gap-2"
+                        className="w-full cursor-pointer text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 flex items-center gap-2"
                       >
                         <Trash2 /> Delete Plan
                       </button>
@@ -128,6 +136,14 @@ export default function SubscriptionPlansTable({
           ))}
         </tbody>
       </table>
+      <ViewPlanDetailsModal
+        isOpen={isViewOpen}
+        plan={selectedPlan}
+        onClose={() => {
+          setIsViewOpen(false);
+          setSelectedPlan(null);
+        }}
+      />
     </div>
   );
 }

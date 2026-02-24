@@ -39,7 +39,7 @@ export const mockPlans: SubscriptionPlan[] = [
   {
     id: "2",
     name: "Plus",
-    type: "Individual",
+    type: "Professional",
     billingCycle: "Monthly",
     price: 24,
     status: "Active",
