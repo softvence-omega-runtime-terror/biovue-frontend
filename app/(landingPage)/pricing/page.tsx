@@ -43,7 +43,7 @@ const PricingPage = () => {
       {/* Individual Plans Section */}
       <section className="container mx-auto px-6 mb-24">
         <div className="text-center mb-10">
-          <h2 className="text-2xl font-bold text-[#3A86FF] mb-6">For Individual</h2>
+          <h2 style={{ color: 'var(--Primary-color, #3A86FF)', textAlign: 'center', fontFamily: 'Roboto', fontSize: '34px', fontStyle: 'normal', fontWeight: 400, lineHeight: '24px' }} className="mb-6">For Individual</h2>
           
           {/* Toggle */}
           <div className="flex items-center justify-center gap-4">
@@ -65,7 +65,7 @@ const PricingPage = () => {
         </div>
 
         {/* Individual Cards Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 container mx-auto">
           {/* Free Trial */}
           <PricingCard
             title="Free Trial"
@@ -134,8 +134,10 @@ const PricingPage = () => {
       {/* Professional Plans Section */}
       <section className="container mx-auto px-6 mb-24">
         <div className="text-center mb-12">
-          <h2 className="text-3xl font-bold text-[#3A86FF] mb-2 uppercase tracking-wide">Professional Plan</h2>
-          <p className="text-[#1F2D2E] font-semibold mb-6">6 month minimum commitment required.</p>
+          <h2 style={{ color: 'var(--Primary-color, #3A86FF)', textAlign: 'center', fontFamily: 'Roboto', fontSize: '34px', fontStyle: 'normal', fontWeight: 400, lineHeight: '24px' }} className="mb-2">Professional Plan</h2>
+         <p className="text-[#041228] text-center font-['Roboto'] text-[24px] font-normal leading-[24px] my-6">
+  6 month minimum commitment required.
+</p>
           
           {/* Toggle */}
           <div className="flex items-center justify-center gap-4">
@@ -157,7 +159,7 @@ const PricingPage = () => {
         </div>
 
         {/* Professional Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-7xl mx-auto">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 container mx-auto">
           {/* Tier 1 */}
           <PricingCard
             compact
@@ -249,7 +251,7 @@ const PricingPage = () => {
       </section>
 
       {/* Integration Banner */}
-      <section className="container mx-auto px-6">
+      <section className="container mx-auto px-4">
         <div className="bg-[#D9EFEF] rounded-2xl p-8 md:p-12 flex flex-col md:flex-row items-center justify-between gap-8 max-w-7xl mx-auto shadow-sm">
           <div className="max-w-xl">
             <h2 className="text-3xl md:text-3xl font-bold text-[#1F2D2E] mb-4">Already have an app or platform?</h2>
@@ -284,7 +286,7 @@ const PricingCard = ({
   priceSize = "text-5xl"
 }: any) => {
   return (
-    <div className="bg-white rounded-[2rem] p-8 border border-[#E5E9EA] shadow-sm transition-all flex flex-col h-full hover:border-blue-100 hover:shadow-md">
+    <div className="bg-white rounded-xl p-8 border border-[#E5E9EA] shadow-sm transition-all flex flex-col h-full hover:border-blue-100 hover:shadow-md">
       <div className="mb-6">
         <h3 className="text-lg font-bold text-[#3A86FF] mb-2">{title}</h3>
         {capacity && <p className="text-sm font-bold text-[#1F2D2E] mb-4">{capacity}</p>}
@@ -336,7 +338,7 @@ const PricingCard = ({
       </div>
 
       <Link
-        href="/sign-up"
+        href="/register"
         className="w-full text-center py-3.5 rounded-xl font-bold text-sm bg-[#0FA4A9] text-white hover:bg-opacity-90 transition-all shadow-[0_4px_14px_0_rgba(15,164,169,0.3)] shadow-md group"
       >
         {cta}
