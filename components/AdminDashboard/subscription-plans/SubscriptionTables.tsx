@@ -1,6 +1,6 @@
 "use client";
 
-import { MoreVertical } from "lucide-react";
+import { AlertCircleIcon, Edit2, MoreVertical, Trash2 } from "lucide-react";
 import { SubscriptionPlan } from "./MockData";
 import { useState } from "react";
 
@@ -19,36 +19,36 @@ export default function SubscriptionPlansTable({
 
   const getTypeColor = (type: string) => {
     if (type === "Individual") {
-      return "bg-pink-100 text-pink-700";
+      return "bg-[#8746E726] text-[#8746E7] border-[#8746E7]";
     }
-    return "bg-purple-100 text-purple-700";
+    return "bg-[#0FA4A926] text-[#0FA4A9] border-[#0FA4A9]";
   };
 
   return (
-    <div className="bg-white rounded-lg shadow overflow-hidden">
+    <div className=" rounded-lg shadow overflow-hidden">
       <table className="w-full">
-        <thead className="bg-gray-50 border-b border-gray-200">
+        <thead className="bg-[#0FA4A91A] border-b border-gray-200">
           <tr>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
+            <th className="px-6 py-4 text-left text-base font-medium text-gray-700 uppercase tracking-wider">
               Users
             </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
+            <th className="px-6 py-4 text-left text-base font-medium text-gray-700 uppercase tracking-wider">
               Plan Type
             </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
+            <th className="px-6 py-4 text-left text-base font-medium text-gray-700 uppercase tracking-wider">
               Billing Cycle
             </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
+            <th className="px-6 py-4 text-left text-base font-medium text-gray-700 uppercase tracking-wider">
               Price
             </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
+            <th className="px-6 py-4 text-left text-base font-medium text-gray-700 uppercase tracking-wider">
               Status
             </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
+            <th className="px-6 py-4 text-left text-base font-medium text-gray-700 uppercase tracking-wider">
               Created Date
             </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
-              Actions
+            <th className="px-6 py-4 text-left text-base font-medium text-gray-700 uppercase tracking-wider">
+              {""}
             </th>
           </tr>
         </thead>
@@ -74,8 +74,8 @@ export default function SubscriptionPlansTable({
                 ${plan.price.toFixed(2)}/mo
               </td>
               <td className="px-6 py-4 whitespace-nowrap">
-                <span className="flex items-center gap-2 text-sm text-green-700">
-                  <span className="w-2 h-2 bg-green-500 rounded-full"></span>
+                <span className="flex items-center gap-2 text-sm text-[#22C55E]">
+                  <span className="w-2 h-2 bg-[#22C55E] rounded-full"></span>
                   {plan.status}
                 </span>
               </td>
@@ -96,13 +96,20 @@ export default function SubscriptionPlansTable({
                   {openMenuId === plan.id && (
                     <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg z-10 border border-gray-200">
                       <button
+                        onClick={() => setOpenMenuId(null)}
+                        className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
+                      >
+                        <AlertCircleIcon />
+                        View Details
+                      </button>
+                      <button
                         onClick={() => {
                           onEdit(plan);
                           setOpenMenuId(null);
                         }}
                         className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
                       >
-                        ✏️ Edit Plan
+                        <Edit2 /> Edit Plan
                       </button>
                       <button
                         onClick={() => {
@@ -111,13 +118,7 @@ export default function SubscriptionPlansTable({
                         }}
                         className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 flex items-center gap-2"
                       >
-                        🗑️ Delete Plan
-                      </button>
-                      <button
-                        onClick={() => setOpenMenuId(null)}
-                        className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                      >
-                        View Details
+                        <Trash2 /> Delete Plan
                       </button>
                     </div>
                   )}

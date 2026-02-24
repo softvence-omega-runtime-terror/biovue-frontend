@@ -6,7 +6,7 @@ export interface SubscriptionPlan {
   price: number;
   status: "Active" | "Inactive";
   createdDate: string;
-  users: number;
+  users: string;
   features: {
     aiProjections: boolean;
     aiHealthSuggestions: boolean;
@@ -26,7 +26,7 @@ export const mockPlans: SubscriptionPlan[] = [
     price: 0,
     status: "Active",
     createdDate: "2023-10-12",
-    users: 1250,
+    users: "Free Trial",
     features: {
       aiProjections: false,
       aiHealthSuggestions: false,
@@ -44,7 +44,7 @@ export const mockPlans: SubscriptionPlan[] = [
     price: 24,
     status: "Active",
     createdDate: "2023-10-12",
-    users: 850,
+    users: "Plus",
     features: {
       aiProjections: true,
       aiHealthSuggestions: true,
@@ -58,11 +58,11 @@ export const mockPlans: SubscriptionPlan[] = [
     id: "3",
     name: "Premium",
     type: "Individual",
-    billingCycle: "Monthly",
+    billingCycle: "Yearly",
     price: 280,
     status: "Active",
     createdDate: "2023-10-12",
-    users: 420,
+    users: "Premium",
     features: {
       aiProjections: true,
       aiHealthSuggestions: true,
@@ -80,7 +80,7 @@ export const mockPlans: SubscriptionPlan[] = [
     price: 89,
     status: "Active",
     createdDate: "2023-10-12",
-    users: 180,
+    users: "Trainer Pro",
     features: {
       aiProjections: true,
       aiHealthSuggestions: true,
