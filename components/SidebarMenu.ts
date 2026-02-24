@@ -16,7 +16,11 @@ import {
 export const SIDEBAR_MENU = {
   user: [
     { label: "Dashboard", icon: LayoutGrid, href: "/user-dashboard" },
-    { label: "Projections", icon: TrendingUp, href: "/user-dashboard/projections" },
+    {
+      label: "Projections",
+      icon: TrendingUp,
+      href: "/user-dashboard/projections",
+    },
     { label: "Insights", icon: Brain, href: "/user-dashboard/insights" },
     { label: "Habits", icon: Repeat, href: "/user-dashboard/habits" },
     { label: "Support", icon: HeartHandshake, href: "/user-dashboard/support" },
@@ -59,7 +63,7 @@ export const SIDEBAR_MENU = {
     {
       label: "Banner Management",
       icon: Image,
-      href: "/admin-dashboard/banners",
+      href: "/admin-dashboard/banner-management",
     },
     { label: "Settings", icon: Settings, href: "/admin-dashboard/settings" },
   ],
