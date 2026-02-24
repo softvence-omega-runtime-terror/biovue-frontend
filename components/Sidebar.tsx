@@ -58,7 +58,7 @@ export default function Sidebar({ role }: SidebarProps) {
         {/* Logo */}
         <div
           className={`mb-8 transition-all duration-300 flex items-center justify-center md:block 
-             w-26 h-14`}
+             w-16 md:w-25 h-8 md:h-14 `}
         >
           <Link href="/" className="block">
             <Image
