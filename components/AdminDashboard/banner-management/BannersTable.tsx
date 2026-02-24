@@ -10,8 +10,10 @@ import {
   Edit,
 } from "lucide-react";
 import { Banner, MOCK_BANNERS } from "./data";
-
-export default function BannersTable() {
+interface BannersTableProps {
+  onEdit: (banner: Banner) => void;
+}
+export default function BannersTable({ onEdit }: BannersTableProps) {
   const [banners, setBanners] = useState<Banner[]>(MOCK_BANNERS);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("All Statuses");
@@ -77,7 +79,6 @@ export default function BannersTable() {
           />
         </div>
         <div className="w-full md:w-1/2 text-[#5F6F73] flex justify-end gap-4">
-          
           <select
             value={statusFilter}
             onChange={(e) => {
@@ -210,7 +211,10 @@ export default function BannersTable() {
                     </button>
 
                     {/* Edit Button */}
-                    <button className="p-2 text-gray-600 hover:text-teal-600 hover:bg-gray-100 rounded transition-colors">
+                    <button
+                      onClick={() => onEdit(banner)}
+                      className="p-2 text-gray-600 hover:text-teal-600 hover:bg-gray-100 rounded transition-colors"
+                    >
                       <Edit size={18} />
                     </button>
 
