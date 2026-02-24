@@ -10,25 +10,71 @@ interface AddPlanModalProps {
   onAdd: (plan: Omit<SubscriptionPlan, "id" | "createdDate" | "users">) => void;
 }
 
+function Toggle({
+  checked,
+  onChange,
+}: {
+  checked: boolean;
+  onChange: (val: boolean) => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={() => onChange(!checked)}
+      className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
+        checked ? "bg-[#4F39F6]" : "bg-[#D1D5DC]"
+      }`}
+    >
+      <span
+        className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
+          checked ? "translate-x-4" : "translate-x-0"
+        }`}
+      />
+    </button>
+  );
+}
+type PlanType = "Individual" | "Professional";
+type BillingCycle = "Monthly" | "Yearly" | "Annual";
+
+interface FormData {
+  name: string;
+  type: PlanType;
+  billingCycle: BillingCycle;
+  price: number;
+  status: "Active";
+  features: {
+    aiProjections: boolean;
+    aiHealthSuggestions: boolean;
+    coachRecommendations: boolean;
+    deviceSync: boolean;
+    prioritySupport: boolean;
+  };
+  projectionsPerMonth: number;
+  isActive: boolean;
+  featuresList: string[];
+}
+
 export default function AddPlanModal({
   isOpen,
   onClose,
   onAdd,
 }: AddPlanModalProps) {
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<FormData>({
     name: "",
-    type: "Individual" as const,
-    billingCycle: "Monthly" as const,
+    type: "Individual",
+    billingCycle: "Monthly",
     price: 0,
-    status: "Active" as const,
+    status: "Active",
     features: {
       aiProjections: false,
       aiHealthSuggestions: false,
+      coachRecommendations: false,
       deviceSync: false,
       prioritySupport: false,
     },
     projectionsPerMonth: 0,
     isActive: true,
+    featuresList: [],
   });
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -43,11 +89,13 @@ export default function AddPlanModal({
       features: {
         aiProjections: false,
         aiHealthSuggestions: false,
+        coachRecommendations: false,
         deviceSync: false,
         prioritySupport: false,
       },
       projectionsPerMonth: 0,
       isActive: true,
+      featuresList: [] as string[],
     });
     onClose();
   };
@@ -131,7 +179,7 @@ export default function AddPlanModal({
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Price
@@ -175,6 +223,25 @@ export default function AddPlanModal({
                     min="0"
                   />
                 </div>
+                {/* features */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Features
+                  </label>
+                  <div className="w-full min-h-10 px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-700">
+                    {formData.featuresList.length > 0 ? (
+                      <ul className="list-disc pl-5 space-y-1">
+                        {formData.featuresList.map((feature) => (
+                          <li key={feature}>{feature}</li>
+                        ))}
+                      </ul>
+                    ) : (
+                      <span className="text-gray-400">
+                        No features selected yet
+                      </span>
+                    )}
+                  </div>
+                </div>
               </div>
             </div>
 
@@ -190,68 +257,70 @@ export default function AddPlanModal({
                     key: "aiHealthSuggestions",
                     label: "AI Health Suggestions",
                   },
+                  {
+                    key: "coachRecommendations",
+                    label: "Coach Recommendations",
+                  },
                   { key: "deviceSync", label: "Device Sync" },
                   { key: "prioritySupport", label: "Priority Support" },
                 ].map((feature) => (
-                  <label
+                  <div
                     key={feature.key}
-                    className="flex items-center gap-3 cursor-pointer"
+                    className="flex items-center justify-between gap-3"
                   >
-                    <input
-                      type="checkbox"
+                    <span className="text-sm text-gray-700">
+                      {feature.label}
+                    </span>
+
+                    <Toggle
                       checked={
                         formData.features[
                           feature.key as keyof typeof formData.features
                         ]
                       }
-                      onChange={(e) =>
+                      onChange={(val) =>
                         setFormData({
                           ...formData,
                           features: {
                             ...formData.features,
-                            [feature.key]: e.target.checked,
+                            [feature.key]: val,
                           },
+                          featuresList: val
+                            ? [...formData.featuresList, feature.label] // add feature
+                            : formData.featuresList.filter(
+                                (f) => f !== feature.label,
+                              ), // remove feature
                         })
                       }
-                      className="w-4 h-4 accent-blue-500"
                     />
-                    <span className="text-sm text-gray-700">
-                      {feature.label}
-                    </span>
-                  </label>
+                  </div>
                 ))}
-              </div>
-
-              <div className="mt-6 pt-6 border-t border-gray-200">
-                <label className="flex items-center gap-3 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={formData.isActive}
-                    onChange={(e) =>
-                      setFormData({ ...formData, isActive: e.target.checked })
-                    }
-                    className="w-4 h-4 accent-blue-500"
-                  />
-                  <span className="text-sm font-medium text-gray-700">
-                    Plan is Active
-                  </span>
-                </label>
               </div>
             </div>
           </div>
-
+          <div className="mt-6 pt-6 border-t border-gray-200">
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-medium text-[#00A63E]">
+                Plan is Active
+              </span>
+              <Toggle
+                checked={formData.isActive}
+                onChange={(val) => setFormData({ ...formData, isActive: val })}
+              />
+            </div>
+          </div>
           {/* Form Actions */}
-          <div className="flex gap-3 justify-end mt-8 pt-6 border-t border-gray-200">
+          <div className="flex gap-3 justify-end mt-8 pt-6 ">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50"
+              className="px-4 py-2  cursor-pointer text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50"
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700"
+              className="px-4 py-2 bg-[#0D9488] text-white rounded-lg hover:opacity-80 cursor-pointer"
             >
               Add Plan
             </button>

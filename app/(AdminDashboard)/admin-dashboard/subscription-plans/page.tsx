@@ -83,7 +83,7 @@ export default function SubscriptionPlansPage() {
         <div className="mb-6 flex justify-end items-center">
           <button
             onClick={() => setShowAddModal(true)}
-            className="flex items-center gap-2 px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700"
+            className="flex cursor-pointer items-center gap-2 px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700"
           >
             <Plus size={18} />
             Add New Plan
@@ -98,7 +98,7 @@ export default function SubscriptionPlansPage() {
             />
           </div>
           {/* Billing Cycle Filter */}
-          <div className="mb-6 flex text-center  items-center gap-3">
+          <div className="flex text-center  items-center gap-3">
             <Filter size={18} className="text-gray-600" />
             <select
               value={billingCycle}
