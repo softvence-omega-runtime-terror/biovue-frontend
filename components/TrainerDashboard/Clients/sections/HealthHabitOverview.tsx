@@ -52,8 +52,12 @@ export default function HealthHabitOverview({
     <div className="space-y-4">
       <div className="flex justify-between items-end">
         <div>
-          <h2 className="text-lg font-bold text-[#111827]">Health & Habit Overview</h2>
-          <p className="text-xs text-[#6B7280]">Read-only live activity data.</p>
+          <h2 className="text-lg font-bold text-[#111827]">
+            Health & Habit Overview
+          </h2>
+          <p className="text-xs text-[#6B7280]">
+            Read-only live activity data.
+          </p>
         </div>
         <p className="text-[10px] text-[#9CA3AF] font-medium tracking-wide">
           All data synced from user device
@@ -69,7 +73,9 @@ export default function HealthHabitOverview({
                 <span className="text-xs font-medium">{card.title}</span>
               </div>
               <div className="space-y-3">
-                <h3 className="text-2xl font-bold text-[#111827]">{card.value}</h3>
+                <h3 className="text-2xl font-bold text-[#111827]">
+                  {card.value}
+                </h3>
                 {card.targetApplied && (
                   <Badge className="bg-[#10B9811A] text-[#059669] border-none text-[10px] font-bold py-1 uppercase tracking-tight">
                     COACH TARGET APPLIED
