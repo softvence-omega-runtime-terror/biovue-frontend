@@ -9,7 +9,7 @@ export default function AdminDashboardLayout({
   return (
     <div className={`flex min-h-screen bg-[#F4FBFA] ${poppins.className}`}>
       {/* Sidebar - Fixed width container to reserve space on desktop */}
-      <div className="hidden md:block w-65 shrink-0" />
+     
       <Sidebar role="user" />
 
       {/* Right side */}

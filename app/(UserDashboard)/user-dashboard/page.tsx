@@ -1,7 +1,8 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { 
   Bell, 
   Crown, 
@@ -11,7 +12,18 @@ import {
   Calendar,
   Archive,
   Moon,
-  Repeat
+  Repeat,
+  X,
+  Weight,
+  Cigarette,
+  GlassWater,
+  Footprints,
+  Dumbbell,
+  Utensils,
+  Droplets,
+  Zap,
+  Smartphone,
+  PencilLine
 } from "lucide-react";
 import { 
   AreaChart, 
@@ -25,6 +37,8 @@ import {
   Line
 } from "recharts";
 import { cn } from "@/lib/utils";
+import LogTodayModal from "@/components/dashboard/LogTodayModal";
+import ChangeSourceModal from "@/components/dashboard/ChangeSourceModal";
 
 // --- Mock Data ---
 const weightData = [
@@ -63,13 +77,22 @@ const ChartCard = ({ title, subtitle, total, totalLabel, children }: any) => (
 
 // --- Main Page ---
 const UserDashboard = () => {
+  const [showLogModal, setShowLogModal] = useState(false);
+  const [showSourceModal, setShowSourceModal] = useState(false);
+  const [dataSource, setDataSource] = useState<"device" | "manual">("device");
+  const [habitData, setHabitData] = useState({
+    weight: "", bodyFat: "", smoking: "", alcohol: "",
+    steps: "7500", workout: "5", strength: "2", sleep: "7.5",
+    diet: "", fastFood: "", stress: "", water: ""
+  });
+
   return (
     <div className="flex flex-col min-h-screen">
       {/* Header - Only for Dashboard Overview */}
       <header className="sticky top-0 z-20 flex items-center justify-between py-4 bg-white border-b border-gray-100 px-6 w-full">
         <h1 className="text-xl font-semibold text-[#1F2D2E]">Dashboard</h1>
         <div className="flex items-center gap-4 ml-auto">
-          <button className="relative p-2 rounded-full bg-[#F4FBFA] hover:bg-gray-100 transition-colors" aria-label="Notifications">
+          <button className="relative p-2 rounded-full bg-[#F4FBFA] hover:bg-gray-100 transition-colors cursor-pointer" aria-label="Notifications">
             <Bell size={20} className="text-[#5F6F73]" />
             <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full border-2 border-white"></span>
           </button>
@@ -79,13 +102,15 @@ const UserDashboard = () => {
               alt="User Profile"
               width={40}
               height={40}
-              className="rounded-full border-2 border-[#F4FBFA]"
+              className="rounded-full border-2 border-[#F4FBFA] cursor-pointer"
             />
           </div>
-          <button className="flex items-center gap-2 bg-[#0FA4A9] text-white px-4 py-2 rounded-lg font-medium hover:bg-opacity-90 transition-all text-sm">
-            <Crown size={18} fill="currentColor" />
-            Upgrade
-          </button>
+          <Link href="/user-dashboard/support">
+            <button className="flex items-center gap-2 bg-[#0FA4A9] text-white px-4 py-2 rounded-lg font-medium hover:bg-opacity-90 transition-all text-sm cursor-pointer">
+              <Crown size={18} fill="currentColor" />
+              Upgrade
+            </button>
+          </Link>
         </div>
       </header>
 
@@ -104,10 +129,12 @@ const UserDashboard = () => {
           <p className="text-[#5F6F73] text-sm md:text-base max-w-xl">
             Upload your photo and see your future body transformation with AI predictions
           </p>
-          <button className="bg-[#0FA4A9] text-white px-6 py-2.5 rounded-lg font-semibold flex items-center gap-2 hover:bg-opacity-90 transition-all mt-2 group">
-            Generate AI Body Projections
-            <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
-          </button>
+          <Link href="/user-dashboard/projections">
+            <button className="bg-[#0FA4A9] text-white px-6 py-2.5 rounded-lg font-semibold flex items-center gap-2 hover:bg-opacity-90 transition-all mt-2 group cursor-pointer">
+              Generate AI Body Projections
+              <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
+            </button>
+          </Link>
         </div>
         <div className="w-full md:w-auto flex flex-col gap-3 min-w-[200px]">
            <div className="bg-white border border-[#3A86FF] rounded-xl p-4 flex flex-col transition-all cursor-pointer hover:bg-blue-50">
@@ -173,7 +200,10 @@ const UserDashboard = () => {
       {/* Current Health Overview */}
       <div className="flex items-center justify-between mt-4">
         <h2 className="text-xl font-bold text-[#1F2D2E]">Current Health Overview</h2>
-        <button className="flex items-center gap-2 bg-[#0FA4A9] text-white px-4 py-2 rounded-lg font-medium hover:bg-opacity-90 transition-all text-sm group">
+        <button
+          onClick={() => setShowLogModal(true)}
+          className="flex items-center gap-2 bg-[#0FA4A9] text-white px-4 py-2 rounded-lg font-medium hover:bg-opacity-90 transition-all text-sm group cursor-pointer"
+        >
           <Plus size={18} />
           Log today's data
         </button>
@@ -213,7 +243,7 @@ const UserDashboard = () => {
           <h2 className="text-xl font-bold text-[#1F2D2E]">Your Progress & Trends</h2>
           <div className="flex p-1 bg-white border border-gray-100 rounded-lg">
              {["Weekly", "Monthly", "Last 3 months"].map((t) => (
-               <button key={t} className={cn("px-4 py-1.5 text-xs font-semibold rounded-md transition-all", 
+               <button key={t} className={cn("px-4 py-1.5 text-xs font-semibold rounded-md transition-all cursor-pointer", 
                  t === "Weekly" ? "bg-[#E4EFFF] text-[#3A86FF]" : "text-[#5F6F73] hover:text-[#1F2D2E]"
                )}>
                  {t}
@@ -277,7 +307,7 @@ const UserDashboard = () => {
       <div className="mt-8 flex flex-col gap-6">
         <div className="flex items-center justify-between">
           <h2 className="text-xl font-bold text-[#1F2D2E]">Today's focus</h2>
-          <button className="flex items-center gap-2 bg-[#0FA4A9] text-white px-4 py-2 rounded-lg font-medium hover:bg-opacity-90 transition-all text-sm group">
+          <button className="flex items-center gap-2 bg-[#0FA4A9] text-white px-4 py-2 rounded-lg font-medium hover:bg-opacity-90 transition-all text-sm group cursor-pointer">
             View All Insights
             <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
           </button>
@@ -318,6 +348,24 @@ const UserDashboard = () => {
         </div>
       </div>
       </div>
+
+      <LogTodayModal 
+        isOpen={showLogModal}
+        onClose={() => setShowLogModal(false)}
+        onChangeSource={() => {
+          setShowLogModal(false);
+          setShowSourceModal(true);
+        }}
+        habitData={habitData}
+        setHabitData={setHabitData}
+      />
+
+      <ChangeSourceModal 
+        isOpen={showSourceModal}
+        onClose={() => setShowSourceModal(false)}
+        dataSource={dataSource}
+        setDataSource={setDataSource}
+      />
     </div>
   );
 };
