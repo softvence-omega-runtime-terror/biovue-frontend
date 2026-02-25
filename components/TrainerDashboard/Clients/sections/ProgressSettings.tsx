@@ -1,94 +1,85 @@
 "use client";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-
+import { Card, CardContent } from "@/components/ui/card";
+import { Settings, Eye } from "lucide-react";
 import { useState } from "react";
-import { MessageSquare, Dumbbell, CheckSquare, Award } from "lucide-react";
 
-export default function ProgramSettings() {
+export default function VisibilityControls() {
   const [settings, setSettings] = useState({
-    progressUpdates: true,
-    workoutReminders: true,
-    weeklyReports: true,
-    performanceTracking: true,
+    programGoals: true,
+    macrosTargets: true,
+    supplementRecommendations: true,
+    progressGraphs: true,
   });
 
-  const settingItems = [
+  const toggle = (key: keyof typeof settings) => {
+    setSettings(prev => ({ ...prev, [key]: !prev[key] }));
+  };
+
+  const items = [
     {
-      icon: MessageSquare,
-      label: "Progress Updates",
-      key: "progressUpdates",
-      color: "bg-blue-50",
-      iconColor: "text-blue-500",
+      key: "programGoals",
+      title: "Program goals",
+      description: "Allows client to see set targets",
     },
     {
-      icon: Dumbbell,
-      label: "Workout Reminders",
-      key: "workoutReminders",
-      color: "bg-green-50",
-      iconColor: "text-green-500",
+      key: "macrosTargets",
+      title: "Macros & targets",
+      description: "Shows granular nutritional goals",
     },
     {
-      icon: CheckSquare,
-      label: "Weekly Reports",
-      key: "weeklyReports",
-      color: "bg-purple-50",
-      iconColor: "text-purple-500",
+      key: "supplementRecommendations",
+      title: "Supplement recommendations",
+      description: "Displays personalized stack lists",
     },
     {
-      icon: Award,
-      label: "Performance Tracking",
-      key: "performanceTracking",
-      color: "bg-orange-50",
-      iconColor: "text-orange-500",
+      key: "progressGraphs",
+      title: "Progress graphs",
+      description: "Shows visual comparison lines",
     },
   ];
 
-  const handleToggle = (key: string) => {
-    setSettings((prev) => ({
-      ...prev,
-      [key]: !prev[key as keyof typeof prev],
-    }));
-  };
-
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Program Settings & Preferences</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {settingItems.map((item) => {
-            const Icon = item.icon;
-            const isEnabled = settings[item.key as keyof typeof settings];
-            return (
-              <div
+    <div className="space-y-4">
+      <div className="flex items-center gap-2 text-[#111827]">
+        <Settings size={20} className="text-[#374151]" />
+        <h2 className="text-lg font-bold text-[#111827]">Visibility Controls</h2>
+      </div>
+
+      <Card className="border-none shadow-xs bg-white">
+        <CardContent className="p-6 space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {items.map((item) => (
+              <div 
                 key={item.key}
-                className={`${item.color} p-4 rounded-lg flex items-center justify-between`}
+                className="flex items-center justify-between p-4 bg-white border border-[#F3F4F6] rounded-xl"
               >
-                <div className="flex items-center gap-3">
-                  <Icon className={`${item.iconColor} w-6 h-6`} />
-                  <span className="font-medium text-[#1F2937]">
-                    {item.label}
-                  </span>
+                <div className="space-y-0.5">
+                  <h4 className="text-sm font-bold text-[#111827]">{item.title}</h4>
+                  <p className="text-[10px] text-[#9CA3AF] font-medium leading-tight">{item.description}</p>
                 </div>
                 <button
-                  onClick={() => handleToggle(item.key)}
-                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                    isEnabled ? "bg-[#0D9488]" : "bg-[#D1D5DB]"
+                  onClick={() => toggle(item.key as keyof typeof settings)}
+                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none ${
+                    settings[item.key as keyof typeof settings] ? "bg-[#0D9488]" : "bg-[#D1D5DB]"
                   }`}
                 >
                   <span
                     className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                      isEnabled ? "translate-x-6" : "translate-x-1"
+                      settings[item.key as keyof typeof settings] ? "translate-x-6" : "translate-x-1"
                     }`}
                   />
                 </button>
               </div>
-            );
-          })}
-        </div>
-      </CardContent>
-    </Card>
+            ))}
+          </div>
+
+          <div className="flex items-center gap-2 text-[#0D9488] pt-2">
+            <Eye size={16} />
+            <span className="text-[11px] font-medium opacity-80 uppercase tracking-tight">Clients only see what you allow.</span>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
   );
 }

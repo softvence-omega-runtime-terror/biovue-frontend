@@ -114,107 +114,145 @@
 // };
 import { ClientDetails, clients } from "../overview/data";
 
-const defaultDetails = {
+const baseDetails = {
   connectedDate: "Connected since",
-  currentWeight: 70,
-  targetWeight: 65,
-  bmi: 24.5,
+  primaryGoal: {
+    title: "Fat Loss",
+    subtitle: "Program duration 12 weeks",
+  },
+  currentTrend: {
+    status: "Improving",
+    description: "Based on last 14 days",
+  },
+  lastActivity: {
+    status: "Logged 2h ago",
+    description: "Yesterday: 10k steps",
+  },
+  consistencyScore: {
+    score: 71,
+    description: "Habits adherence",
+  },
+  projectionUsage: {
+    used: 2,
+    total: 2,
+    nextResetDays: 18,
+    lastProjectionDaysAgo: 12,
+  },
+  healthHabitOverview: {
+    weight: {
+      value: 193.1,
+      unit: "lbs",
+      targetApplied: true,
+    },
+    nutritionQuality: {
+      value: 84,
+      targetApplied: true,
+    },
+    activity: {
+      steps: 8421,
+    },
+    sleep: {
+      hours: 7,
+      minutes: 12,
+      targetApplied: true,
+    },
+    stress: "Low" as const,
+    hydration: {
+      value: 64,
+      unit: "oz",
+    },
+  },
+  coachSetGoals: {
+    targetWeight: 190,
+    weeklyWorkoutGoal: 4,
+    dailyStepGoal: 800,
+    sleepTargetHours: 8,
+  },
+  nextCheckIn: {
+    day: "Tuesday",
+    date: "Oct 31",
+    time: "10:00 AM",
+    timezone: "PDT",
+  },
+  compliance: {
+    score: 88,
+    description: "Alex is highly compliant with nutritional goals but misses 1/5 scheduled workouts.",
+  },
+  currentWeight: 193.1,
+  targetWeight: 190,
+  bmi: 28.1,
   measurements: {
-    chest: 95,
-    waist: 80,
-    hips: 95,
+    chest: 105,
+    waist: 95,
+    hips: 105,
   },
   workouts: {
     weekly: 3,
-    goal: 4,
+    goal: 5,
   },
   waterIntake: {
-    current: 2.0,
+    current: 2.5,
     goal: 3,
     unit: "L",
   },
   healthMetrics: {
-    startWeight: 75,
-    currentWeight: 70,
-    weeklyWeightLoss: 0.5,
+    startWeight: 200,
+    currentWeight: 193.1,
+    weeklyWeightLoss: 0.8,
   },
-  coachNotes: ["Maintain consistency.", "Focus on sleep."],
+  coachNotes: ["Great progress this week!", "Focus more on hydration."],
   progressGoals: [
-    { goal: "Weight Loss", progress: 5, target: 10, unit: "kg" },
+    { goal: "Weight Loss", progress: 6.5, target: 17, unit: "kg" },
   ],
 };
 
 export const clientDetailsData: Record<string, ClientDetails> = {
   "1": {
     ...clients.find((c) => c.id === 1)!,
-    connectedDate: "Connected since Jan 2024",
-    currentWeight: 85.5,
-    targetWeight: 75,
-    bmi: 28.1,
-    measurements: {
-      chest: 105,
-      waist: 95,
-      hips: 105,
-    },
-    workouts: {
-      weekly: 3,
-      goal: 5,
-    },
-    waterIntake: {
-      current: 2.5,
-      goal: 3,
-      unit: "L",
-    },
-    healthMetrics: {
-      startWeight: 92,
-      currentWeight: 85.5,
-      weeklyWeightLoss: 0.8,
-    },
-    coachNotes: ["Great progress this week!", "Focus more on hydration."],
-    progressGoals: [
-      { goal: "Weight Loss", progress: 6.5, target: 17, unit: "kg" },
-    ],
+    ...baseDetails,
+    name: "Alex Rivera",
+    connectedDate: "Connected client",
   },
   "2": {
     ...clients.find((c) => c.id === 2)!,
-    ...defaultDetails,
+    ...baseDetails,
     name: "Sarah Chen",
     goal: "Muscle gain",
   },
   "3": {
     ...clients.find((c) => c.id === 3)!,
-    ...defaultDetails,
+    ...baseDetails,
     name: "Jordan Smith",
     goal: "General wellness",
   },
   "4": {
     ...clients.find((c) => c.id === 4)!,
-    ...defaultDetails,
+    ...baseDetails,
     name: "Elena Rodriguez",
   },
   "5": {
     ...clients.find((c) => c.id === 5)!,
-    ...defaultDetails,
+    ...baseDetails,
     name: "Elena Rodriguez",
   },
   "6": {
     ...clients.find((c) => c.id === 6)!,
-    ...defaultDetails,
+    ...baseDetails,
     name: "Elena Rodriguez",
   },
   "7": {
     ...clients.find((c) => c.id === 7)!,
-    ...defaultDetails,
+    ...baseDetails,
     name: "Elena Rodriguez",
   },
   "8": {
     ...clients.find((c) => c.id === 8)!,
-    ...defaultDetails,
+    ...baseDetails,
     name: "Elena Rodriguez",
   },
   "9": {
     ...clients.find((c) => c.id === 9)!,
-    ...defaultDetails,
+    ...baseDetails,
     name: "Elena Rodriguez",
   },
 };

@@ -1,17 +1,17 @@
 "use client";
 
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { MessageSquare, Calendar, CheckCircle2, ChevronLeft } from "lucide-react";
 import Link from "next/link";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { ChevronLeft } from "lucide-react";
-
-import ProgressTrends from "./sections/ProgressTrends";
-import ProgressGoals from "./sections/ProgressGoals";
-import ProgramSettings from "./sections/ProgressSettings";
 import HealthHabitOverview from "./sections/HealthHabitOverview";
+import CoachSetGoals from "./sections/CoachSetGoals";
+import CoachActions from "./sections/CoachActions";
+import ProgressTrends from "./sections/ProgressTrends";
 import CoachNotes from "./sections/CoachNotes";
-import CoachClientRelationship from "./sections/CoachClientRelationship";
+import VisibilityControls from "./sections/ProgressSettings";
+
 import { ClientDetails } from "../overview/data";
 
 export default function ClientDetailsContent({
@@ -19,215 +19,148 @@ export default function ClientDetailsContent({
 }: {
   clientDetails: ClientDetails;
 }) {
-  return (
-    <div className="min-h-screen bg-[#F3F4F6] p-4 md:p-8">
-      {/* Header */}
-      <div className="mb-6 flex items-center gap-3">
-        <Link href="/trainer-dashboard/clients">
-          <button className="flex items-center gap-2 text-[#0D9488] hover:opacity-80 transition-opacity">
-            <ChevronLeft size={20} />
-            <span>Back to Clients</span>
-          </button>
-        </Link>
-      </div>
+  const statusConfig = {
+    "on-track": "bg-green-100 text-green-700",
+    "need-attention": "bg-yellow-100 text-yellow-700",
+    inactive: "bg-gray-100 text-gray-700",
+  };
 
-      {/* Client Info Header */}
-      <div className="bg-white rounded-lg p-6 mb-6">
-        <div className="flex justify-between items-start mb-6">
-          <div>
-            <h1 className="text-3xl font-bold text-[#1F2937] mb-2">
+  return (
+    <div className="min-h-screen p-4 md:p-8 space-y-8 max-w-7xl mx-auto">
+      {/* Header */}
+      <div className="flex justify-between items-start">
+        <div className="space-y-1">
+          <div className="flex items-center gap-3">
+            <h1 className="text-2xl font-bold text-[#111827]">
               {clientDetails.name}
             </h1>
-            <p className="text-[#6B7280]">{clientDetails.connectedDate}</p>
+            <Badge className={`${statusConfig[clientDetails.status]} border-none font-medium capitalize py-0.5 px-2 text-xs hover:bg-transparent`}>
+              {clientDetails.status.replace("-", " ")}
+            </Badge>
           </div>
-          <Badge className="bg-[#0D9488] text-white">
-            {clientDetails.goal}
-          </Badge>
+          <p className="text-sm text-[#6B7280] font-medium">
+            {clientDetails.connectedDate}
+          </p>
         </div>
-
-        {/* Quick Stats */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div className="bg-[#F9FAFB] p-4 rounded-lg">
-            <p className="text-[#6B7280] text-sm font-medium mb-1">Fat Loss</p>
-            <p className="text-2xl font-bold text-[#1F2937]">
-              {clientDetails.goal}
-            </p>
-            <p className="text-xs text-[#9CA3AF] mt-2">Connected since</p>
-          </div>
-
-          <div className="bg-[#F9FAFB] p-4 rounded-lg">
-            <p className="text-[#6B7280] text-sm font-medium mb-1">Improving</p>
-            <p className="text-2xl font-bold text-[#1F2937]">
-              65% of projection
-            </p>
-            <p className="text-xs text-[#9CA3AF] mt-2">
-              Usage: 45% from 1 year ago
-            </p>
-          </div>
-
-          <div className="bg-[#F9FAFB] p-4 rounded-lg">
-            <p className="text-[#6B7280] text-sm font-medium mb-1">
-              Last Activity
-            </p>
-            <p className="text-2xl font-bold text-[#1F2937]">Logged 2h ago</p>
-            <p className="text-xs text-[#9CA3AF] mt-2">
-              Active: Check-in score
-            </p>
-          </div>
-
-          <div className="bg-[#F9FAFB] p-4 rounded-lg">
-            <p className="text-[#6B7280] text-sm font-medium mb-1">
-              Overall Score
-            </p>
-            <p className="text-2xl font-bold text-[#1F2937]">71%</p>
-            <p className="text-xs text-[#9CA3AF] mt-2">Keep performing well</p>
-          </div>
+        <div className="flex gap-3">
+          <Link href="/trainer-dashboard/clients" className="flex items-center gap-2 text-[#6B7280] hover:text-[#111827] transition-colors text-sm font-medium mr-4">
+            <ChevronLeft size={16} />
+            Back
+          </Link>
+          <button className="flex items-center gap-2 bg-[#0D9488] text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-[#0A7A6F] transition-colors">
+            <MessageSquare size={16} />
+            Message Client
+          </button>
         </div>
       </div>
 
-      {/* Health Metrics Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg">Weight</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-baseline gap-2 mb-4">
-              <span className="text-4xl font-bold text-[#1F2937]">
-                {clientDetails.currentWeight}
-              </span>
-              <span className="text-[#6B7280]">kg</span>
-            </div>
-            <div className="flex items-center gap-2 text-sm">
-              <span className="text-[#0D9488]">Target Weight:</span>
-              <span className="font-semibold text-[#1F2937]">
-                {clientDetails.targetWeight} kg
-              </span>
-            </div>
-            <div className="mt-2 w-full bg-[#E5E7EB] rounded-full h-2">
-              <div
-                className="bg-[#0D9488] h-2 rounded-full"
-                style={{
-                  width: `${
-                    ((clientDetails.currentWeight -
-                      clientDetails.targetWeight) /
-                      (clientDetails.healthMetrics.startWeight -
-                        clientDetails.targetWeight)) *
-                    100
-                  }%`,
-                }}
-              />
+      {/* Top Summary Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <Card className="border-none shadow-xs bg-white">
+          <CardContent className="p-5 space-y-4">
+            <p className="text-[10px] font-bold text-[#6B7280] tracking-wider uppercase">PRIMARY GOAL</p>
+            <div className="space-y-1">
+              <h3 className="text-xl font-bold text-[#111827]">{clientDetails.primaryGoal.title}</h3>
+              <p className="text-xs text-[#9CA3AF]">{clientDetails.primaryGoal.subtitle}</p>
             </div>
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg">BMI</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-baseline gap-2 mb-4">
-              <span className="text-4xl font-bold text-[#1F2937]">
-                {clientDetails.bmi}
-              </span>
+        <Card className="border-none shadow-xs bg-white">
+          <CardContent className="p-5 space-y-4">
+            <p className="text-[10px] font-bold text-[#6B7280] tracking-wider uppercase">CURRENT TREND</p>
+            <div className="space-y-1">
+              <h3 className="text-xl font-bold text-[#111827]">{clientDetails.currentTrend.status}</h3>
+              <p className="text-xs text-[#10B981] font-medium">{clientDetails.currentTrend.description}</p>
             </div>
-            <p className="text-sm text-[#6B7280]">Current BMI status</p>
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg">Measurements</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-2 text-sm">
-              <div className="flex justify-between">
-                <span className="text-[#6B7280]">Chest:</span>
-                <span className="font-semibold text-[#1F2937]">
-                  {clientDetails.measurements.chest} cm
-                </span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-[#6B7280]">Waist:</span>
-                <span className="font-semibold text-[#1F2937]">
-                  {clientDetails.measurements.waist} cm
-                </span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-[#6B7280]">Hips:</span>
-                <span className="font-semibold text-[#1F2937]">
-                  {clientDetails.measurements.hips} cm
-                </span>
-              </div>
+        <Card className="border-none shadow-xs bg-white">
+          <CardContent className="p-5 space-y-4">
+            <p className="text-[10px] font-bold text-[#6B7280] tracking-wider uppercase">LAST ACTIVITY</p>
+            <div className="space-y-1">
+              <h3 className="text-xl font-bold text-[#111827]">{clientDetails.lastActivity.status}</h3>
+              <p className="text-xs text-[#9CA3AF]">{clientDetails.lastActivity.description}</p>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="border-none shadow-xs bg-white">
+          <CardContent className="p-5 space-y-4">
+            <p className="text-[10px] font-bold text-[#6B7280] tracking-wider uppercase">CONSISTENCY SCORE</p>
+            <div className="space-y-1">
+              <h3 className="text-xl font-bold text-[#111827]">{clientDetails.consistencyScore.score}%</h3>
+              <p className="text-xs text-[#FBBF24] font-medium">{clientDetails.consistencyScore.description}</p>
             </div>
           </CardContent>
         </Card>
       </div>
 
-      {/* Workouts and Water Intake */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg">Weekly Workouts</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center gap-4">
-              <div className="flex items-baseline gap-2">
-                <span className="text-4xl font-bold text-[#1F2937]">
-                  {clientDetails.workouts.weekly}
-                </span>
-                <span className="text-[#6B7280]">
-                  of {clientDetails.workouts.goal}
-                </span>
-              </div>
-              <div className="w-16 h-16 rounded-full bg-linear-to-br from-[#0D9488] to-[#0D8676] flex items-center justify-center text-white font-bold">
-                {Math.round(
-                  (clientDetails.workouts.weekly /
-                    clientDetails.workouts.goal) *
-                    100,
-                )}
-                %
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+      {/* Projection Usage */}
+      <Card className="w-fit border-none shadow-xs bg-white">
+        <CardContent className="p-5 space-y-4">
+          <p className="text-[10px] font-bold text-[#6B7280] tracking-wider uppercase">Projection Usage</p>
+          <div className="space-y-1">
+            <h3 className="text-sm font-bold text-[#111827]">Used: {clientDetails.projectionUsage.used}/{clientDetails.projectionUsage.total}</h3>
+            <p className="text-xs text-[#9CA3AF]">Next reset: {clientDetails.projectionUsage.nextResetDays} days</p>
+            <p className="text-xs text-[#10B981] font-medium whitespace-nowrap">Last projection: {clientDetails.projectionUsage.lastProjectionDaysAgo} days ago</p>
+          </div>
+        </CardContent>
+      </Card>
 
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg">Water Intake</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center gap-4">
-              <div className="flex items-baseline gap-2">
-                <span className="text-4xl font-bold text-[#1F2937]">
-                  {clientDetails.waterIntake.current}
-                </span>
-                <span className="text-[#6B7280]">
-                  of {clientDetails.waterIntake.goal}{" "}
-                  {clientDetails.waterIntake.unit}
-                </span>
-              </div>
-              <div className="w-16 h-16 rounded-full bg-linear-to-br from-[#64B5F6] to-[#42A5F5] flex items-center justify-center text-white font-bold">
-                {Math.round(
-                  (clientDetails.waterIntake.current /
-                    clientDetails.waterIntake.goal) *
-                    100,
-                )}
-                %
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {/* Main Content Area */}
+        <div className="lg:col-span-2 space-y-12">
+          <HealthHabitOverview clientDetails={clientDetails} />
+          <CoachSetGoals goals={clientDetails.coachSetGoals} />
+          <CoachActions />
+          <ProgressTrends />
+          <CoachNotes notes={clientDetails.coachNotes} />
+          <VisibilityControls />
+        </div>
 
-      {/* Sections */}
-      <div className="space-y-6">
-        <HealthHabitOverview clientDetails={clientDetails} />
-        <CoachClientRelationship />
-        <ProgressGoals progressGoals={clientDetails.progressGoals} />
-        <ProgressTrends />
-        <CoachNotes notes={clientDetails.coachNotes} />
-        <ProgramSettings />
+        {/* Sidebar */}
+        <div className="space-y-6">
+          <Card className="border-none shadow-xs bg-[#0D9488] text-white overflow-hidden">
+            <CardContent className="p-6 space-y-6">
+              <div className="space-y-2">
+                <div className="flex items-center gap-2 text-[10px] font-bold tracking-wider uppercase opacity-80">
+                  <Calendar size={14} />
+                  NEXT CHECK-IN
+                </div>
+                <h3 className="text-xl font-bold leading-tight">
+                  {clientDetails.nextCheckIn.day}, {clientDetails.nextCheckIn.date}
+                </h3>
+                <p className="text-xs font-medium opacity-80">
+                  {clientDetails.nextCheckIn.time} ({clientDetails.nextCheckIn.timezone})
+                </p>
+              </div>
+              
+              <button className="w-full bg-white text-[#0D9488] py-2.5 rounded-lg text-sm font-bold hover:bg-opacity-90 transition-all">
+                Reschedule
+              </button>
+            </CardContent>
+          </Card>
+
+          <Card className="border-none shadow-xs bg-[#F0F9FF]">
+            <CardContent className="p-6 space-y-4">
+              <div className="flex items-center gap-2 text-[10px] font-bold text-[#0369A1] tracking-wider uppercase">
+                <CheckCircle2 size={14} />
+                COMPLIANCE
+              </div>
+              <div className="space-y-1">
+                <div className="flex items-baseline gap-1">
+                  <span className="text-2xl font-bold text-[#111827]">{clientDetails.compliance.score}%</span>
+                  <span className="text-xs text-[#6B7280] font-medium">avg</span>
+                </div>
+                <p className="text-xs text-[#0369A1] leading-relaxed font-medium">
+                  {clientDetails.compliance.description}
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
       </div>
     </div>
   );
