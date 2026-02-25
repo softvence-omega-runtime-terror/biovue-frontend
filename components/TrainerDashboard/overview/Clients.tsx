@@ -3,11 +3,11 @@ import ClientsTable from "./ClientsTable";
 import DashboardHeading from "@/components/common/DashboardHeading";
 import { ChevronRight } from "lucide-react";
 import Link from "next/link";
-
+import { clients as allClients } from "./data";
 export default function Clients() {
   return (
-    <div className="bg-white p-5">
-      <div className="mb-2  flex justify-between items-center">
+    <div className="bg-white">
+      <div className=" p-5 flex justify-between items-center">
         <div>
           <DashboardHeading
             heading="Clients"
@@ -20,7 +20,7 @@ export default function Clients() {
           </Button>
         </Link>
       </div>
-      <ClientsTable limit={4} />
+      <ClientsTable clients={allClients} limit={4} />
     </div>
   );
 }

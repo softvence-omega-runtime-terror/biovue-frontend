@@ -29,7 +29,7 @@ export const clients: Client[] = [
     name: "Sarah Chen",
     goal: "Muscle gain",
     projectionUsed: "4/20",
-    status: "on-track",
+    status: "need-attention",
     activity: "Logged in 2 hrs ago",
   },
   {

@@ -9,13 +9,14 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { clients } from "./data";
+import { Client, clients } from "./data";
 
 type ClientsTableProps = {
   limit?: number;
+  clients: Client[];
 };
 
-export default function ClientsTable({ limit }: ClientsTableProps) {
+export default function ClientsTable({ clients, limit }: ClientsTableProps) {
   const statusConfig = {
     "on-track": {
       label: "On track",
@@ -32,7 +33,7 @@ export default function ClientsTable({ limit }: ClientsTableProps) {
   };
   const visibleClients = limit ? clients.slice(0, limit) : clients;
   return (
-    <div className="">
+    <div className=" bg-white p-5">
       <div className="overflow-x-auto">
         <Table>
           <TableHeader>
