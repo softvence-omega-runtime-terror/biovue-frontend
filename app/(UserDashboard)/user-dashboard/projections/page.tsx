@@ -71,7 +71,7 @@ const ProjectionsPage = () => {
         </div>
 
         {/* Time Horizon Selector */}
-        <div className="bg-white rounded-[16px] p-6 border border-[#3A86FF]/25 shadow-sm space-y-4">
+        <div className="bg-white rounded-xl p-6 border border-[#3A86FF]/25 shadow-sm space-y-4">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-[#E4EFFF] rounded-lg flex items-center justify-center">
               <Calendar className="text-[#3A86FF]" size={20} />
@@ -98,7 +98,7 @@ const ProjectionsPage = () => {
         </div>
 
         {/* Lifestyle Options */}
-        <div className="bg-white rounded-[16px] p-6 border border-[#3A86FF]/25 shadow-sm space-y-4">
+        <div className="bg-white rounded-xl p-6 border border-[#3A86FF]/25 shadow-sm space-y-4">
           <div className="space-y-3">
             {/* Current Lifestyle */}
             <div 
@@ -248,7 +248,7 @@ const ProjectionsPage = () => {
                 src="/images/auth/body1.png" 
                 alt="Current Projection"
                 fill
-                className="object-contain p-4"
+                className="object-cover"
               />
             </div>
             
@@ -303,7 +303,7 @@ const ProjectionsPage = () => {
                 src="/images/auth/body2.png" 
                 alt="Goal Projection"
                 fill
-                className="object-contain p-4"
+                className="object-cover"
               />
             </div>
             
