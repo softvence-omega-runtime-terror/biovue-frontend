@@ -1,6 +1,7 @@
 import { poppins } from "@/app/font";
 import AdminNavbar from "@/components/AdminDashboard/AdminNavbar";
 import Sidebar from "@/components/Sidebar";
+import { Suspense } from "react";
 
 export default function AdminDashboardLayout({
   children,
@@ -10,7 +11,9 @@ export default function AdminDashboardLayout({
   return (
     <div className={`flex min-h-screen bg-[#F4FBFA] ${poppins.className}`}>
       {/* Sidebar */}
-      <Sidebar role="admin" />
+      <Suspense fallback={<div className="w-20 md:w-65 border-r border-gray-200" />}>
+        <Sidebar role="admin" />
+      </Suspense>
 
       {/* Right side */}
       <div className="flex flex-col flex-1">
