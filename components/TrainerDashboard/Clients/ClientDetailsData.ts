@@ -114,10 +114,40 @@
 // };
 import { ClientDetails, clients } from "../overview/data";
 
+const defaultDetails = {
+  connectedDate: "Connected since",
+  currentWeight: 70,
+  targetWeight: 65,
+  bmi: 24.5,
+  measurements: {
+    chest: 95,
+    waist: 80,
+    hips: 95,
+  },
+  workouts: {
+    weekly: 3,
+    goal: 4,
+  },
+  waterIntake: {
+    current: 2.0,
+    goal: 3,
+    unit: "L",
+  },
+  healthMetrics: {
+    startWeight: 75,
+    currentWeight: 70,
+    weeklyWeightLoss: 0.5,
+  },
+  coachNotes: ["Maintain consistency.", "Focus on sleep."],
+  progressGoals: [
+    { goal: "Weight Loss", progress: 5, target: 10, unit: "kg" },
+  ],
+};
+
 export const clientDetailsData: Record<string, ClientDetails> = {
   "1": {
     ...clients.find((c) => c.id === 1)!,
-    connectedDate: "Connected since",
+    connectedDate: "Connected since Jan 2024",
     currentWeight: 85.5,
     targetWeight: 75,
     bmi: 28.1,
@@ -144,5 +174,47 @@ export const clientDetailsData: Record<string, ClientDetails> = {
     progressGoals: [
       { goal: "Weight Loss", progress: 6.5, target: 17, unit: "kg" },
     ],
+  },
+  "2": {
+    ...clients.find((c) => c.id === 2)!,
+    ...defaultDetails,
+    name: "Sarah Chen",
+    goal: "Muscle gain",
+  },
+  "3": {
+    ...clients.find((c) => c.id === 3)!,
+    ...defaultDetails,
+    name: "Jordan Smith",
+    goal: "General wellness",
+  },
+  "4": {
+    ...clients.find((c) => c.id === 4)!,
+    ...defaultDetails,
+    name: "Elena Rodriguez",
+  },
+  "5": {
+    ...clients.find((c) => c.id === 5)!,
+    ...defaultDetails,
+    name: "Elena Rodriguez",
+  },
+  "6": {
+    ...clients.find((c) => c.id === 6)!,
+    ...defaultDetails,
+    name: "Elena Rodriguez",
+  },
+  "7": {
+    ...clients.find((c) => c.id === 7)!,
+    ...defaultDetails,
+    name: "Elena Rodriguez",
+  },
+  "8": {
+    ...clients.find((c) => c.id === 8)!,
+    ...defaultDetails,
+    name: "Elena Rodriguez",
+  },
+  "9": {
+    ...clients.find((c) => c.id === 9)!,
+    ...defaultDetails,
+    name: "Elena Rodriguez",
   },
 };
