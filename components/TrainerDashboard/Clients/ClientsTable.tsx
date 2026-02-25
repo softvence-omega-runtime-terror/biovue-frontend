@@ -9,13 +9,15 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { clients } from "./data";
+import { Client } from "../overview/data";
+import Link from "next/link";
 
 type ClientsTableProps = {
   limit?: number;
+  clients: Client[];
 };
 
-export default function ClientsTable({ limit }: ClientsTableProps) {
+export default function ClientsTable({ clients, limit }: ClientsTableProps) {
   const statusConfig = {
     "on-track": {
       label: "On track",
@@ -32,7 +34,7 @@ export default function ClientsTable({ limit }: ClientsTableProps) {
   };
   const visibleClients = limit ? clients.slice(0, limit) : clients;
   return (
-    <div className="">
+    <div className=" bg-white p-5">
       <div className="overflow-x-auto">
         <Table>
           <TableHeader>
@@ -78,11 +80,11 @@ export default function ClientsTable({ limit }: ClientsTableProps) {
                   {client.activity}
                 </TableCell>
                 <TableCell className="py-3 text-base md:text-lg">
-                  <button className="flex gap-5 items-center cursor-pointer hover:opacity-80">
-                    <span className=" border px-2 py-1 rounded-full border-[#0D9488] text-[#0D9488]">
+                  <Link href={`/trainer-dashboard/clients/${client.id}`}>
+                    <button className="flex gap-5 items-center cursor-pointer hover:opacity-80  border px-4 py-1 rounded-full border-[#0D9488] text-[#0D9488] font-medium transition-all">
                       View
-                    </span>
-                  </button>
+                    </button>
+                  </Link>
                 </TableCell>
               </TableRow>
             ))}
