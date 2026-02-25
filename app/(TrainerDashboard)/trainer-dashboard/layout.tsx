@@ -8,7 +8,7 @@ export default function TrainerDashboardLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className={`flex min-h-screen bg-[#F4FBFA] ${poppins.className}`}>
+    <div className={`flex min-h-screen bg-[#F3F8FF] ${poppins.className}`}>
       {/* Sidebar */}
       <Sidebar role="trainer" />
 
