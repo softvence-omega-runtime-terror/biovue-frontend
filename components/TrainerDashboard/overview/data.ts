@@ -17,6 +17,69 @@ export interface Client {
 
 export interface ClientDetails extends Client {
   connectedDate: string;
+  primaryGoal: {
+    title: string;
+    subtitle: string;
+  };
+  currentTrend: {
+    status: string;
+    description: string;
+  };
+  lastActivity: {
+    status: string;
+    description: string;
+  };
+  consistencyScore: {
+    score: number;
+    description: string;
+  };
+  projectionUsage: {
+    used: number;
+    total: number;
+    nextResetDays: number;
+    lastProjectionDaysAgo: number;
+  };
+  healthHabitOverview: {
+    weight: {
+      value: number;
+      unit: string;
+      targetApplied: boolean;
+    };
+    nutritionQuality: {
+      value: number;
+      targetApplied: boolean;
+    };
+    activity: {
+      steps: number;
+    };
+    sleep: {
+      hours: number;
+      minutes: number;
+      targetApplied: boolean;
+    };
+    stress: "Low" | "Medium" | "High";
+    hydration: {
+      value: number;
+      unit: string;
+    };
+  };
+  coachSetGoals: {
+    targetWeight: number;
+    weeklyWorkoutGoal: number;
+    dailyStepGoal: number;
+    sleepTargetHours: number;
+  };
+  nextCheckIn: {
+    day: string;
+    date: string;
+    time: string;
+    timezone: string;
+  };
+  compliance: {
+    score: number;
+    description: string;
+  };
+  // Keeping old fields for compatibility if needed, but focusing on new ones
   currentWeight: number;
   targetWeight: number;
   bmi: number;
