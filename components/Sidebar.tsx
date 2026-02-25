@@ -29,7 +29,7 @@ export default function Sidebar({ role }: SidebarProps) {
       {/* Hamburger Menu Button - Visible on mobile */}
       <button
         onClick={() => setIsExpanded(!isExpanded)}
-        className="fixed top-4 left-4 z-50 md:hidden p-2 rounded-lg hover:bg-gray-100"
+        className="fixed top-4 left-4 z-50 md:hidden p-2 rounded-lg hover:bg-gray-100 cursor-pointer"
         aria-label="Toggle sidebar"
       >
         {isExpanded ? (
@@ -49,7 +49,7 @@ export default function Sidebar({ role }: SidebarProps) {
 
       {/* Sidebar */}
       <aside
-        className={`fixed md:static top-0 left-0 h-screen z-40 bg-white flex flex-col px-3 py-8 md:px-6 transition-all duration-300 ease-in-out border-r border-gray-200 ${
+        className={`sticky top-0 self-start h-screen z-40 bg-white flex flex-col px-3 py-8 md:px-6 transition-all duration-300 ease-in-out border-r border-gray-200 ${
           isExpanded
             ? "w-65 translate-x-0"
             : "w-20 -translate-x-full md:translate-x-0 md:w-65"
@@ -150,7 +150,7 @@ export default function Sidebar({ role }: SidebarProps) {
 
         {/* Sign Out Button */}
         <button
-          className={`flex items-center gap-3 text-gray-600 px-4 py-2 rounded-lg hover:bg-gray-100 transition-all duration-300 whitespace-nowrap ${
+          className={`flex items-center gap-3 text-gray-600 px-4 py-2 rounded-lg hover:bg-gray-100 transition-all duration-300 whitespace-nowrap cursor-pointer ${
             isExpanded ? "" : "justify-center px-2 md:px-4 md:justify-start"
           }`}
           title={isExpanded ? "" : "Sign Out"}
