@@ -97,7 +97,7 @@ export default function Sidebar({ role }: SidebarProps) {
                   }}
                   className={`w-full cursor-pointer flex items-center gap-3 px-2 py-2.5 rounded-lg text-sm font-medium transition-all duration-300 whitespace-nowrap ${
                     isActive
-                      ? "bg-blue-50 text-blue-600"
+                      ? "bg-[#3A86FF25] text-black"
                       : "text-gray-600 hover:bg-gray-100"
                   }`}
                 >
