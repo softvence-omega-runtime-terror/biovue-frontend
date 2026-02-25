@@ -31,8 +31,8 @@ export const actionCards: ActionCard[] = [
 ];
 export default function Actions() {
   return (
-    <div className="mb-8">
-      <h3 className="text-lg font-bold text-foreground mb-4">
+    <div className="">
+      <h3 className="text-lg font-medium text-foreground mb-4">
         Today's actions
       </h3>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
