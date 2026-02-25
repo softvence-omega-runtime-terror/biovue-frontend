@@ -1,6 +1,7 @@
 import { poppins } from "@/app/font";
 import Sidebar from "@/components/Sidebar";
 import TrainerNavbar from "@/components/TrainerDashboard/TrainerNavbar";
+import { Suspense } from "react";
 
 export default function TrainerDashboardLayout({
   children,
@@ -10,7 +11,9 @@ export default function TrainerDashboardLayout({
   return (
     <div className={`flex min-h-screen bg-[#F3F8FF] ${poppins.className}`}>
       {/* Sidebar */}
-      <Sidebar role="trainer" />
+      <Suspense fallback={<div className="w-20 md:w-65 border-r border-gray-200" />}>
+        <Sidebar role="trainer" />
+      </Suspense>
 
       {/* Right side */}
       <div className="flex flex-col flex-1">

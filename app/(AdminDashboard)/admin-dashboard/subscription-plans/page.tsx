@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useSearchParams } from "next/navigation";
+import { Suspense } from "react";
 import { Plus, Filter } from "lucide-react";
 import {
   mockPlans,
@@ -13,7 +14,7 @@ import EditPlanModal from "@/components/AdminDashboard/subscription-plans/EditPl
 import Toast from "@/components/AdminDashboard/subscription-plans/Toast";
 import DashboardHeading from "@/components/common/DashboardHeading";
 
-export default function SubscriptionPlansPage() {
+function SubscriptionPlansContent() {
   const searchParams = useSearchParams();
   const planType = searchParams.get("type"); // individual | professional | null
 
@@ -142,5 +143,13 @@ export default function SubscriptionPlansPage() {
         />
       )}
     </div>
+  );
+}
+
+export default function SubscriptionPlansPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <SubscriptionPlansContent />
+    </Suspense>
   );
 }
