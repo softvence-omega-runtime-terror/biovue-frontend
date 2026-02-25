@@ -26,7 +26,7 @@ export default function ClientDetailsContent({
   };
 
   return (
-    <div className="min-h-screen p-4 md:p-8 space-y-8 max-w-7xl mx-auto">
+    <div className="min-h-screen space-y-8">
       {/* Header */}
       <div className="flex justify-between items-start">
         <div className="space-y-1">
