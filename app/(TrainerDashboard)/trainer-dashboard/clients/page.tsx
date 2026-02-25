@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import DashboardHeading from "@/components/common/DashboardHeading";
-import ClientsTable from "@/components/TrainerDashboard/overview/ClientsTable";
+import ClientsTable from "@/components/TrainerDashboard/Clients/ClientsTable";
 import {
   clients as allClients,
   Client,
@@ -82,7 +82,7 @@ export default function ClientsPage() {
           placeholder="Search clients..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          className="flex-1 min-w-[200px] px-4 py-2 border bg-white rounded w-full max-w-sm focus:ring-2 focus:ring-teal-500"
+          className="flex-1 min-w-50 px-4 py-2 border bg-white rounded w-full max-w-sm focus:ring-2 focus:ring-teal-500"
         />
 
         {/* Status Dropdown */}

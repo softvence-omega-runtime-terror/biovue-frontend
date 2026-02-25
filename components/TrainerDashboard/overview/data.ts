@@ -15,6 +15,39 @@ export interface Client {
   activity: string;
 }
 
+export interface ClientDetails extends Client {
+  connectedDate: string;
+  currentWeight: number;
+  targetWeight: number;
+  bmi: number;
+  measurements: {
+    chest: number;
+    waist: number;
+    hips: number;
+  };
+  workouts: {
+    weekly: number;
+    goal: number;
+  };
+  waterIntake: {
+    current: number;
+    goal: number;
+    unit: string;
+  };
+  healthMetrics: {
+    startWeight: number;
+    currentWeight: number;
+    weeklyWeightLoss: number;
+  };
+  coachNotes: string[];
+  progressGoals: {
+    goal: string;
+    progress: number;
+    target: number;
+    unit: string;
+  }[];
+}
+
 export const clients: Client[] = [
   {
     id: 1,

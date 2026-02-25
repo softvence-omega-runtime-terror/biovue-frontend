@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import ClientsTable from "./ClientsTable";
+import ClientsTable from "../Clients/ClientsTable";
 import DashboardHeading from "@/components/common/DashboardHeading";
 import { ChevronRight } from "lucide-react";
 import Link from "next/link";

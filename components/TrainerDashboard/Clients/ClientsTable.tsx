@@ -9,7 +9,8 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Client, clients } from "./data";
+import { Client } from "../overview/data";
+import Link from "next/link";
 
 type ClientsTableProps = {
   limit?: number;
@@ -79,11 +80,11 @@ export default function ClientsTable({ clients, limit }: ClientsTableProps) {
                   {client.activity}
                 </TableCell>
                 <TableCell className="py-3 text-base md:text-lg">
-                  <button className="flex gap-5 items-center cursor-pointer hover:opacity-80">
-                    <span className=" border px-2 py-1 rounded-full border-[#0D9488] text-[#0D9488]">
+                  <Link href={`/trainer-dashboard/clients/${client.id}`}>
+                    <button className="flex gap-5 items-center cursor-pointer hover:opacity-80  border px-4 py-1 rounded-full border-[#0D9488] text-[#0D9488] font-medium transition-all">
                       View
-                    </span>
-                  </button>
+                    </button>
+                  </Link>
                 </TableCell>
               </TableRow>
             ))}
