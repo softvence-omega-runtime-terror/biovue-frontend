@@ -9,7 +9,16 @@ export interface Banner {
   status: "ACTIVE" | "INACTIVE" | "EXPIRED";
   isEnabled: boolean;
 }
-
+export interface BannerFormData {
+  title: string;
+  preview: string;
+  type: "External Advertise" | "Internal Fallback";
+  placement: string[];
+  scheduleFrom: string;
+  scheduleTo: string;
+  isActive: boolean;
+  rotationPriority: number;
+}
 export const MOCK_BANNERS: Banner[] = [
   {
     id: 1,

@@ -2,13 +2,13 @@
 
 import { useState, useRef, useEffect } from "react";
 import { X, Upload } from "lucide-react";
-import { Banner } from "./data";
+import { Banner, BannerFormData } from "./data";
 
 interface AddEditBannerModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSave: (data: Partial<Banner>) => void;
-  existingBanner?: Banner | null; // if provided → Edit mode
+  onSave: (data: BannerFormData) => void;
+  existingBanner?: Banner | null;
 }
 
 function Toggle({
@@ -58,12 +58,14 @@ export default function AddEditBannerModal({
   const [formData, setFormData] = useState(defaultForm);
   const [previewImage, setPreviewImage] = useState<string>("");
 
-  // Populate form when editing
   useEffect(() => {
     if (existingBanner) {
       setFormData({
         title: existingBanner.title,
-        type: existingBanner.type as "External Advertise" | "Internal Fallback",
+        type:
+          existingBanner.type === "EXTERNAL ADVERTISER"
+            ? "External Advertise"
+            : "Internal Fallback",
         placement: existingBanner.placement,
         scheduleFrom: existingBanner.scheduleFrom,
         scheduleTo: existingBanner.scheduleTo,
