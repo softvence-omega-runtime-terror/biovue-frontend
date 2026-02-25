@@ -2,7 +2,10 @@
 
 import AddEditBannerModal from "@/components/AdminDashboard/banner-management/AddEditBanner";
 import BannersTable from "@/components/AdminDashboard/banner-management/BannersTable";
-import { Banner } from "@/components/AdminDashboard/banner-management/data";
+import {
+  Banner,
+  BannerFormData,
+} from "@/components/AdminDashboard/banner-management/data";
 import DashboardHeading from "@/components/common/DashboardHeading";
 import { Plus } from "lucide-react";
 import { useState } from "react";
@@ -21,14 +24,30 @@ export default function BannerManagement() {
     setIsModalOpen(true);
   };
 
-  const handleSave = (data: Partial<Banner>) => {
+  const handleSave = (data: BannerFormData) => {
+    const payload: Partial<Banner> = {
+      title: data.title,
+      preview: data.preview,
+      placement: data.placement,
+      scheduleFrom: data.scheduleFrom,
+      scheduleTo: data.scheduleTo,
+      isEnabled: data.isActive,
+      status: data.isActive ? "ACTIVE" : "INACTIVE",
+      type:
+        data.type === "External Advertise"
+          ? "EXTERNAL ADVERTISER"
+          : "INTERNAL FALLBACK",
+    };
+
     if (editingBanner) {
-      // TODO: update banner in state/API
-      console.log("Update banner:", { ...editingBanner, ...data });
+      console.log("Update banner:", {
+        ...editingBanner,
+        ...payload,
+      });
     } else {
-      // TODO: add new banner to state/API
-      console.log("Add new banner:", data);
+      console.log("Add new banner:", payload);
     }
+
     setIsModalOpen(false);
   };
   return (
