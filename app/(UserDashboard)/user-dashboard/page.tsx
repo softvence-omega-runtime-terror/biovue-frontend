@@ -39,6 +39,7 @@ import {
 import { cn } from "@/lib/utils";
 import LogTodayModal from "@/components/dashboard/LogTodayModal";
 import ChangeSourceModal from "@/components/dashboard/ChangeSourceModal";
+import NotificationDropdown, { MOCK_NOTIFICATIONS } from "@/components/dashboard/NotificationDropdown";
 
 // --- Mock Data ---
 const weightData = [
@@ -79,6 +80,8 @@ const ChartCard = ({ title, subtitle, total, totalLabel, children }: any) => (
 const UserDashboard = () => {
   const [showLogModal, setShowLogModal] = useState(false);
   const [showSourceModal, setShowSourceModal] = useState(false);
+  const [isNotificationOpen, setIsNotificationOpen] = useState(false);
+  const [notifications, setNotifications] = useState(MOCK_NOTIFICATIONS);
   const [dataSource, setDataSource] = useState<"device" | "manual">("device");
   const [habitData, setHabitData] = useState({
     weight: "", bodyFat: "", smoking: "", alcohol: "",
@@ -92,10 +95,24 @@ const UserDashboard = () => {
       <header className="sticky top-0 z-20 flex items-center justify-between py-4 bg-white border-b border-gray-100 px-6 w-full">
         <h1 className="text-xl font-semibold text-[#1F2D2E]">Dashboard</h1>
         <div className="flex items-center gap-4 ml-auto">
-          <button className="relative p-2 rounded-full bg-[#F4FBFA] hover:bg-gray-100 transition-colors cursor-pointer" aria-label="Notifications">
-            <Bell size={20} className="text-[#5F6F73]" />
-            <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full border-2 border-white"></span>
-          </button>
+          <div className="relative">
+            <button 
+              onClick={() => setIsNotificationOpen(!isNotificationOpen)}
+              className="relative p-2 rounded-full bg-[#F4FBFA] hover:bg-gray-100 transition-colors cursor-pointer" 
+              aria-label="Notifications"
+            >
+              <Bell size={20} className="text-[#5F6F73]" />
+              {notifications.some(n => !n.isRead) && (
+                <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full border-2 border-white"></span>
+              )}
+            </button>
+            <NotificationDropdown 
+              isOpen={isNotificationOpen}
+              onClose={() => setIsNotificationOpen(false)}
+              onMarkAllAsRead={() => setNotifications(prev => prev.map(n => ({...n, isRead: true})))}
+              notifications={notifications.filter(n => !n.isRead)} // Show only unread or all based on preference, Image 2 seems to show unread, but let's just show all recent or unread. I'll pass all for now since there's only 5. Let's pass all.
+            />
+          </div>
           <div className="flex items-center gap-3 pr-2">
             <Image
               src="/images/avatar.png"
