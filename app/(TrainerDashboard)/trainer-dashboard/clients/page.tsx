@@ -7,7 +7,31 @@ import {
   clients as allClients,
   Client,
 } from "@/components/TrainerDashboard/overview/data";
-import { ArrowDownUp, Funnel, UserPlus } from "lucide-react";
+import { ArrowDownUp, Funnel, User, UserPlus } from "lucide-react";
+
+type InviteStep = "email" | "review" | "success" | null;
+
+function Modal({
+  children,
+  onClose,
+}: {
+  children: React.ReactNode;
+  onClose: () => void;
+}) {
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+      <div className="relative bg-white rounded-xl shadow-lg w-full max-w-xl p-6">
+        <button
+          onClick={onClose}
+          className="absolute top-3 right-3 text-gray-400 hover:text-gray-600"
+        >
+          ✕
+        </button>
+        {children}
+      </div>
+    </div>
+  );
+}
 
 export default function ClientsPage() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -16,6 +40,10 @@ export default function ClientsPage() {
   );
   const [sortOption, setSortOption] = useState("Most Recent Activity");
   const [showStatusDropdown, setShowStatusDropdown] = useState(false);
+
+  const [inviteStep, setInviteStep] = useState<InviteStep>(null);
+  const [clientEmail, setClientEmail] = useState("");
+  const [agreed, setAgreed] = useState(false);
 
   const [showSortDropdown, setShowSortDropdown] = useState(false);
   const statusOptions = [
@@ -56,7 +84,10 @@ export default function ClientsPage() {
           subheading="Manage and monitor your coaching roster"
         />
         <div className="mb-6 flex justify-end items-center">
-          <button className="flex cursor-pointer items-center gap-2 px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700">
+          <button
+            onClick={() => setInviteStep("email")}
+            className="flex cursor-pointer items-center gap-2 px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700"
+          >
             <UserPlus size={18} />
             Invite Client
           </button>
@@ -168,6 +199,116 @@ export default function ClientsPage() {
           )}
         </div>
       </div>
+
+      {inviteStep === "email" && (
+        <Modal onClose={() => setInviteStep(null)}>
+          <h2 className="text-lg font-semibold mb-3 md:mb-7">Invite Client</h2>
+
+          <label className="text-sm text-black">EMAIL ADDRESS</label>
+          <input
+            type="email"
+            value={clientEmail}
+            onChange={(e) => setClientEmail(e.target.value)}
+            placeholder="client@email.com"
+            className="w-full mt-3 md:mt-7 px-4 py-2 border rounded-lg focus:ring-2 focus:ring-teal-500"
+          />
+
+          <button
+            disabled={!clientEmail}
+            onClick={() => setInviteStep("review")}
+            className="mt-3 md:mt-7 cursor-pointer w-full bg-teal-600 text-white py-2 rounded-lg disabled:opacity-50"
+          >
+            Send Invitation
+          </button>
+
+          <p className="text-xs text-gray-500 mt-2">
+            Your client will receive an email invite to join and connect with
+            you.
+          </p>
+        </Modal>
+      )}
+      {inviteStep === "review" && (
+        <Modal onClose={() => setInviteStep(null)}>
+          <h2 className="text-2xl font-semibold mb-2">Review & Permissions</h2>
+          <p className="text-[#5F6F73] text-base mb-3 md:mb-5">
+            Confirm invitation details for your new client.
+          </p>
+
+          <div className="flex items-center gap-2 bg-[#9AAEB21A] rounded-lg p-4 mb-4">
+            <p>
+              <User className="text-[#0D9488]" size={32} />
+            </p>
+            <div>
+              {/* <p>ekhane email id theke name fetch kora lagbe.</p> */}
+              <p className="text-sm text-gray-500">{clientEmail}</p>
+            </div>
+          </div>
+
+          <label className="flex text-[#0D9488] bg-[#9AAEB21A] p-4 items-start gap-2 text-sm">
+            <input
+              type="checkbox"
+              checked={agreed}
+              onChange={(e) => setAgreed(e.target.checked)}
+              className="mt-1 "
+            />
+            I confirm this client has agreed to share wellness data with me for
+            coaching purposes.
+          </label>
+
+          <div className="flex gap-3 mt-6">
+            <button
+              onClick={() => setInviteStep("email")}
+              className="flex-1 border py-2 rounded-lg"
+            >
+              Back
+            </button>
+            <button
+              disabled={!agreed}
+              onClick={() => {
+                // invitation er API ekhane dite hobe
+                setInviteStep("success");
+              }}
+              className="flex-1 cursor-pointer bg-[#0FA4A9] text-white py-2 rounded-lg disabled:opacity-50"
+            >
+              Confirm & Send
+            </button>
+          </div>
+        </Modal>
+      )}
+      {inviteStep === "success" && (
+        <Modal onClose={() => setInviteStep(null)}>
+          <div className="text-center">
+            <div className="mx-auto mb-4 w-16 h-16 text-3xl rounded-xl bg-[#3A86FF25] text-[#3A86FF] flex items-center justify-center">
+              ✓
+            </div>
+
+            <h2 className="text-2xl font-semibold">
+              Invitation sent successfully
+            </h2>
+            <p className="text-sm text-[#8C9094] mt-2">
+              The client will appear in your list once they accept the invite.
+            </p>
+
+            <button
+              onClick={() => setInviteStep(null)}
+              className="mt-6 w-full px-6 cursor-pointer bg-[#0FA4A9] text-white py-4 hover:opacity-80 rounded-lg"
+            >
+              View Clients
+            </button>
+
+            <button
+              onClick={() => {
+                setClientEmail("");
+                setAgreed(false);
+                setInviteStep("email");
+              }}
+              className="mt-5 cursor-pointer w-full border border-[#0FA4A9]! px-6 py-4 hover:opacity-80 text-[#0FA4A9] rounded-lg"
+            >
+              Invite Another Client
+            </button>
+          </div>
+        </Modal>
+      )}
 
       {/* Table */}
       <ClientsTable clients={filteredClients} />
