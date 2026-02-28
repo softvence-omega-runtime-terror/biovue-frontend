@@ -46,7 +46,7 @@ export default function LogHabitModal({ isOpen, onClose, habitType }: LogHabitMo
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="bg-white rounded-3xl p-6 md:p-8 shadow-2xl w-full max-w-[600px] pointer-events-auto border border-gray-100 flex flex-col gap-8"
+              className="bg-white rounded-[16px] p-6 md:p-8 shadow-2xl w-full max-w-[600px] pointer-events-auto border border-[#3A86FF]/25 flex flex-col gap-8"
             >
               
               {/* Header */}
@@ -66,7 +66,7 @@ export default function LogHabitModal({ isOpen, onClose, habitType }: LogHabitMo
               </div>
 
               {/* Source Banner */}
-              <div className="bg-[#E6F6F6] rounded-2xl p-4 md:p-6 border border-[#BDE8E8] flex items-center justify-between">
+              <div className="bg-white rounded-[16px] p-4 md:p-6 border border-[#3A86FF]/25 flex items-center justify-between shadow-sm">
                 <div className="flex items-center gap-4">
                   <div className="w-10 h-10 rounded-xl bg-[#0FA4A9] flex items-center justify-center shrink-0">
                     <Smartphone size={20} className="text-white" />
@@ -85,7 +85,7 @@ export default function LogHabitModal({ isOpen, onClose, habitType }: LogHabitMo
               <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-8">
                 
                 {/* Weight */}
-                <div className="flex flex-col gap-2">
+                <div className="flex flex-col gap-3 p-4 rounded-[16px] border border-[#3A86FF]/25 bg-white shadow-sm">
                   <div className="flex items-center gap-2 text-[#1F2D2E] font-medium text-[15px]">
                     <div className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center shrink-0">
                       <Scale size={16} className="text-[#3A86FF]" />
@@ -103,7 +103,7 @@ export default function LogHabitModal({ isOpen, onClose, habitType }: LogHabitMo
                 </div>
 
                 {/* Daily Steps */}
-                <div className="flex flex-col gap-2">
+                <div className="flex flex-col gap-3 p-4 rounded-[16px] border border-[#3A86FF]/25 bg-white shadow-sm">
                   <div className="flex items-center gap-2 text-[#1F2D2E] font-medium text-[15px]">
                     <div className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center shrink-0">
                       <Footprints size={16} className="text-[#3A86FF]" />
@@ -121,26 +121,26 @@ export default function LogHabitModal({ isOpen, onClose, habitType }: LogHabitMo
                 </div>
 
                 {/* Sleep Hours */}
-                <div className="flex flex-col gap-2">
+                <div className="flex flex-col gap-3 p-4 rounded-[16px] border border-[#3A86FF]/25 bg-white shadow-sm">
                   <div className="flex items-center gap-2 text-[#1F2D2E] font-medium text-[15px]">
-                    <div className="w-8 h-8 rounded-lg bg-[#EAEAFC] flex items-center justify-center shrink-0 border border-[#D5D5F9]">
-                      <Bed size={16} className="text-[#A855F7]" />
+                    <div className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center shrink-0">
+                      <Bed size={16} className="text-[#3A86FF]" />
                     </div>
                     Sleep Hours
                   </div>
                   <div className="relative">
-                    <select className="w-full appearance-none bg-[#F9F9FF] border border-[#EAEAFC] rounded-xl px-4 py-3.5 text-[#8686B3] text-[15px] focus:outline-none focus:ring-2 focus:ring-[#D5D5F9] cursor-pointer font-medium">
+                    <select className="w-full appearance-none bg-white border border-gray-200 rounded-xl px-4 py-3.5 text-[#5F6F73] text-[15px] focus:outline-none focus:ring-2 focus:ring-blue-100 cursor-pointer">
                       <option value="">Select.....</option>
                       <option value="6">6</option>
                       <option value="7">7</option>
                       <option value="8">8</option>
                     </select>
-                    <ChevronsUpDown size={16} className="absolute right-4 top-1/2 -translate-y-1/2 text-[#8686B3] pointer-events-none" />
+                    <ChevronsUpDown size={16} className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
                   </div>
                 </div>
 
                 {/* Water Glasses */}
-                <div className="flex flex-col gap-2">
+                <div className="flex flex-col gap-3 p-4 rounded-[16px] border border-[#3A86FF]/25 bg-white shadow-sm">
                   <div className="flex items-center gap-2 text-[#1F2D2E] font-medium text-[15px]">
                     <div className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center shrink-0">
                       <Droplets size={16} className="text-[#3A86FF]" />
@@ -163,7 +163,7 @@ export default function LogHabitModal({ isOpen, onClose, habitType }: LogHabitMo
               {/* Save Button */}
               <button 
                 onClick={onClose}
-                className="w-full bg-[#0FA4A9] text-white py-4 rounded-xl font-medium text-[17px] hover:bg-opacity-90 transition-all cursor-pointer shadow-sm mt-4"
+                className="w-full bg-[#0FA4A9] text-white py-4 rounded-xl font-bold text-[17px] hover:bg-opacity-90 transition-all cursor-pointer shadow-lg shadow-[#0FA4A9]/20 mt-4"
               >
                 Save Today's {habitType}
               </button>

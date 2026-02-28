@@ -6,6 +6,8 @@ import { useParams, useRouter } from "next/navigation";
 import { ArrowLeft, BarChart2, CheckCircle2, Bed, Apple, Footprints, Frown, Droplets, Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
 import LogHabitModal from "@/components/dashboard/LogHabitModal";
+import LogNutritionModal from "@/components/dashboard/LogNutritionModal";
+import LogNutritionView from "@/components/dashboard/LogNutritionView";
 
 
 const HABIT_DETAILS: Record<string, any> = {
@@ -81,117 +83,146 @@ export default function HabitDetailPage() {
   const router = useRouter();
   const habitId = params.habitId as string;
   const habit = HABIT_DETAILS[habitId] || HABIT_DETAILS["sleep"];
-  
+  const [view, setView] = useState<"details" | "logging">("details");
   const [isLogModalOpen, setIsLogModalOpen] = useState(false);
+
+  const handleLogClick = () => {
+    if (habitId === 'nutrition') {
+      setView("logging");
+    } else {
+      setIsLogModalOpen(true);
+    }
+  };
 
   return (
     <div className="flex flex-col min-h-[calc(100vh-80px)] p-6 md:p-8 container mx-auto w-full">
-      {/* Top Navigation */}
-      <div className="mb-8">
-        <button 
-          onClick={() => router.push('/user-dashboard/habits')}
-          className="flex items-center gap-2 px-4 py-2 border border-[#3A86FF]/30 text-[#5F6F73] hover:text-[#1F2D2E] hover:bg-blue-50/50 rounded-lg text-sm font-medium transition-colors cursor-pointer"
-        >
-          <ArrowLeft size={16} />
-          Back To Habit
-        </button>
-      </div>
-
-      {/* Main Container */}
-      <div className="bg-white rounded-[16px] p-6 md:p-10 border border-[#3A86FF]/25 shadow-[0_2px_12px_rgba(0,0,0,0.02)]">
-        
-        {/* Header section */}
-        <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-6 mb-8">
-          <div className="flex items-center gap-6">
-            <div className={cn("w-18 h-18 rounded-2xl flex items-center justify-center shrink-0 border", habit.iconBg)}>
-              {habit.icon}
-            </div>
-            <div className="flex flex-col gap-2">
-              <h1 className="text-3xl font-bold text-[#3A86FF] leading-none mb-0.5">{habit.title}</h1>
-              <span className={cn("px-4 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border w-fit", habit.statusBg, habit.statusBg.split(' ')[0].replace('bg-', 'border-').replace('100', '200'))}>
-                {habit.status}
-              </span>
-            </div>
-          </div>
-
-          <Link href={`/user-dashboard/habits/${habitId}/progress`}>
-            <button className="flex items-center gap-2 bg-primary text-white px-5 py-2.5 rounded-lg font-medium hover:bg-opacity-90 transition-all text-sm cursor-pointer shadow-sm">
-              <BarChart2 size={18} />
-              View Progress
-            </button>
-          </Link>
-        </div>
-
-        {/* Content Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          
-          {/* Left Column (Why it matters & Patterns) */}
-          <div className="lg:col-span-2 flex flex-col gap-6">
-            
-            {/* Why This Matters */}
-            <div className="bg-[#F8FBFF] rounded-2xl p-8 border border-blue-100/50 flex flex-col gap-3">
-              <h3 className="text-[#1F2D2E] font-bold text-sm uppercase tracking-wider">WHY THIS MATTERS</h3>
-              <p className="text-[#1F2D2E] italic leading-relaxed text-[15px]">
-                {habit.why}
-              </p>
-            </div>
-
-            {/* Current Pattern */}
-            <div className="border border-[#3A86FF]/25 rounded-[16px] p-8 flex flex-col gap-5 bg-white">
-              <div className="flex items-center justify-between">
-                <h3 className="text-[#1F2D2E] font-bold text-sm sm:text-base tracking-wide uppercase">YOUR CURRENT PATTERN</h3>
-                <span className="text-[#1F2D2E] font-bold text-sm sm:text-base">{habit.daysLogged} Days Logged</span>
-              </div>
-              
-              <div className="grid grid-cols-2 gap-4 sm:gap-6">
-                <div className="bg-[#EAF6F6] rounded-xl p-5 border border-teal-50">
-                  <div className="text-[#94A3B8] font-bold text-[11px] uppercase tracking-wider mb-2">WEEKLY AVERAGE</div>
-                  <div className="text-[28px] font-bold text-[#1F2D2E] leading-none">{habit.avg}</div>
-                </div>
-                <div className="bg-[#EAF6F6] rounded-xl p-5 border border-teal-50">
-                  <div className="text-[#94A3B8] font-bold text-[11px] uppercase tracking-wider mb-2">CONSISTENCY</div>
-                  <div className="text-[28px] font-bold text-[#1F2D2E] leading-none">{habit.consistency}</div>
-                </div>
-              </div>
-            </div>
-
-          </div>
-
-          {/* Right Column (Suggested Target & Log Button) */}
-          <div className="flex flex-col gap-6">
-            
-            {/* Suggested Target */}
-            <div className="border border-[#3A86FF]/25 rounded-[16px] p-8 flex flex-col items-center justify-center text-center gap-3 bg-white">
-              <div className="text-[#94A3B8] font-bold text-[11px] uppercase tracking-wider">SUGGESTED TARGET</div>
-              <div className="text-[32px] font-bold text-[#1F2D2E] leading-none my-1">{habit.target}</div>
-              <div className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-[#1F2D2E]">
-                <CheckCircle2 size={14} className="text-[#10B981] fill-[#10B981]/20" />
-                COACH APPROVED
-              </div>
-            </div>
-
-            {/* Log Button Box */}
-            <div 
-              onClick={() => setIsLogModalOpen(true)}
-              className="border-2 border-[#3A86FF] rounded-2xl p-8 flex flex-col items-center justify-center text-center gap-4 bg-white hover:bg-blue-50/50 transition-colors cursor-pointer group flex-1 min-h-40"
+      {view === "logging" && habitId === "nutrition" ? (
+        <LogNutritionView onBack={() => setView("details")} onSave={() => setView("details")} />
+      ) : (
+        <>
+          {/* Top Navigation */}
+          <div className="mb-2">
+            <button 
+              onClick={() => router.push('/user-dashboard/habits')}
+              className="flex items-center gap-2 px-4 py-2 bg-white border border-[#3A86FF]/30 text-[#5F6F73] hover:text-[#1F2D2E] hover:bg-blue-50/50 rounded-lg text-xs font-semibold transition-all cursor-pointer"
             >
-              <div className="w-12 h-12 rounded-[14px] bg-[#3A86FF] flex items-center justify-center group-hover:scale-110 transition-transform shadow-md">
-                <Plus size={24} className="text-white" />
+              <ArrowLeft size={14} />
+              Back To Habit
+            </button>
+          </div>
+
+          {/* Breadcrumbs */}
+          <div className="flex items-center gap-1 text-sm font-medium mb-8">
+            <span className="text-[#94A3B8]">Habits/</span>
+            <span className="text-[#A855F7] capitalize">
+              {habitId}
+            </span>
+          </div>
+
+          {/* Main Container */}
+          <div className="bg-white rounded-[16px] p-8 md:p-12 border border-gray-100 shadow-sm">
+          
+          {/* Header section */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 mb-12">
+            <div className="flex items-center gap-6">
+              <div className={cn("w-16 h-16 rounded-xl flex items-center justify-center shrink-0", habit.iconBg)}>
+                {habit.icon}
               </div>
-              <span className="text-[#1F2D2E] font-medium text-[15px]">
-                Log Today's {habit.logType}
-              </span>
+              <div className="flex flex-col gap-1">
+                <h1 className="text-3xl font-bold text-[#3A86FF] leading-none">{habit.title}</h1>
+                <span className={cn("px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border w-fit", habit.statusBg, habit.statusBg.split(' ')[0].replace('bg-', 'border-').replace('100', '200'))}>
+                  {habit.status}
+                </span>
+              </div>
             </div>
 
+            <Link href={`/user-dashboard/habits/${habitId}/progress`}>
+              <button className="flex items-center gap-2 bg-[#0FA4A9] text-white px-6 py-3 rounded-xl font-bold hover:bg-opacity-90 transition-all text-sm cursor-pointer shadow-sm">
+                <BarChart2 size={18} />
+                View Progress
+              </button>
+            </Link>
+          </div>
+
+          {/* Content Grid */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            
+            {/* Left Column (Why it matters & Patterns) */}
+            <div className="lg:col-span-2 flex flex-col gap-6">
+              
+              {/* Why This Matters */}
+              <div className="bg-[#F8FBFF] rounded-2xl p-8 border border-blue-100/50 flex flex-col gap-3">
+                <h3 className="text-[#1F2D2E] font-bold text-sm uppercase tracking-wider">WHY THIS MATTERS</h3>
+                <p className="text-[#1F2D2E] italic leading-relaxed text-[15px]">
+                  {habit.why}
+                </p>
+              </div>
+
+              {/* Current Pattern */}
+              <div className="border border-gray-50 rounded-[16px] p-10 flex flex-col gap-8 bg-white shadow-[0_2px_12px_rgba(0,0,0,0.01)]">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-[#1F2D2E] font-bold text-[18px] tracking-wide uppercase">YOUR CURRENT PATTERN</h3>
+                  <span className="text-[#1F2D2E] font-bold text-[15px]">{habit.daysLogged} Days Logged</span>
+                </div>
+                
+                <div className="grid grid-cols-2 gap-8">
+                  <div className="bg-[#EAF6F6] rounded-2xl p-8 flex flex-col gap-2">
+                    <div className="text-[#94A3B8] font-bold text-[11px] uppercase tracking-widest">WEEKLY AVERAGE</div>
+                    <div className="text-[28px] font-bold text-[#1F2D2E] leading-none">{habit.avg}</div>
+                  </div>
+                  <div className="bg-[#EAF6F6] rounded-2xl p-8 flex flex-col gap-2">
+                    <div className="text-[#94A3B8] font-bold text-[11px] uppercase tracking-widest">CONSISTENCY</div>
+                    <div className="text-[28px] font-bold text-[#1F2D2E] leading-none">{habit.consistency}</div>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+
+            {/* Right Column (Suggested Target & Log Button) */}
+            <div className="flex flex-col gap-6">
+              
+              {/* Suggested Target */}
+              <div className="border border-gray-100 rounded-[16px] p-8 flex flex-col items-center justify-center text-center gap-3 bg-white shadow-sm">
+                <div className="text-[#94A3B8] font-bold text-[11px] uppercase tracking-widest">SUGGESTED TARGET</div>
+                <div className="text-[32px] font-bold text-[#1F2D2E] leading-none my-1">{habitId === 'activity' ? '10k Steps' : habit.target}</div>
+                <div className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-widest text-[#1F2D2E]">
+                  <div className="w-2.5 h-2.5 rounded-full bg-[#10B981]" />
+                  COACH SUGGESTS ADJUSTMENT
+                </div>
+              </div>
+
+              {/* Log Button Box */}
+              <div 
+                onClick={handleLogClick}
+                className="border-2 border-[#3A86FF] rounded-[16px] p-8 flex flex-col items-center justify-center text-center gap-4 bg-white hover:bg-blue-50/30 transition-all cursor-pointer group flex-1 min-h-[240px] shadow-[0_4px_20px_rgba(58,134,255,0.08)]"
+              >
+                <div className="w-12 h-12 rounded-xl bg-[#3A86FF] flex items-center justify-center group-hover:scale-110 transition-transform shadow-lg shadow-blue-200">
+                  <Plus size={24} className="text-white" />
+                </div>
+                <span className="text-[#1F2D2E] font-bold text-[17px]">
+                  Log Today's {habit.title}
+                </span>
+              </div>
+
+            </div>
           </div>
         </div>
-      </div>
+      </>
+      )}
 
-      <LogHabitModal 
-        isOpen={isLogModalOpen} 
-        onClose={() => setIsLogModalOpen(false)} 
-        habitType={habit.logType} 
-      />
+      {habitId === 'nutrition' ? (
+        <LogNutritionModal 
+          isOpen={isLogModalOpen} 
+          onClose={() => setIsLogModalOpen(false)} 
+        />
+      ) : (
+        <LogHabitModal 
+          isOpen={isLogModalOpen} 
+          onClose={() => setIsLogModalOpen(false)} 
+          habitType={habit.logType} 
+        />
+      )}
     </div>
   );
 }
