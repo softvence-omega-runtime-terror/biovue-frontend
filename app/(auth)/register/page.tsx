@@ -14,8 +14,7 @@ const SelectAccountType = () => {
     if (selectedType === "individual") {
       router.push("/register/individual");
     } else if (selectedType === "business") {
-      // Logic for business registration if available
-      alert("Business registration is coming soon!");
+      router.push("/register/business");
     }
   };
 
