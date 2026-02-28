@@ -88,7 +88,7 @@ export default function HabitsPage() {
       {/* Habits Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
         {HABITS.map((habit) => (
-          <div key={habit.id} className="bg-white rounded-[20px] p-6 border border-gray-100 shadow-[0_2px_12px_rgba(0,0,0,0.02)] flex flex-col justify-between hover:border-blue-100 transition-colors">
+          <div key={habit.id} className="bg-white rounded-[16px] p-6 border border-[#3A86FF]/25 shadow-[0_2px_12px_rgba(0,0,0,0.02)] flex flex-col justify-between hover:border-blue-100 transition-colors">
             <div className="flex flex-col gap-4">
               <div className="flex items-start justify-between">
                 <div className={cn("w-12 h-12 rounded-xl flex items-center justify-center shrink-0", habit.iconBg)}>
@@ -139,7 +139,7 @@ export default function HabitsPage() {
       </div>
 
       {/* Focus on Trends Banner */}
-      <div className="bg-[#EEF2FC] rounded-2xl p-6 border border-[#2563EB]/10 flex items-center gap-4 mt-auto shadow-sm">
+      <div className="bg-[#EEF2FC] rounded-[16px] p-6 border border-[#2563EB]/10 flex items-center gap-4 mt-auto shadow-sm">
         <div className="w-12 h-12 rounded-xl bg-[#5C82C8] flex items-center justify-center shrink-0 shadow-sm">
           <Calendar size={24} className="text-white" />
         </div>

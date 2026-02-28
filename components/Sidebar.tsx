@@ -78,9 +78,12 @@ export default function Sidebar({ role }: SidebarProps) {
             const isSubscription =
               item.href === "/admin-dashboard/subscription-plans";
 
+            const isRootDashboard = item.href === "/user-dashboard" || item.href === "/trainer-dashboard/overview" || item.href === "/admin-dashboard/overview";
             const isActive = isSubscription
               ? pathname === item.href && !searchParams.get("type")
-              : pathname === item.href;
+              : isRootDashboard 
+                ? pathname === item.href 
+                : pathname.startsWith(item.href);
             return (
               <div key={item.label}>
                 {/* Parent Menu Item */}

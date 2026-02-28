@@ -81,7 +81,7 @@ export default function HabitProgressPage() {
       <div className="flex flex-col gap-6 w-full">
         
         {/* Main Chart Card */}
-        <div className="bg-white rounded-[24px] p-6 md:p-8 border border-gray-100 shadow-[0_2px_12px_rgba(0,0,0,0.02)] flex flex-col gap-8 w-full">
+        <div className="bg-white rounded-[16px] p-6 md:p-8 border border-[#3A86FF]/25 shadow-[0_2px_12px_rgba(0,0,0,0.02)] flex flex-col gap-8 w-full">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div className="flex items-center gap-4">
               <div className={cn("w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 text-[#3A86FF]", habit.iconBg)}>
@@ -142,19 +142,19 @@ export default function HabitProgressPage() {
 
         {/* Stats Row */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 w-full">
-          <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-[0_2px_12px_rgba(0,0,0,0.02)] flex flex-col gap-2">
+          <div className="bg-white rounded-[16px] p-6 border border-[#3A86FF]/25 shadow-[0_2px_12px_rgba(0,0,0,0.02)] flex flex-col gap-2">
             <span className="text-[#3A86FF] font-bold text-[13px] uppercase tracking-wider">AVERAGE</span>
             <span className="text-[17px] font-bold text-[#1F2D2E]">{habit.avgStr}</span>
           </div>
-          <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-[0_2px_12px_rgba(0,0,0,0.02)] flex flex-col gap-2">
+          <div className="bg-white rounded-[16px] p-6 border border-[#3A86FF]/25 shadow-[0_2px_12px_rgba(0,0,0,0.02)] flex flex-col gap-2">
             <span className="text-[#3A86FF] font-bold text-[13px] uppercase tracking-wider">CONSISTENCY</span>
             <span className="text-[17px] font-bold text-[#1F2D2E]">{habit.consistency}</span>
           </div>
-          <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-[0_2px_12px_rgba(0,0,0,0.02)] flex flex-col gap-2">
+          <div className="bg-white rounded-[16px] p-6 border border-[#3A86FF]/25 shadow-[0_2px_12px_rgba(0,0,0,0.02)] flex flex-col gap-2">
             <span className="text-[#3A86FF] font-bold text-[13px] uppercase tracking-wider">BEST STREAK</span>
             <span className="text-[17px] font-bold text-[#1F2D2E]">{habit.streak}</span>
           </div>
-          <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-[0_2px_12px_rgba(0,0,0,0.02)] flex flex-col gap-2">
+          <div className="bg-white rounded-[16px] p-6 border border-[#3A86FF]/25 shadow-[0_2px_12px_rgba(0,0,0,0.02)] flex flex-col gap-2">
             <span className="text-[#3A86FF] font-bold text-[13px] uppercase tracking-wider">CURRENT TREND</span>
             <span className={cn("text-[17px] font-bold", habit.trendColor)}>{habit.trend}</span>
           </div>
