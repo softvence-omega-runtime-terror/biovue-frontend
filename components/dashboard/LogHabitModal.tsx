@@ -8,6 +8,7 @@ import {
   Bed, 
   Footprints, 
   Droplets,
+  Frown,
   Scale,
   ChevronsUpDown
 } from "lucide-react";
@@ -26,6 +27,7 @@ export default function LogHabitModal({ isOpen, onClose, habitType }: LogHabitMo
       case "sleep": return <Bed size={20} className="text-[#3A86FF]" />;
       case "activity": return <Footprints size={20} className="text-[#3A86FF]" />;
       case "hydration": return <Droplets size={20} className="text-[#3A86FF]" />;
+      case "stress": return <Frown size={20} className="text-[#A855F7]" />;
       default: return <Bed size={20} className="text-[#3A86FF]" />;
     }
   };
