@@ -52,14 +52,14 @@ export default function HealthHabitOverview({
     <div className="space-y-4">
       <div className="flex justify-between items-end">
         <div>
-          <h2 className="text-lg font-bold text-[#111827]">
+          <h2 className="text-2xl font-medium text-[#111827]">
             Health & Habit Overview
           </h2>
-          <p className="text-xs text-[#6B7280]">
+          <p className="text-lg text-[#6B7280] font-medium">
             Read-only live activity data.
           </p>
         </div>
-        <p className="text-[10px] text-[#9CA3AF] font-medium tracking-wide">
+        <p className="text-base text-[#9AAEB2] font-medium tracking-wide">
           All data synced from user device
         </p>
       </div>
@@ -67,17 +67,19 @@ export default function HealthHabitOverview({
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {metricCards.map((card, index) => (
           <Card key={index} className="border-none shadow-xs bg-white">
-            <CardContent className="p-5 space-y-4">
-              <div className="flex items-center gap-2 text-[#0D9488]">
-                <card.icon size={18} strokeWidth={1.5} />
-                <span className="text-xs font-medium">{card.title}</span>
+            <CardContent className="p-5 space-y-2">
+              <div className=" text-[#0D9488]">
+                <card.icon size={32} strokeWidth={1.5} />
               </div>
+              <p className="text-base text-[#5F6F73] font-medium">
+                {card.title}
+              </p>
               <div className="space-y-3">
-                <h3 className="text-2xl font-bold text-[#111827]">
+                <h3 className="text-2xl font-semibold text-[#111827]">
                   {card.value}
                 </h3>
                 {card.targetApplied && (
-                  <Badge className="bg-[#10B9811A] text-[#059669] border-none text-[10px] font-bold py-1 uppercase tracking-tight">
+                  <Badge className="bg-[#22C55E1A] text-[#22C55E] border-none text-base font-medium py-1 uppercase tracking-tight">
                     COACH TARGET APPLIED
                   </Badge>
                 )}
