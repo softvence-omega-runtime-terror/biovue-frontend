@@ -8,6 +8,7 @@ import { cn } from "@/lib/utils";
 import LogHabitModal from "@/components/dashboard/LogHabitModal";
 import LogNutritionModal from "@/components/dashboard/LogNutritionModal";
 import LogNutritionView from "@/components/dashboard/LogNutritionView";
+import LogStressView from "@/components/dashboard/LogStressView";
 
 
 const HABIT_DETAILS: Record<string, any> = {
@@ -87,7 +88,7 @@ export default function HabitDetailPage() {
   const [isLogModalOpen, setIsLogModalOpen] = useState(false);
 
   const handleLogClick = () => {
-    if (habitId === 'nutrition') {
+    if (habitId === 'nutrition' || habitId === 'stress') {
       setView("logging");
     } else {
       setIsLogModalOpen(true);
@@ -98,6 +99,8 @@ export default function HabitDetailPage() {
     <div className="flex flex-col min-h-[calc(100vh-80px)] p-6 md:p-8 container mx-auto w-full">
       {view === "logging" && habitId === "nutrition" ? (
         <LogNutritionView onBack={() => setView("details")} onSave={() => setView("details")} />
+      ) : view === "logging" && habitId === "stress" ? (
+        <LogStressView onBack={() => setView("details")} onSave={() => setView("details")} />
       ) : (
         <>
           {/* Top Navigation */}

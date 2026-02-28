@@ -20,6 +20,7 @@ import {
 import LogHabitModal from "@/components/dashboard/LogHabitModal";
 import LogNutritionModal from "@/components/dashboard/LogNutritionModal";
 import LogNutritionView from "@/components/dashboard/LogNutritionView";
+import LogStressView from "@/components/dashboard/LogStressView";
 
 const MOCK_DATA = [
   { name: 'M', val: 2, Protin: 35, Carbs: 45, Fats: 20 }, 
@@ -60,6 +61,20 @@ const HABIT_META: Record<string, any> = {
     coachNote: "your sleep consistency improved this weekly after tuesday, maintaining regular timing will significantly increase your physical recovery markers.",
     coachName: "JORDAN",
     coachTime: "2H AGO"
+  },
+  "stress": {
+    title: "Stress",
+    icon: <Frown size={24} className="text-[#A855F7]" />,
+    iconBg: "bg-purple-100",
+    avgStr: "4/10 PTS",
+    consistency: "57%",
+    streak: "7 DAYS",
+    trend: "Improving",
+    trendColor: "text-[#10B981]",
+    insight: "your sleep consistency improved this weekly after tuesday, maintaining regular timing will significantly increase your physical recovery markers.",
+    coachNote: "managing cortisol prevents metabolic interference. stress oversight is critical for longevity.",
+    coachName: "JORDAN",
+    coachTime: "2H AGO"
   }
 };
 
@@ -74,7 +89,7 @@ export default function HabitProgressPage() {
   const [isLogModalOpen, setIsLogModalOpen] = useState(false);
 
   const handleLogClick = () => {
-    if (habitId === 'nutrition') {
+    if (habitId === 'nutrition' || habitId === 'stress') {
       setView("logging");
     } else {
       setIsLogModalOpen(true);
@@ -85,6 +100,8 @@ export default function HabitProgressPage() {
     <div className="flex flex-col min-h-[calc(100vh-80px)] p-6 md:p-8 container mx-auto w-full">
       {view === "logging" && habitId === "nutrition" ? (
         <LogNutritionView onBack={() => setView("trends")} onSave={() => setView("trends")} />
+      ) : view === "logging" && habitId === "stress" ? (
+        <LogStressView onBack={() => setView("trends")} onSave={() => setView("trends")} />
       ) : (
         <>
           {/* Top Navigation */}
