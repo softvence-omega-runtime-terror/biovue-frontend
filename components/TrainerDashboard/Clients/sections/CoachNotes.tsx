@@ -29,7 +29,7 @@ export default function CoachNotes({ notes }: { notes: string[] }) {
           <div className="relative">
             <textarea 
               placeholder="Add observations, preferences, or follow-up reminders..."
-              className="w-full h-32 p-4 bg-[#F0F9F9] border-none rounded-xl resize-none outline-none text-sm placeholder:text-[#9CA3AF] text-[#374151]"
+              className="w-full h-32 p-4 bg-[#0FA4A91A] border-none rounded-xl resize-none outline-none text-sm placeholder:text-[#9CA3AF] text-[#374151]"
             />
             <button className="absolute bottom-4 right-4 p-2 bg-[#0D9488] text-white rounded-lg hover:bg-[#0A7A6F] transition-colors">
               <Plus size={20} />
@@ -41,7 +41,7 @@ export default function CoachNotes({ notes }: { notes: string[] }) {
             {mockNotes.map((note, index) => (
               <div
                 key={index}
-                className="bg-[#F0F9F9] p-5 rounded-xl space-y-2"
+                className="bg-[#0FA4A91A] p-5 rounded-xl space-y-2"
               >
                 <p className="text-sm text-[#374151] leading-relaxed font-medium">
                   {note.text}
