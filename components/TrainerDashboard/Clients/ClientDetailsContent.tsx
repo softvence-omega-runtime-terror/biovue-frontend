@@ -2,7 +2,12 @@
 
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { MessageSquare, Calendar, CheckCircle2, ChevronLeft } from "lucide-react";
+import {
+  MessageSquare,
+  Calendar,
+  CheckCircle2,
+  ChevronLeft,
+} from "lucide-react";
 import Link from "next/link";
 
 import HealthHabitOverview from "./sections/HealthHabitOverview";
@@ -20,9 +25,9 @@ export default function ClientDetailsContent({
   clientDetails: ClientDetails;
 }) {
   const statusConfig = {
-    "on-track": "bg-green-100 text-green-700",
-    "need-attention": "bg-yellow-100 text-yellow-700",
-    inactive: "bg-gray-100 text-gray-700",
+    "on-track": "bg-[#22C55E1A] text-[#22C55E]",
+    "need-attention": "bg-[#D3BB5B1A] text-[#D3BB5B]",
+    inactive: "bg-[#9AAEB24D] text-[#5F6F73]",
   };
 
   return (
@@ -31,19 +36,24 @@ export default function ClientDetailsContent({
       <div className="flex justify-between items-start">
         <div className="space-y-1">
           <div className="flex items-center gap-3">
-            <h1 className="text-2xl font-bold text-[#111827]">
+            <h1 className="text-2xl font-medium text-[#111827]">
               {clientDetails.name}
             </h1>
-            <Badge className={`${statusConfig[clientDetails.status]} border-none font-medium capitalize py-0.5 px-2 text-xs hover:bg-transparent`}>
+            <Badge
+              className={`${statusConfig[clientDetails.status]} border-none font-medium capitalize py-0.5 px-2 text-base `}
+            >
               {clientDetails.status.replace("-", " ")}
             </Badge>
           </div>
-          <p className="text-sm text-[#6B7280] font-medium">
+          <p className="text-lg text-[#6B7280] font-medium">
             {clientDetails.connectedDate}
           </p>
         </div>
         <div className="flex gap-3">
-          <Link href="/trainer-dashboard/clients" className="flex items-center gap-2 text-[#6B7280] hover:text-[#111827] transition-colors text-sm font-medium mr-4">
+          <Link
+            href="/trainer-dashboard/clients"
+            className="flex items-center gap-2 text-[#6B7280] hover:text-[#111827] transition-colors text-sm font-medium mr-4"
+          >
             <ChevronLeft size={16} />
             Back
           </Link>
@@ -57,41 +67,65 @@ export default function ClientDetailsContent({
       {/* Top Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <Card className="border-none shadow-xs bg-white">
-          <CardContent className="p-5 space-y-4">
-            <p className="text-[10px] font-bold text-[#6B7280] tracking-wider uppercase">PRIMARY GOAL</p>
-            <div className="space-y-1">
-              <h3 className="text-xl font-bold text-[#111827]">{clientDetails.primaryGoal.title}</h3>
-              <p className="text-xs text-[#9CA3AF]">{clientDetails.primaryGoal.subtitle}</p>
+          <CardContent className="p-5 ">
+            <p className="text-base mb-2 font-bold text-[#5F6F73] tracking-wider uppercase">
+              PRIMARY GOAL
+            </p>
+            <div className="">
+              <h3 className="text-xl md:text-[28px] mb-2 font-medium text-[#111827]">
+                {clientDetails.primaryGoal.title}
+              </h3>
+              <p className="text-base text-[#9AAEB2]">
+                {clientDetails.primaryGoal.subtitle}
+              </p>
             </div>
           </CardContent>
         </Card>
 
         <Card className="border-none shadow-xs bg-white">
           <CardContent className="p-5 space-y-4">
-            <p className="text-[10px] font-bold text-[#6B7280] tracking-wider uppercase">CURRENT TREND</p>
+            <p className="text-base mb-2 font-bold text-[#5F6F73] tracking-wider uppercase">
+              CURRENT TREND
+            </p>
             <div className="space-y-1">
-              <h3 className="text-xl font-bold text-[#111827]">{clientDetails.currentTrend.status}</h3>
-              <p className="text-xs text-[#10B981] font-medium">{clientDetails.currentTrend.description}</p>
+              <h3 className="text-xl md:text-[28px] mb-2 font-medium text-[#111827]">
+                {clientDetails.currentTrend.status}
+              </h3>
+              <p className="text-base text-[#22C55E] font-medium">
+                {clientDetails.currentTrend.description}
+              </p>
             </div>
           </CardContent>
         </Card>
 
         <Card className="border-none shadow-xs bg-white">
           <CardContent className="p-5 space-y-4">
-            <p className="text-[10px] font-bold text-[#6B7280] tracking-wider uppercase">LAST ACTIVITY</p>
+            <p className="text-base mb-2 font-bold text-[#5F6F73] tracking-wider uppercase">
+              LAST ACTIVITY
+            </p>
             <div className="space-y-1">
-              <h3 className="text-xl font-bold text-[#111827]">{clientDetails.lastActivity.status}</h3>
-              <p className="text-xs text-[#9CA3AF]">{clientDetails.lastActivity.description}</p>
+              <h3 className="text-xl md:text-[28px] mb-2 font-medium text-[#111827]">
+                {clientDetails.lastActivity.status}
+              </h3>
+              <p className="text-base text-[#9AAEB2]">
+                {clientDetails.lastActivity.description}
+              </p>
             </div>
           </CardContent>
         </Card>
 
         <Card className="border-none shadow-xs bg-white">
           <CardContent className="p-5 space-y-4">
-            <p className="text-[10px] font-bold text-[#6B7280] tracking-wider uppercase">CONSISTENCY SCORE</p>
+            <p className="text-base mb-2 font-bold text-[#5F6F73] tracking-wider uppercase">
+              CONSISTENCY SCORE
+            </p>
             <div className="space-y-1">
-              <h3 className="text-xl font-bold text-[#111827]">{clientDetails.consistencyScore.score}%</h3>
-              <p className="text-xs text-[#FBBF24] font-medium">{clientDetails.consistencyScore.description}</p>
+              <h3 className="text-xl md:text-[28px] mb-2 font-medium text-[#111827]">
+                {clientDetails.consistencyScore.score}%
+              </h3>
+              <p className="text-base text-[#D3BB5B] font-medium">
+                {clientDetails.consistencyScore.description}
+              </p>
             </div>
           </CardContent>
         </Card>
@@ -100,20 +134,33 @@ export default function ClientDetailsContent({
       {/* Projection Usage */}
       <Card className="w-fit border-none shadow-xs bg-white">
         <CardContent className="p-5 space-y-4">
-          <p className="text-[10px] font-bold text-[#6B7280] tracking-wider uppercase">Projection Usage</p>
+          <p className="text-base mb-2 font-bold text-[#5F6F73] tracking-wider uppercase">
+            Projection Usage
+          </p>
           <div className="space-y-1">
-            <h3 className="text-sm font-bold text-[#111827]">Used: {clientDetails.projectionUsage.used}/{clientDetails.projectionUsage.total}</h3>
-            <p className="text-xs text-[#9CA3AF]">Next reset: {clientDetails.projectionUsage.nextResetDays} days</p>
-            <p className="text-xs text-[#10B981] font-medium whitespace-nowrap">Last projection: {clientDetails.projectionUsage.lastProjectionDaysAgo} days ago</p>
+            <h3 className="text-base font-medium text-[#111827]">
+              Used: {clientDetails.projectionUsage.used}/
+              {clientDetails.projectionUsage.total}
+            </h3>
+            <p className="text-sm text-[#5F6F73]">
+              Next reset: {clientDetails.projectionUsage.nextResetDays} days
+            </p>
+            <p className="text-base text-[#22C55E] font-medium whitespace-nowrap">
+              Last projection:{" "}
+              {clientDetails.projectionUsage.lastProjectionDaysAgo} days ago
+            </p>
           </div>
         </CardContent>
       </Card>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div className="">
         {/* Main Content Area */}
-        <div className="lg:col-span-2 space-y-12">
+        <div className="lg:col-span-2 space-y-10">
           <HealthHabitOverview clientDetails={clientDetails} />
-          <CoachSetGoals goals={clientDetails.coachSetGoals} />
+          <CoachSetGoals
+            goals={clientDetails.coachSetGoals}
+            clientDetails={clientDetails}
+          />
           <CoachActions />
           <ProgressTrends />
           <CoachNotes notes={clientDetails.coachNotes} />
@@ -121,46 +168,6 @@ export default function ClientDetailsContent({
         </div>
 
         {/* Sidebar */}
-        <div className="space-y-6">
-          <Card className="border-none shadow-xs bg-[#0D9488] text-white overflow-hidden">
-            <CardContent className="p-6 space-y-6">
-              <div className="space-y-2">
-                <div className="flex items-center gap-2 text-[10px] font-bold tracking-wider uppercase opacity-80">
-                  <Calendar size={14} />
-                  NEXT CHECK-IN
-                </div>
-                <h3 className="text-xl font-bold leading-tight">
-                  {clientDetails.nextCheckIn.day}, {clientDetails.nextCheckIn.date}
-                </h3>
-                <p className="text-xs font-medium opacity-80">
-                  {clientDetails.nextCheckIn.time} ({clientDetails.nextCheckIn.timezone})
-                </p>
-              </div>
-              
-              <button className="w-full bg-white text-[#0D9488] py-2.5 rounded-lg text-sm font-bold hover:bg-opacity-90 transition-all">
-                Reschedule
-              </button>
-            </CardContent>
-          </Card>
-
-          <Card className="border-none shadow-xs bg-[#F0F9FF]">
-            <CardContent className="p-6 space-y-4">
-              <div className="flex items-center gap-2 text-[10px] font-bold text-[#0369A1] tracking-wider uppercase">
-                <CheckCircle2 size={14} />
-                COMPLIANCE
-              </div>
-              <div className="space-y-1">
-                <div className="flex items-baseline gap-1">
-                  <span className="text-2xl font-bold text-[#111827]">{clientDetails.compliance.score}%</span>
-                  <span className="text-xs text-[#6B7280] font-medium">avg</span>
-                </div>
-                <p className="text-xs text-[#0369A1] leading-relaxed font-medium">
-                  {clientDetails.compliance.description}
-                </p>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
       </div>
     </div>
   );
