@@ -122,12 +122,13 @@ const UserDashboard = () => {
               className="rounded-full border-2 border-[#F4FBFA] cursor-pointer"
             />
           </div>
-          <Link href="/user-dashboard/support">
+          <Link href="/user-dashboard/upgrade">
             <button className="flex items-center gap-2 bg-[#0FA4A9] text-white px-4 py-2 rounded-lg font-medium hover:bg-opacity-90 transition-all text-sm cursor-pointer">
               <Crown size={18} fill="currentColor" />
               Upgrade
             </button>
           </Link>
+
         </div>
       </header>
 
