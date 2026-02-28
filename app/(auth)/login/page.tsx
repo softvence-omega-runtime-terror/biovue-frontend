@@ -45,16 +45,16 @@ const LoginPage = () => {
         <div className="flex justify-center mb-10">
           <Link 
             href="/register" 
-            className="inline-flex items-center gap-2 text-[#3A86FF] hover:opacity-80 transition-opacity font-bold text-xs tracking-wider uppercase"
+            className="inline-flex items-center gap-2 text-[#3A86FF] hover:opacity-80 transition-opacity font-bold text-[13px] tracking-wider uppercase"
           >
-            <ArrowLeft size={18} strokeWidth={2.5} />
-            Back to account type
+            <ArrowLeft size={20} strokeWidth={2.5} />
+            BACK TO ACCOUNT TYPE
           </Link>
         </div>
 
         {/* Header */}
         <div className="text-center mb-12">
-          <h1 className="text-3xl font-extrabold text-[#041228] mb-3">
+          <h1 className="text-[32px] font-bold text-[#041228] mb-3">
             Welocme
           </h1>
         </div>
