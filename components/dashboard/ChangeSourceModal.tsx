@@ -20,15 +20,15 @@ const ChangeSourceModal = ({
 
   return (
     <div className="fixed inset-0 z-[60] bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
-      <div className="bg-white rounded-2xl w-full max-w-sm shadow-2xl p-6 relative">
+      <div className="bg-white rounded-[16px] w-full max-w-sm shadow-2xl p-6 relative border border-[#3A86FF]/25">
         <h2 className="text-lg font-bold text-[#041228] mb-1">Change Data Source</h2>
         <p className="text-sm text-gray-400 mb-6">Choose how today&apos;s data should be filled</p>
 
         <div className="space-y-3">
           {/* Option 1: Connected Device */}
           <label className={cn(
-            "flex items-start gap-4 p-4 rounded-xl border-2 cursor-pointer transition-all",
-            dataSource === "device" ? "border-[#3A86FF] bg-[#F0F6FF]" : "border-gray-200 hover:bg-gray-50"
+            "flex items-start gap-4 p-4 rounded-[16px] border-2 cursor-pointer transition-all",
+            dataSource === "device" ? "border-[#3A86FF] bg-[#F0F6FF]" : "border-gray-100 hover:bg-gray-50 bg-white"
           )}>
             <input 
               type="radio" 
@@ -46,8 +46,8 @@ const ChangeSourceModal = ({
 
           {/* Option 2: Manual Entry */}
           <label className={cn(
-            "flex items-start gap-4 p-4 rounded-xl border-2 cursor-pointer transition-all",
-            dataSource === "manual" ? "border-[#3A86FF] bg-[#F0F6FF]" : "border-gray-200 hover:bg-gray-50"
+            "flex items-start gap-4 p-4 rounded-[16px] border-2 cursor-pointer transition-all",
+            dataSource === "manual" ? "border-[#3A86FF] bg-[#F0F6FF]" : "border-gray-100 hover:bg-gray-50 bg-white"
           )}>
             <input 
               type="radio" 

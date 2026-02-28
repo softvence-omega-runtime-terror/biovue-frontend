@@ -36,7 +36,7 @@ const LogTodayModal = ({
 
   return (
     <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-center justify-center p-4">
-      <div className="bg-white rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden shadow-2xl relative">
+      <div className="bg-white rounded-[16px] w-full max-w-2xl max-h-[90vh] overflow-y-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden shadow-2xl relative border border-[#3A86FF]/25">
         {/* Close Button */}
         {/* <button 
           onClick={onClose}
@@ -46,19 +46,19 @@ const LogTodayModal = ({
         </button> */}
 
         {/* Device Sync Banner */}
-        <div className="flex items-center justify-between bg-[#F0F9FF] border border-[#BAE6FD] rounded-t-2xl px-6 py-4">
+        <div className="flex items-center justify-between bg-white border-b border-[#3A86FF]/25 px-6 py-4 rounded-t-[16px]">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 bg-[#3A86FF]/10 rounded-lg flex items-center justify-center">
+            <div className="w-9 h-9 bg-blue-50/80 border border-blue-100 rounded-lg flex items-center justify-center">
               <Smartphone size={18} className="text-[#3A86FF]" />
             </div>
             <div>
-              <p className="text-sm font-bold text-[#0369A1]">Device Sync Active</p>
-              <p className="text-xs text-[#64748B]">Some Data Is Automatically Synced From Your Connected Device.</p>
+              <p className="text-sm font-bold text-[#1F2D2E]">Device Sync Active</p>
+              <p className="text-[11px] text-[#5F6F73]">Some Data Is Automatically Synced From Your Connected Device.</p>
             </div>
           </div>
           <button
             onClick={onChangeSource}
-            className="bg-[#8746E7] hover:bg-[#6D28D9] text-white text-sm font-semibold px-4 py-2 rounded-lg transition-all cursor-pointer whitespace-nowrap"
+            className="bg-white border border-gray-200 text-[#1F2D2E] text-xs font-semibold px-4 py-2 rounded-lg transition-all cursor-pointer whitespace-nowrap hover:bg-gray-50"
           >
             Change Source
           </button>
@@ -76,14 +76,14 @@ const LogTodayModal = ({
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-5">
             {/* Weight */}
-            <div className="space-y-2">
-              <label className="flex items-center gap-2 text-[#041228] font-semibold text-sm">
+            <div className="flex flex-col gap-3 p-4 rounded-[16px] border border-[#3A86FF]/25 bg-white shadow-sm">
+              <label className="flex items-center gap-2 text-[#1F2D2E] font-semibold text-sm">
                 <Weight size={16} className="text-[#3A86FF]" /> Weight
               </label>
               <select 
                 value={habitData.weight} 
                 onChange={e => setHabitData({...habitData, weight: e.target.value})} 
-                className="w-full bg-[#F8FAFF] border border-gray-200 rounded-xl py-3 px-4 text-gray-500 text-sm appearance-none cursor-pointer"
+                className="w-full bg-white border border-gray-200 rounded-xl py-3 px-4 text-[#5F6F73] text-sm appearance-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-50"
               >
                 <option value="">Select.....</option>
                 <option value="150">150 lbs</option>
@@ -98,14 +98,14 @@ const LogTodayModal = ({
             </div>
 
             {/* Body Fat */}
-            <div className="space-y-2">
-              <label className="flex items-center gap-2 text-[#041228] font-semibold text-sm">
+            <div className="flex flex-col gap-3 p-4 rounded-[16px] border border-[#3A86FF]/25 bg-white shadow-sm">
+              <label className="flex items-center gap-2 text-[#1F2D2E] font-semibold text-sm">
                 <Activity size={16} className="text-[#3A86FF]" /> Body Fat (Optional)
               </label>
               <select 
                 value={habitData.bodyFat} 
                 onChange={e => setHabitData({...habitData, bodyFat: e.target.value})} 
-                className="w-full bg-[#F8FAFF] border border-gray-200 rounded-xl py-3 px-4 text-gray-500 text-sm appearance-none cursor-pointer"
+                className="w-full bg-white border border-gray-200 rounded-xl py-3 px-4 text-[#5F6F73] text-sm appearance-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-50"
               >
                 <option value="">Select.....</option>
                 <option value="10">10%</option>
@@ -118,14 +118,14 @@ const LogTodayModal = ({
             </div>
 
             {/* Smoking */}
-            <div className="space-y-2">
-              <label className="flex items-center gap-2 text-[#041228] font-semibold text-sm">
+            <div className="flex flex-col gap-3 p-4 rounded-[16px] border border-[#3A86FF]/25 bg-white shadow-sm">
+              <label className="flex items-center gap-2 text-[#1F2D2E] font-semibold text-sm">
                 <Cigarette size={16} className="text-[#3A86FF]" /> Smoking Status
               </label>
               <select 
                 value={habitData.smoking} 
                 onChange={e => setHabitData({...habitData, smoking: e.target.value})} 
-                className="w-full bg-[#F8FAFF] border border-gray-200 rounded-xl py-3 px-4 text-gray-500 text-sm appearance-none cursor-pointer"
+                className="w-full bg-white border border-gray-200 rounded-xl py-3 px-4 text-[#5F6F73] text-sm appearance-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-50"
               >
                 <option value="">Select.....</option>
                 <option value="never">Never Smoked</option>
@@ -136,14 +136,14 @@ const LogTodayModal = ({
             </div>
 
             {/* Alcohol */}
-            <div className="space-y-2">
-              <label className="flex items-center gap-2 text-[#041228] font-semibold text-sm">
+            <div className="flex flex-col gap-3 p-4 rounded-[16px] border border-[#3A86FF]/25 bg-white shadow-sm">
+              <label className="flex items-center gap-2 text-[#1F2D2E] font-semibold text-sm">
                 <GlassWater size={16} className="text-[#3A86FF]" /> Alcohol Consumption
               </label>
               <select 
                 value={habitData.alcohol} 
                 onChange={e => setHabitData({...habitData, alcohol: e.target.value})} 
-                className="w-full bg-[#F8FAFF] border border-gray-200 rounded-xl py-3 px-4 text-gray-500 text-sm appearance-none cursor-pointer"
+                className="w-full bg-white border border-gray-200 rounded-xl py-3 px-4 text-[#5F6F73] text-sm appearance-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-50"
               >
                 <option value="">Select.....</option>
                 <option value="none">None</option>
@@ -155,66 +155,66 @@ const LogTodayModal = ({
             </div>
 
             {/* Daily Steps */}
-            <div className="space-y-2">
-              <label className="flex items-center gap-2 text-[#041228] font-semibold text-sm">
+            <div className="flex flex-col gap-3 p-4 rounded-[16px] border border-[#3A86FF]/25 bg-white shadow-sm">
+              <label className="flex items-center gap-2 text-[#1F2D2E] font-semibold text-sm">
                 <Footprints size={16} className="text-[#3A86FF]" /> Daily Steps
               </label>
               <input 
                 type="number" 
                 value={habitData.steps} 
                 onChange={e => setHabitData({...habitData, steps: e.target.value})} 
-                className="w-full bg-[#F8FAFF] border border-gray-200 rounded-xl py-3 px-4 text-gray-700 text-sm focus:outline-none focus:ring-1 focus:ring-[#3A86FF]/50" 
+                className="w-full bg-white border border-gray-200 rounded-xl py-3 px-4 text-[#1F2D2E] text-sm focus:outline-none focus:ring-2 focus:ring-blue-50" 
               />
             </div>
 
             {/* Workout */}
-            <div className="space-y-2">
-              <label className="flex items-center gap-2 text-[#041228] font-semibold text-sm">
+            <div className="flex flex-col gap-3 p-4 rounded-[16px] border border-[#3A86FF]/25 bg-white shadow-sm">
+              <label className="flex items-center gap-2 text-[#1F2D2E] font-semibold text-sm">
                 <Dumbbell size={16} className="text-[#3A86FF]" /> Workout Per Week
               </label>
               <input 
                 type="number" 
                 value={habitData.workout} 
                 onChange={e => setHabitData({...habitData, workout: e.target.value})} 
-                className="w-full bg-[#F8FAFF] border border-gray-200 rounded-xl py-3 px-4 text-gray-700 text-sm focus:outline-none focus:ring-1 focus:ring-[#3A86FF]/50" 
+                className="w-full bg-white border border-gray-200 rounded-xl py-3 px-4 text-[#1F2D2E] text-sm focus:outline-none focus:ring-2 focus:ring-blue-50" 
               />
             </div>
 
             {/* Strength */}
-            <div className="space-y-2">
-              <label className="flex items-center gap-2 text-[#041228] font-semibold text-sm">
+            <div className="flex flex-col gap-3 p-4 rounded-[16px] border border-[#3A86FF]/25 bg-white shadow-sm">
+              <label className="flex items-center gap-2 text-[#1F2D2E] font-semibold text-sm">
                 <Zap size={16} className="text-[#3A86FF]" /> Strength Training Per Week
               </label>
               <input 
                 type="number" 
                 value={habitData.strength} 
                 onChange={e => setHabitData({...habitData, strength: e.target.value})} 
-                className="w-full bg-[#F8FAFF] border border-gray-200 rounded-xl py-3 px-4 text-gray-700 text-sm focus:outline-none focus:ring-1 focus:ring-[#3A86FF]/50" 
+                className="w-full bg-white border border-gray-200 rounded-xl py-3 px-4 text-[#1F2D2E] text-sm focus:outline-none focus:ring-2 focus:ring-blue-50" 
               />
             </div>
 
             {/* Sleep */}
-            <div className="space-y-2">
-              <label className="flex items-center gap-2 text-[#041228] font-semibold text-sm">
+            <div className="flex flex-col gap-3 p-4 rounded-[16px] border border-[#3A86FF]/25 bg-white shadow-sm">
+              <label className="flex items-center gap-2 text-[#1F2D2E] font-semibold text-sm">
                 <Moon size={16} className="text-[#3A86FF]" /> Sleep Hours Per Night
               </label>
               <input 
                 type="number" 
                 value={habitData.sleep} 
                 onChange={e => setHabitData({...habitData, sleep: e.target.value})} 
-                className="w-full bg-[#F8FAFF] border border-gray-200 rounded-xl py-3 px-4 text-gray-700 text-sm focus:outline-none focus:ring-1 focus:ring-[#3A86FF]/50" 
+                className="w-full bg-white border border-gray-200 rounded-xl py-3 px-4 text-[#1F2D2E] text-sm focus:outline-none focus:ring-2 focus:ring-blue-50" 
               />
             </div>
 
             {/* Diet Quality */}
-            <div className="space-y-2">
-              <label className="flex items-center gap-2 text-[#041228] font-semibold text-sm">
+            <div className="flex flex-col gap-3 p-4 rounded-[16px] border border-[#3A86FF]/25 bg-white shadow-sm">
+              <label className="flex items-center gap-2 text-[#1F2D2E] font-semibold text-sm">
                 <Utensils size={16} className="text-[#3A86FF]" /> Overall Diet Quality
               </label>
               <select 
                 value={habitData.diet} 
                 onChange={e => setHabitData({...habitData, diet: e.target.value})} 
-                className="w-full bg-[#F8FAFF] border border-gray-200 rounded-xl py-3 px-4 text-gray-500 text-sm appearance-none cursor-pointer"
+                className="w-full bg-white border border-gray-200 rounded-xl py-3 px-4 text-[#5F6F73] text-sm appearance-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-50"
               >
                 <option value="">Select.....</option>
                 <option value="excellent">Excellent</option>
@@ -225,14 +225,14 @@ const LogTodayModal = ({
             </div>
 
             {/* Fast Food */}
-            <div className="space-y-2">
-              <label className="flex items-center gap-2 text-[#041228] font-semibold text-sm">
+            <div className="flex flex-col gap-3 p-4 rounded-[16px] border border-[#3A86FF]/25 bg-white shadow-sm">
+              <label className="flex items-center gap-2 text-[#1F2D2E] font-semibold text-sm">
                 <Utensils size={16} className="text-[#3A86FF]" /> Fast Food Frequency
               </label>
               <select 
                 value={habitData.fastFood} 
                 onChange={e => setHabitData({...habitData, fastFood: e.target.value})} 
-                className="w-full bg-[#F8FAFF] border border-gray-200 rounded-xl py-3 px-4 text-gray-500 text-sm appearance-none cursor-pointer"
+                className="w-full bg-white border border-gray-200 rounded-xl py-3 px-4 text-[#5F6F73] text-sm appearance-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-50"
               >
                 <option value="">Select.....</option>
                 <option value="never">Never</option>
@@ -244,14 +244,14 @@ const LogTodayModal = ({
             </div>
 
             {/* Stress */}
-            <div className="space-y-2">
-              <label className="flex items-center gap-2 text-[#041228] font-semibold text-sm">
+            <div className="flex flex-col gap-3 p-4 rounded-[16px] border border-[#3A86FF]/25 bg-white shadow-sm">
+              <label className="flex items-center gap-2 text-[#1F2D2E] font-semibold text-sm">
                 <Activity size={16} className="text-[#3A86FF]" /> Stress Level
               </label>
               <select 
                 value={habitData.stress} 
                 onChange={e => setHabitData({...habitData, stress: e.target.value})} 
-                className="w-full bg-[#F8FAFF] border border-gray-200 rounded-xl py-3 px-4 text-gray-500 text-sm appearance-none cursor-pointer"
+                className="w-full bg-white border border-gray-200 rounded-xl py-3 px-4 text-[#5F6F73] text-sm appearance-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-50"
               >
                 <option value="">Select.....</option>
                 <option value="low">Low</option>
@@ -262,14 +262,14 @@ const LogTodayModal = ({
             </div>
 
             {/* Water */}
-            <div className="space-y-2">
-              <label className="flex items-center gap-2 text-[#041228] font-semibold text-sm">
+            <div className="flex flex-col gap-3 p-4 rounded-[16px] border border-[#3A86FF]/25 bg-white shadow-sm">
+              <label className="flex items-center gap-2 text-[#1F2D2E] font-semibold text-sm">
                 <Droplets size={16} className="text-[#3A86FF]" /> Water Consumption Per Day
               </label>
               <select 
                 value={habitData.water} 
                 onChange={e => setHabitData({...habitData, water: e.target.value})} 
-                className="w-full bg-[#F8FAFF] border border-gray-200 rounded-xl py-3 px-4 text-gray-500 text-sm appearance-none cursor-pointer"
+                className="w-full bg-white border border-gray-200 rounded-xl py-3 px-4 text-[#5F6F73] text-sm appearance-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-50"
               >
                 <option value="">Select.....</option>
                 <option value="less_1L">Less than 1L</option>
@@ -284,9 +284,9 @@ const LogTodayModal = ({
           <div className="flex justify-end mt-8">
             <button
               onClick={onClose}
-              className="bg-[#8746E7] hover:bg-[#6D28D9] text-white font-semibold px-6 py-3 rounded-xl transition-all cursor-pointer"
+              className="w-full md:w-auto bg-[#0FA4A9] hover:bg-opacity-90 text-white font-bold px-8 py-3.5 rounded-xl transition-all cursor-pointer shadow-lg shadow-[#0FA4A9]/20"
             >
-              Save Today&apos;s Data
+              Save Today's Data
             </button>
           </div>
         </div>
