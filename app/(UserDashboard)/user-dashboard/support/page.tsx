@@ -224,7 +224,7 @@ const SupportPage = () => {
 
   if (step === "detail") {
     return (
-      <div className="flex flex-col gap-8 p-6 md:p-8 container mx-auto pb-20 ">
+      <div className="flex flex-col gap-8 p-4 md:p-6 container mx-auto pb-16 ">
         <button 
           onClick={() => setStep("list")}
           className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-lg text-[#5F6F73] text-xs font-semibold hover:bg-gray-50 transition-all w-fit cursor-pointer"
@@ -233,7 +233,7 @@ const SupportPage = () => {
           Back to Support
         </button>
 
-        <div className="bg-white rounded-[16px] p-8 md:p-12 border border-[#3A86FF]/25 shadow-[0_2px_30px_rgba(0,0,0,0.03)] flex flex-col items-center text-center gap-6 relative overflow-hidden">
+        <div className="bg-white rounded-[16px] p-4 md:p-6 border border-[#3A86FF]/25 shadow-[0_2px_30px_rgba(0,0,0,0.03)] flex flex-col items-center text-center gap-6 relative overflow-hidden">
           <div className="relative">
              <div className="w-32 h-32 rounded-[24px] overflow-hidden border-4 border-[#3A86FF20]">
                <Image src={selectedCoach.avatar} alt={selectedCoach.name} width={128} height={128} className="object-cover w-full h-full" />
@@ -254,7 +254,7 @@ const SupportPage = () => {
             <span className="text-[#3A86FF] font-bold text-sm tracking-widest uppercase">{selectedCoach.role}</span>
           </div>
 
-          <p className="text-[#5F6F73] text-base max-w-2xl leading-relaxed italic">
+          <p className="text-[#5F6F73] text-base  leading-relaxed italic">
             &quot;Helps busy professionals improve body composition, energy, and consistency through data-driven lifestyle adjustments.&quot;
           </p>
         </div>
@@ -281,7 +281,7 @@ const SupportPage = () => {
            </div>
 
            {/* What this coach will do for you */}
-           <div className="bg-white rounded-[16px] p-8 border border-[#3A86FF]/25 shadow-sm flex flex-col gap-6">
+           <div className="bg-white rounded-[16px] p-6 border border-[#3A86FF]/25 shadow-sm flex flex-col gap-6">
               <div className="flex items-center gap-3">
                  <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center">
                    <Check size={20} className="text-blue-400" />

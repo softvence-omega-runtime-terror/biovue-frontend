@@ -98,7 +98,7 @@ export default function HabitDetailPage() {
       </div>
 
       {/* Main Container */}
-      <div className="bg-white rounded-[24px] p-6 md:p-10 border border-gray-100 shadow-[0_2px_12px_rgba(0,0,0,0.02)]">
+      <div className="bg-white rounded-[16px] p-6 md:p-10 border border-[#3A86FF]/25 shadow-[0_2px_12px_rgba(0,0,0,0.02)]">
         
         {/* Header section */}
         <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-6 mb-8">
@@ -137,7 +137,7 @@ export default function HabitDetailPage() {
             </div>
 
             {/* Current Pattern */}
-            <div className="border border-gray-100 rounded-2xl p-8 flex flex-col gap-5">
+            <div className="border border-[#3A86FF]/25 rounded-[16px] p-8 flex flex-col gap-5 bg-white">
               <div className="flex items-center justify-between">
                 <h3 className="text-[#1F2D2E] font-bold text-sm sm:text-base tracking-wide uppercase">YOUR CURRENT PATTERN</h3>
                 <span className="text-[#1F2D2E] font-bold text-sm sm:text-base">{habit.daysLogged} Days Logged</span>
@@ -161,7 +161,7 @@ export default function HabitDetailPage() {
           <div className="flex flex-col gap-6">
             
             {/* Suggested Target */}
-            <div className="border border-gray-100 rounded-2xl p-8 flex flex-col items-center justify-center text-center gap-3">
+            <div className="border border-[#3A86FF]/25 rounded-[16px] p-8 flex flex-col items-center justify-center text-center gap-3 bg-white">
               <div className="text-[#94A3B8] font-bold text-[11px] uppercase tracking-wider">SUGGESTED TARGET</div>
               <div className="text-[32px] font-bold text-[#1F2D2E] leading-none my-1">{habit.target}</div>
               <div className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-[#1F2D2E]">
