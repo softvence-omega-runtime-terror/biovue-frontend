@@ -4,10 +4,12 @@ import React, { useState, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { ChevronLeft, ArrowRight } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 const VerifyOTPPage = () => {
   const [otp, setOtp] = useState(["", "", "", "", "", ""]);
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
+  const router = useRouter();
 
   const handleChange = (value: string, index: number) => {
     if (!/^[0-9]?$/.test(value)) return;
@@ -58,10 +60,16 @@ const VerifyOTPPage = () => {
     inputRefs.current[lastPastedIndex]?.focus();
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    console.log("Verifying OTP:", otp.join(""));
-  };
+  // const handleSubmit = (e: React.FormEvent) => {
+  //   e.preventDefault();
+  //   console.log("Verifying OTP:", otp.join(""));
+  // };
+
+const handleSubmit = (e: React.FormEvent) => {
+  e.preventDefault();
+  // Always redirect, no OTP checks
+  router.push("/personalize-journey");
+};
 
   return (
     <div>
@@ -128,6 +136,7 @@ const VerifyOTPPage = () => {
             </div>
 
             {/* Verify Button */}
+            
             <button
               onClick={handleSubmit}
               className="w-full bg-[#0FA4A9] text-white py-3 md:py-4 rounded-xl font-bold text-lg hover:bg-opacity-90 transition-all flex items-center justify-center gap-2 group shadow-lg shadow-[#0FA4A9]/10 cursor-pointer"

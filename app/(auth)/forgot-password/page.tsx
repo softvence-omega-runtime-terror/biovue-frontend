@@ -80,13 +80,15 @@ const ForgotPasswordPage = () => {
 
             {/* Verify Button */}
             <div className="pt-2">
-              <button
-                type="submit"
-                className="w-full bg-[#0FA4A9] text-white py-3 rounded-xl font-bold text-lg hover:bg-opacity-90 transition-all flex items-center justify-center gap-2 group shadow-lg shadow-[#0FA4A9]/10 cursor-pointer"
-              >
-                Verify
+              <Link href="/verify-otp">
+                <button
+                  type="submit"
+                  className="w-full bg-[#0FA4A9] text-white py-3 rounded-xl font-bold text-lg hover:bg-opacity-90 transition-all flex items-center justify-center gap-2 group shadow-lg shadow-[#0FA4A9]/10 cursor-pointer"
+                >
+                  Verify
                 <ArrowRight size={22} className="group-hover:translate-x-1 transition-transform" />
               </button>
+              </Link>
             </div>
           </form>
         </div>
