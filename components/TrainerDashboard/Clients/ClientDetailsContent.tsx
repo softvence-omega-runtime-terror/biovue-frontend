@@ -4,8 +4,6 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
   MessageSquare,
-  Calendar,
-  CheckCircle2,
   ChevronLeft,
 } from "lucide-react";
 import Link from "next/link";
@@ -36,7 +34,7 @@ export default function ClientDetailsContent({
       <div className="flex justify-between items-start">
         <div className="space-y-1">
           <div className="flex items-center gap-3">
-            <h1 className="text-2xl font-medium text-[#111827]">
+            <h1 className="text-xl font-medium text-[#111827]">
               {clientDetails.name}
             </h1>
             <Badge
@@ -57,7 +55,7 @@ export default function ClientDetailsContent({
             <ChevronLeft size={16} />
             Back
           </Link>
-          <button className="flex items-center gap-2 bg-[#0D9488] text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-[#0A7A6F] transition-colors">
+          <button className="flex items-center gap-2 bg-[#0D9488] text-white px-4 py-3 cursor-pointer rounded-lg text-sm font-semibold hover:bg-[#0A7A6F] transition-colors">
             <MessageSquare size={16} />
             Message Client
           </button>

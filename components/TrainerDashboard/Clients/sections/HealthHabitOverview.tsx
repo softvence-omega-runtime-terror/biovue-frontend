@@ -52,7 +52,7 @@ export default function HealthHabitOverview({
     <div className="space-y-4">
       <div className="flex justify-between items-end">
         <div>
-          <h2 className="text-2xl font-medium text-[#111827]">
+          <h2 className="text-xl font-medium text-[#111827]">
             Health & Habit Overview
           </h2>
           <p className="text-lg text-[#6B7280] font-medium">
