@@ -9,9 +9,9 @@ interface ProgramsTableProps {
 export default function ProgramsTable({ programs }: ProgramsTableProps) {
   const getIntensityStyles = (intensity: string) => {
     if (intensity === "Aggressive") {
-      return "text-[#DC2626] font-semibold";
+      return "text-[#C73434] bg-[#C73434]/5 px-3 py-1 rounded-full font-medium";
     } else if (intensity === "Light") {
-      return "bg-[#DBEAFE] text-[#1E40AF] px-3 py-1 rounded text-sm font-semibold";
+      return "bg-[#3A86FF26] text-[#3A86FF]  px-3 py-1 rounded-full text-sm font-medium";
     }
     return "";
   };
