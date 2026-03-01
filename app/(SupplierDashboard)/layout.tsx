@@ -96,7 +96,7 @@ export default function SupplierDashboardLayout({
 
         {/* Sidebar Footer */}
         <div className="p-8">
-          <div className="h-[1px] bg-gray-100 w-full mb-10" />
+          <div className="h-px bg-gray-100 w-full mb-10" />
           <button
             className={cn(
               "flex items-center gap-5 w-full px-6 py-4 text-[#041228] hover:bg-gray-50 rounded-xl transition-all group cursor-pointer",
