@@ -1,13 +1,6 @@
 "use client";
 
-import {
-  Users,
-  AlertCircle,
-  MessageSquare,
-  Calendar,
-  Activity,
-  User,
-} from "lucide-react";
+import { AlertCircle, Activity, User } from "lucide-react";
 import { Card } from "@/components/ui/card";
 
 export interface StatCard {
@@ -43,7 +36,7 @@ export default function StatCards() {
       {statCards.map((stat, index) => (
         <Card key={index} className="p-5 bg-white">
           <div className="flex flex-col items-start gap-4">
-            <div className="p-3 w-13 h-13 bg-[#9AAEB233] rounded-lg text-[#0D9488]">
+            <div className="p-3 w-13 h-13 bg-[#0FA4A926] rounded-lg text-[#0D9488]">
               {stat.icon}
             </div>
             <div className="space-y-2">

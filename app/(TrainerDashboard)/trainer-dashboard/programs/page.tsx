@@ -34,34 +34,6 @@ export default function ProgramsPage() {
   ];
 
   // Filter and sort programs based on search, status, and sort
-  //   const filteredPrograms = useMemo(() => {
-  //     let result = programs;
-
-  //     // Filter by search
-  //     if (searchTerm) {
-  //       const lower = searchTerm.toLowerCase();
-  //       result = result.filter((p) => p.name.toLowerCase().includes(lower));
-  //     }
-
-  //     // Filter by status
-  //     if (statusFilter !== "all") {
-  //       result = result.filter((p) => p.status === statusFilter);
-  //     }
-
-  //     // Sort
-  //     if (sortOption === "Most Recent Activity") {
-  //       result = [...result].sort((a, b) =>
-  //         b.updatedAgo.localeCompare(a.updatedAgo),
-  //       );
-  //     } else {
-  //       // Sort by primaryGoal
-  //       result = [...result].sort((a, b) =>
-  //         a.primaryGoal.localeCompare(b.primaryGoal),
-  //       );
-  //     }
-
-  //     return result;
-  //   }, [searchTerm, statusFilter, sortOption]);
   const filteredPrograms = useMemo(() => {
     let result = [...programs];
 
@@ -94,7 +66,7 @@ export default function ProgramsPage() {
   return (
     <div className="space-y-5 md:space-y-10">
       {/* header */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-start justify-between">
         <DashboardHeading
           heading="Programs"
           subheading="Create, manage, and assign coaching programs to your clients"
