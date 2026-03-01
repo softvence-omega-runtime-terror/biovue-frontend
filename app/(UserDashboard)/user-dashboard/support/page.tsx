@@ -204,7 +204,7 @@ const RecommendationCard = ({ coach, onView }: { coach: any; onView: () => void 
     </div>
     <button 
       onClick={onView}
-      className="w-full py-3.5 rounded-xl font-bold flex items-center justify-center gap-2 transition-all group bg-[#6C91C2] text-white hover:bg-[#5a7da9] text-sm"
+      className="w-full py-3.5 rounded-xl font-bold flex items-center justify-center gap-2 transition-all group bg-[#6C91C2] text-white hover:bg-[#5a7da9] text-sm cursor-pointer"
     >
       View Profile
       <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
@@ -234,14 +234,14 @@ const SupportTeamCard = ({ member, onMessage, onGoals }: { member: any; onMessag
     <div className="flex items-center gap-3">
       <button 
         onClick={onMessage}
-        className="flex-1 bg-[#0FA4A9] text-white py-3 rounded-xl text-xs font-bold flex items-center justify-center gap-2 hover:bg-[#0d8d91] transition-all"
+        className="flex-1 bg-[#0FA4A9] text-white py-3 rounded-xl text-xs font-bold flex items-center justify-center gap-2 hover:bg-[#0d8d91] transition-all cursor-pointer"
       >
         Message Coach
         <MessageSquare size={14} />
       </button>
       <button 
         onClick={onGoals}
-        className="flex-1 border border-gray-200 text-[#1F2D2E] py-3 rounded-xl text-xs font-bold flex items-center justify-center gap-2 hover:bg-gray-50 transition-all font-bold"
+        className="flex-1 border border-gray-200 text-[#1F2D2E] py-3 rounded-xl text-xs font-bold flex items-center justify-center gap-2 hover:bg-gray-50 transition-all font-bold cursor-pointer"
       >
         Shared Goal
         <TrendingUp size={14} />
@@ -265,7 +265,7 @@ const BrowseCard = ({ item, onView }: { item: any; onView: () => void }) => (
     </div>
     <button 
       onClick={onView}
-      className="w-full bg-[#6C91C2] text-white py-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-2 hover:bg-[#5a7da9] transition-all group"
+      className="w-full bg-[#6C91C2] text-white py-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-2 hover:bg-[#5a7da9] transition-all group cursor-pointer"
     >
       {item.isShop ? "View Shop" : "View Profile"}
       <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
@@ -353,7 +353,7 @@ const SupportPage = () => {
                 placeholder="Type your message..." 
                 className="flex-1 bg-transparent py-6 outline-none text-base text-[#1F2D2E] placeholder:text-[#9BAFB3]"
               />
-              <button className="text-[#1F2D2E] hover:text-[#0FA4A9] transition-all p-2 ml-4">
+              <button className="text-[#1F2D2E] hover:text-[#0FA4A9] transition-all p-2 cursor-pointer">
                 <Send size={28} className="-rotate-12" />
               </button>
             </div>
@@ -369,7 +369,7 @@ const SupportPage = () => {
         <div className="flex flex-col gap-6">
           <button 
             onClick={() => setView("dashboard")}
-            className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-100 rounded-lg text-[#5F6F73] text-xs font-semibold hover:bg-gray-50 transition-all w-fit"
+            className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-100 rounded-lg text-[#5F6F73] text-xs font-semibold hover:bg-gray-50 transition-all w-fit cursor-pointer"
           >
             <ArrowLeft size={14} />
             Back to Support
@@ -447,10 +447,10 @@ const SupportPage = () => {
               </div>
 
               <div className="flex items-center gap-4">
-                <button className="bg-[#0FA4A9] text-white px-6 py-3.5 rounded-xl text-xs font-bold hover:bg-[#0d8d91] transition-all shadow-lg shadow-[#0FA4A9]/10 font-bold">
+                <button className="bg-[#0FA4A9] text-white px-6 py-3.5 rounded-xl text-xs font-bold hover:bg-[#0d8d91] transition-all shadow-lg shadow-[#0FA4A9]/10 font-bold cursor-pointer">
                   View Habit Progress
                 </button>
-                <button className="border border-gray-200 text-[#1F2D2E] px-6 py-3.5 rounded-xl text-xs font-bold hover:bg-gray-50 transition-all bg-white font-bold">
+                <button className="border border-gray-200 text-[#1F2D2E] px-6 py-3.5 rounded-xl text-xs font-bold hover:bg-gray-50 transition-all bg-white font-bold cursor-pointer">
                   Log Today&apos;s Habit
                 </button>
               </div>
@@ -574,7 +574,7 @@ const SupportPage = () => {
                 />
                 <button 
                   onClick={() => setView("chat")}
-                  className="absolute right-6 top-1/2 -translate-y-1/2 text-[#1F2D2E] hover:text-[#0FA4A9] transition-all"
+                  className="absolute right-6 top-1/2 -translate-y-1/2 text-[#1F2D2E] hover:text-[#0FA4A9] transition-all cursor-pointer"
                 >
                   <Send size={24} className="rotate-[-30deg]" />
                 </button>
@@ -659,10 +659,10 @@ const SupportPage = () => {
          <div className="flex items-center justify-between">
            <h2 className="text-xl font-bold text-[#1F2D2E]">Your support team</h2>
            <div className="flex items-center gap-2">
-             <button className="p-2 rounded-full border border-gray-100 bg-white hover:bg-gray-50 transition-all text-[#1F2D2E]">
+             <button className="p-2 rounded-full border border-gray-100 bg-white hover:bg-gray-50 transition-all text-[#1F2D2E] cursor-pointer">
                <ChevronLeft size={18} />
              </button>
-             <button className="p-2 rounded-full border border-gray-100 bg-white hover:bg-gray-50 transition-all text-[#1F2D2E]">
+             <button className="p-2 rounded-full border border-gray-100 bg-white hover:bg-gray-50 transition-all text-[#1F2D2E] cursor-pointer">
                <ChevronRight size={18} />
              </button>
            </div>
@@ -685,10 +685,10 @@ const SupportPage = () => {
          <div className="flex items-center justify-between">
             <h2 className="text-xl font-bold text-[#1F2D2E]">Browse all professionals</h2>
             <div className="flex items-center gap-2">
-              <button className="p-2 rounded-full border border-gray-100 bg-white hover:bg-gray-50 transition-all text-[#1F2D2E]">
+              <button className="p-2 rounded-full border border-gray-100 bg-white hover:bg-gray-50 transition-all text-[#1F2D2E] cursor-pointer">
                 <ChevronLeft size={18} />
               </button>
-              <button className="p-2 rounded-full border border-gray-100 bg-white hover:bg-gray-50 transition-all text-[#1F2D2E]">
+              <button className="p-2 rounded-full border border-gray-100 bg-white hover:bg-gray-50 transition-all text-[#1F2D2E] cursor-pointer">
                 <ChevronRight size={18} />
               </button>
             </div>

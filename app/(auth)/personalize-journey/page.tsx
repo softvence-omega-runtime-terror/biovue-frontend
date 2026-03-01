@@ -111,7 +111,7 @@ const PersonalizeJourneyPage = () => {
             </button>
             </Link>
             {/* Skip Link */}
-            <button className="text-[#98A2B3] text-sm md:text-base font-semibold hover:text-[#041228] transition-colors">
+            <button className="text-[#98A2B3] text-sm md:text-base font-semibold hover:text-[#041228] transition-colors cursor-pointer">
               Skip All Permissions
             </button>
           </div>
