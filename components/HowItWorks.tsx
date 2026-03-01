@@ -44,7 +44,7 @@ const FeatureCard = ({ step, index }: { step: any; index: number }) => {
       whileInView={{ opacity: 1, x: 0 }}
       viewport={{ once: true }}
       transition={{ delay: index * 0.1, duration: 0.5 }}
-      className="feature-card-how relative bg-white p-5 md:p-6 rounded-xl
+      className="feature-card-how relative bg-white p-5 md:p-6 rounded-xl border border-gray-500
       shadow-[0_2px_15px_rgba(0,0,0,0.02)]
       hover:shadow-[0_12px_30px_rgba(0,0,0,0.06)]
       transition-all duration-300
