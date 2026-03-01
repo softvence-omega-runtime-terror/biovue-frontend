@@ -143,7 +143,7 @@ const HeroSection = () => {
       {/* CTA Buttons */}
       <div className="flex flex-col sm:flex-row items-center gap-3 sm:gap-4 mb-8 sm:mb-10 w-full sm:w-auto px-6">
         <Link
-          href="/start"
+          href="/register"
           className="w-full sm:w-auto bg-primary text-white px-6 md:px-8 py-2.5 md:py-3 rounded-lg font-semibold text-sm md:text-lg hover:bg-opacity-90 transition-all shadow-[0_4px_14px_0_rgba(15,164,169,0.39)] text-center"
         >
           Start your journey

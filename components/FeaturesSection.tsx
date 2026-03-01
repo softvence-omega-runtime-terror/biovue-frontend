@@ -87,10 +87,10 @@ const FeatureCard = ({ feature, index }: { feature: Feature; index: number }) =>
       viewport={{ once: true }}
       transition={{ delay: index * 0.1, duration: 0.5 }}
       whileHover={{ y: -5 }}
-      className="feature-card bg-white p-8 rounded-xl transition-all duration-300 shadow-[0_2px_12px_rgba(0,0,0,0.04)] hover:shadow-[0_12px_24px_rgba(0,0,0,0.08)]"
+      className="feature-card bg-white p-8 rounded-xl  transition-all duration-300 shadow-[0_2px_12px_rgba(0,0,0,0.04)] hover:shadow-[0_12px_24px_rgba(0,0,0,0.08)] space-y-10"
     >
       <div
-        className={`${feature.iconBg} w-12 h-12 rounded-full flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300`}
+        className={`${feature.iconBg} w-12 h-12 rounded-full flex items-center justify-center mb-10 group-hover:scale-110 transition-transform duration-300 `}
       >
         {feature.icon}
       </div>

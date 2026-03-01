@@ -116,6 +116,17 @@ import { ClientDetails, clients } from "../overview/data";
 
 const baseDetails = {
   connectedDate: "Connected since",
+
+  // properties added to satisfy the new ClientDetails interface
+  programContext: {
+    name: "Standard Training",
+    duration: "12 weeks",
+    primaryGoal: "Fat Loss",
+    templateIntensity: "Moderate",
+  },
+  visibilityControls: [],
+  aiObservedMetrics: [],
+
   primaryGoal: {
     title: "Fat Loss",
     subtitle: "Program duration 12 weeks",
