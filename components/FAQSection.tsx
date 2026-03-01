@@ -35,7 +35,7 @@ const FAQItemComponent = ({ faq, isOpen, toggle }: { faq: FAQItem; isOpen: boole
     <div className="border-b border-gray-100 last:border-0 overflow-hidden">
       <button
         onClick={toggle}
-        className="w-full py-6 flex items-center justify-between text-left group gap-4 bg-transparent"
+        className="w-full py-6 flex items-center justify-between text-left group gap-4 bg-transparent cursor-pointer"
       >
         <div className="flex items-center gap-4">
           <div className="w-10 h-10 flex items-center justify-center transition-colors rounded-[4px] bg-[#0FA4A9]/25">

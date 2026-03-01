@@ -70,7 +70,7 @@ const HeroSection = () => {
               />
               {/* Overlay with content */}
               <div className="absolute inset-0 flex items-center px-4 sm:px-8 md:px-10">
-                <div className="flex flex-col items-start gap-3 sm:gap-5">
+                <div className="flex items-center  gap-3 sm:gap-8">
                   <h2
                     style={{
                       color: "#FFF",
@@ -85,10 +85,10 @@ const HeroSection = () => {
                   <Link
                     href="/pricing"
                     style={{ gap: "10px" }}
-                    className="inline-flex items-center justify-center bg-white text-[#1A1A1A] text-xs sm:text-sm font-bold px-4 sm:px-5 py-2 sm:py-3 rounded-full hover:bg-gray-100 transition-all shadow-md whitespace-nowrap min-w-[120px] sm:min-w-[150px] md:min-w-[175px]"
+                    className="inline-flex items-center justify-center bg-white text-[#1A1A1A] text-xs sm:text-sm font-bold px-5 sm:px-6 py-2  rounded-full hover:bg-gray-100 transition-all shadow-md whitespace-nowrap "
                   >
                     Shop Now
-                    <ExternalLink size={12} className="sm:w-[14px] sm:h-[14px]" />
+                    <ExternalLink size={12} className="sm:w-[16px] sm:h-[16px]" />
                   </Link>
                 </div>
               </div>
@@ -96,7 +96,7 @@ const HeroSection = () => {
               {/* Close Button */}
               <button
                 onClick={() => setBannerVisible(false)}
-                className="absolute top-2 right-2 sm:top-3 sm:right-3 w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center text-white hover:bg-white/40 transition-all border border-white/30"
+                className="absolute top-2 right-2 sm:top-3 sm:right-3 w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center text-white hover:bg-white/40 transition-all border border-white/30 cursor-pointer"
                 aria-label="Close banner"
               >
                 <X size={14} className="sm:w-[16px] sm:h-[16px]" />
@@ -108,7 +108,7 @@ const HeroSection = () => {
                   <button
                     key={dot}
                     onClick={() => setActiveDot(dot)}
-                    className={`transition-all rounded-full ${
+                    className={`transition-all rounded-full cursor-pointer ${
                       activeDot === dot
                         ? "w-5 h-1.5 sm:w-6 sm:h-2 bg-white"
                         : "w-1.5 h-1.5 sm:w-2 sm:h-2 bg-white/50"

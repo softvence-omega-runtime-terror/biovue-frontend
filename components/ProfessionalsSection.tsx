@@ -37,7 +37,7 @@ const ProfessionalsSection = () => {
             }
           `}</style>
 
-          <div className="max-w-5xl mx-auto text-center">
+          <div className="mx-auto text-center">
             {/* Title - Forced to one line on larger screens */}
             <motion.h2
               initial={{ opacity: 0, y: 20 }}
@@ -84,14 +84,14 @@ const ProfessionalsSection = () => {
               transition={{ delay: 0.3 }}
               className="flex flex-col sm:flex-row items-center justify-center gap-6"
             >
-              <button className="bg-[#0FA4A9] hover:bg-[#0D8E92] text-white px-8 py-4 rounded-xl font-bold flex items-center gap-2 transition-all shadow-lg shadow-teal-500/10 group">
+              <button className="bg-[#0FA4A9] hover:bg-[#0D8E92] text-white px-8 py-4 rounded-xl font-bold flex items-center gap-2 transition-all shadow-lg shadow-teal-500/10 group cursor-pointer hover:scale-105 active:scale-95">
                 Get Start for Free
                 <svg className="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
                 </svg>
               </button>
               
-              <button className="bg-white hover:bg-gray-50 text-[#1A1C1E] px-8 py-4 rounded-xl font-bold border border-gray-100 shadow-[0_2px_15px_rgba(0,0,0,0.04)] transition-all">
+              <button className="bg-white hover:bg-gray-50 text-[#1A1C1E] px-8 py-4 rounded-xl font-bold border border-gray-100 shadow-[0_2px_15px_rgba(0,0,0,0.04)] transition-all cursor-pointer hover:scale-105 active:scale-95">
                 View Pricing
               </button>
             </motion.div>
