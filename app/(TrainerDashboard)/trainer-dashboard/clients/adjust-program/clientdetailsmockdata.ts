@@ -9,7 +9,98 @@ export const clientDetailsMock: ClientDetails = {
   activity: "No log in 3days",
 
   connectedDate: "Connected since Jan 12, 2024",
+  programContext: {
+    name: "Power Recomp",
+    duration: "12 weeks",
+    primaryGoal: "Fat Loss Hypertrophy",
+    templateIntensity: "High",
+  },
 
+  visibilityControls: [
+    {
+      id: "show_program_goals",
+      label: "Show Program Goals to Client",
+      enabled: true,
+    },
+    {
+      id: "show_personal_targets",
+      label: "Show Personal Targets",
+      enabled: true,
+    },
+    {
+      id: "show_progress_graphs",
+      label: "Show Progress Graphs",
+      enabled: false,
+    },
+    {
+      id: "show_ai_insights",
+      label: "Show AI Insights",
+      enabled: true,
+    },
+  ],
+
+  aiObservedMetrics: [
+    {
+      id: "weight",
+      label: "Weight",
+      value: "-8 lbs",
+      tag: {
+        text: "AI Observed",
+        color: "purple",
+      },
+      updatedTime: "Updated 2h ago",
+    },
+    {
+      id: "sleep_average",
+      label: "Sleep Average",
+      value: "6.4 Hrs",
+      tag: {
+        text: "AI Observed",
+        color: "purple",
+      },
+      updatedTime: "Updated 3h ago",
+    },
+    {
+      id: "activity_level",
+      label: "Activity Level",
+      value: "Moderate",
+      tag: {
+        text: "AI Observed",
+        color: "purple",
+      },
+      updatedTime: "Updated 1 day ago",
+    },
+    {
+      id: "nutrition_adherence",
+      label: "Nutrition Adherence",
+      value: "84%",
+      tag: {
+        text: "AI Observed",
+        color: "purple",
+      },
+      updatedTime: "Updated 1 day ago",
+    },
+    {
+      id: "stress_level",
+      label: "Stress Level",
+      value: "Low",
+      tag: {
+        text: "AI Observed",
+        color: "purple",
+      },
+      updatedTime: "Updated 1 day ago",
+    },
+    {
+      id: "hydration",
+      label: "Hydration",
+      value: "1.8L/day",
+      tag: {
+        text: "AI Observed",
+        color: "purple",
+      },
+      updatedTime: "Updated 1 day ago",
+    },
+  ],
   primaryGoal: {
     title: "Fat Loss",
     subtitle: "Lose 10 lbs in 12 weeks",

@@ -15,8 +15,34 @@ export interface Client {
   activity: string;
 }
 
+export interface AIObservedMetric {
+  id: string;
+
+  label: string; // WEIGHT, SLEEP AVERAGE, etc
+  value: string; // -8 lbs, 6.4 Hrs, Moderate
+
+  tag: {
+    text: string; // AI OBSERVED
+    color: "purple"; // future-proof
+  };
+
+  updatedTime: string; // Updated 2h ago
+}
+export interface VisibilityControl {
+  id: string;
+  label: string;
+  enabled: boolean;
+}
 export interface ClientDetails extends Client {
   connectedDate: string;
+  programContext: {
+    name: string;
+    duration: string;
+    primaryGoal: string;
+    templateIntensity: string;
+  };
+  visibilityControls: VisibilityControl[];
+  aiObservedMetrics: AIObservedMetric[];
   primaryGoal: {
     title: string;
     subtitle: string;
