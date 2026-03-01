@@ -1,5 +1,4 @@
 "use client";
-import React from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
@@ -47,7 +46,7 @@ const TransformSection = () => {
             className="inline-flex items-center gap-2 bg-[#0FA4A9] text-white px-8 py-4 rounded-xl font-bold text-lg hover:bg-[#0d8d91] transition-all shadow-lg shadow-[#0FA4A9]/20 cursor-pointer hover:scale-105 active:scale-95 group"
           >
             Started Your Free Journey
-            <ArrowRight size={24} className="group-hover:translate-x-1 transition-transform bg-white rounded-full p-1 text-black" />
+            <ArrowRight size={24} className="group-hover:translate-x-1 transition-transform " />
           </Link>
         </motion.div>
       </div>
