@@ -21,25 +21,25 @@ export default function ProgramsTable({ programs }: ProgramsTableProps) {
       <table className="w-full">
         <thead>
           <tr className="border-b border-[#E5E7EB] bg-white">
-            <th className="px-6 py-4 text-left text-xs font-semibold text-[#111827] uppercase">
+            <th className="px-6 py-4 text-left text-base font-semibold text-[#111827] uppercase">
               Program Name
             </th>
-            <th className="px-6 py-4 text-left text-xs font-semibold text-[#111827] uppercase">
+            <th className="px-6 py-4 text-left text-base font-semibold text-[#111827] uppercase">
               Primary Goal
             </th>
-            <th className="px-6 py-4 text-left text-xs font-semibold text-[#111827] uppercase">
+            <th className="px-6 py-4 text-left text-base font-semibold text-[#111827] uppercase">
               Intensity
             </th>
-            <th className="px-6 py-4 text-left text-xs font-semibold text-[#111827] uppercase">
+            <th className="px-6 py-4 text-left text-base font-semibold text-[#111827] uppercase">
               Clients
             </th>
-            <th className="px-6 py-4 text-left text-xs font-semibold text-[#111827] uppercase">
+            <th className="px-6 py-4 text-left text-base font-semibold text-[#111827] uppercase">
               Status
             </th>
-            <th className="px-6 py-4 text-left text-xs font-semibold text-[#111827] uppercase">
+            <th className="px-6 py-4 text-left text-base font-semibold text-[#111827] uppercase">
               Updated
             </th>
-            <th className="px-6 py-4 text-left text-xs font-semibold text-[#0F766E] uppercase">
+            <th className="px-6 py-4 text-left text-base font-semibold text-[#111827] uppercase">
               Actions
             </th>
           </tr>
@@ -75,7 +75,7 @@ export default function ProgramsTable({ programs }: ProgramsTableProps) {
               </td>
               <td className="px-6 py-4">
                 <div className="flex items-center gap-3">
-                  <button className="text-sm font-semibold text-[#0F766E] hover:text-[#0D5A52]">
+                  <button className="text-sm font-semibold text-[#111827]">
                     VIEW
                   </button>
                   <button className="text-[#9CA3AF] hover:text-[#6B7280]">
