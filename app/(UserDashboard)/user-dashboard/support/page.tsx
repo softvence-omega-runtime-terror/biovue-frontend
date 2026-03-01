@@ -12,7 +12,18 @@ import {
   Send,
   Heart,
   X,
-  MessageSquare
+  MessageSquare,
+  ChevronLeft,
+  ChevronRight,
+  Paperclip,
+  Moon,
+  Target,
+  Clock,
+  CircleCheck,
+  LayoutGrid,
+  TrendingUp,
+  Info,
+  Calendar
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -23,8 +34,8 @@ const RECOMMENDED_COACHES = [
     name: "Sarah Jenkins, RD",
     role: "NUTRITION COACH",
     avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=300&h=300&auto=format&fit=crop",
-    priority: "HIGH PRIORITY",
-    priorityColor: "text-red-500 bg-red-50",
+    priority: "Already connected",
+    priorityColor: "text-[#6B7280] bg-[#F3F4FB]",
     description: "Suggested due to irregular micronutrient variety and energy spikes in your nutritional data.",
   },
   {
@@ -33,7 +44,7 @@ const RECOMMENDED_COACHES = [
     role: "WELLNESS COACH",
     avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=300&h=300&auto=format&fit=crop",
     priority: "Medium PRIORITY",
-    priorityColor: "text-orange-500 bg-orange-50",
+    priorityColor: "text-[#F59E0B] bg-[#FFFBEB]",
     description: "Recommended based on decreased deep sleep markers.",
   },
   {
@@ -42,8 +53,32 @@ const RECOMMENDED_COACHES = [
     role: "PERSONAL TRAINER",
     avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=300&h=300&auto=format&fit=crop",
     priority: "HIGH PRIORITY",
-    priorityColor: "text-red-500 bg-red-50",
+    priorityColor: "text-[#EF4444] bg-[#FEF2F2]",
     description: "Suggested due to low activity levels and a rising weight trend.",
+  },
+];
+
+const SUPPORT_TEAM = [
+  {
+    id: "sarah-jenkins-team",
+    name: "Sarah Jenkins, RD",
+    role: "NUTRITION COACH",
+    avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=300&h=300&auto=format&fit=crop",
+    status: "Active",
+  },
+  {
+    id: "marcus-chen-team",
+    name: "Sarah Jenkins, RD", // Note: The design keeps using Sarah Jenkins, but I'll use Marcus for variety or maintain Sarah if requested. The image shows the same person often but with different roles in the user's prompt. I'll follow the image's "Sarah Jenkins, RD" trend.
+    role: "Personal Trinar", // Typo in image "Personal Trinar" -> "Personal Trainer" - I'll stick to correct spelling or as design says? I'll use Trainer.
+    avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=300&h=300&auto=format&fit=crop",
+    status: "Active",
+  },
+  {
+    id: "david-aris-team",
+    name: "Sarah Jenkins, RD",
+    role: "NUTRITION COACH",
+    avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=300&h=300&auto=format&fit=crop",
+    status: "Active",
   },
 ];
 
@@ -72,10 +107,84 @@ const ALL_PROFESSIONALS = [
   },
 ];
 
+const MESSAGES = [
+  {
+    id: 1,
+    sender: "coach",
+    content: "I reviewed your sleep and activity trends this week. Your consistency is improving, but let's aim for slightly earlier bedtimes.",
+    time: "10.15AM",
+    isStatus: false
+  },
+  {
+    id: 2,
+    sender: "system",
+    content: "COACH REVIEWED YOUR SLEEP CONSISTENCY",
+    isStatus: true
+  },
+  {
+    id: 3,
+    sender: "user",
+    content: "That makes sense. Ill try shifting bedtime by 20 minutes.",
+    time: "11.15AM",
+    read: true
+  },
+  {
+    id: 4,
+    sender: "coach",
+    content: "Great, Focus on consistency first — duration will improve naturally.",
+    time: "11.15AM"
+  }
+];
+
+const SHARED_GOALS = [
+  {
+    id: 1,
+    title: "Improve Sleep Consistency",
+    category: "SLEEP",
+    icon: <Moon className="text-[#3B82F6]" />,
+    target: "7.5—8 hours nightly, 5+ days per week",
+    timeframe: "Next 30 days",
+    progress: 71,
+    status: "ON TRACK",
+    statusColor: "text-[#10B981] bg-[#ECFDF5]",
+    secondaryStatus: "COACH-APPROVED",
+    coachNote: "Focus on consistent sleep timing before increasing total duration.",
+    logCount: "5 / 7 days logged this week"
+  },
+  {
+    id: 2,
+    title: "Increase Daily Vegetable Intake",
+    category: "NUTRITION",
+    icon: <Sparkles className="text-[#3B82F6]" />,
+    target: "3+ servings of leafy greens or cruciferous vegetables",
+    timeframe: "Ongoing",
+    progress: 71,
+    status: "IN PROGRESS",
+    statusColor: "text-[#3B82F6] bg-[#EFF6FF]",
+    secondaryStatus: "COACH-APPROVED",
+    coachNote: "Try adding one serving to your breakfast to hit your target earlier.",
+    logCount: "5 / 7 days logged this week"
+  },
+  {
+    id: 3,
+    title: "Improve Sleep Consistency",
+    category: "SLEEP",
+    icon: <Moon className="text-[#3B82F6]" />,
+    target: "7.5—8 hours nightly, 5+ days per week",
+    timeframe: "Next 30 days",
+    progress: 71,
+    status: "ON TRACK",
+    statusColor: "text-[#10B981] bg-[#ECFDF5]",
+    secondaryStatus: "COACH-APPROVED",
+    coachNote: "Focus on consistent sleep timing before increasing total duration.",
+    logCount: "5 / 7 days logged this week"
+  }
+];
+
 // --- Sub-components ---
 
-const CoachCard = ({ coach, onView }: { coach: any; onView: () => void }) => (
-  <div className="bg-white rounded-[16px] p-6 border border-[#3A86FF]/25 shadow-[0_2px_12px_rgba(0,0,0,0.02)] flex flex-col gap-4">
+const RecommendationCard = ({ coach, onView }: { coach: any; onView: () => void }) => (
+  <div className="bg-white rounded-[16px] p-6 border border-[#3A86FF]/25 shadow-[0_4px_20px_rgba(0,0,0,0.03)] flex flex-col gap-4">
     <div className="flex items-start justify-between">
        <div className="w-16 h-16 rounded-xl overflow-hidden">
          <Image src={coach.avatar} alt={coach.name} width={64} height={64} className="object-cover w-full h-full" />
@@ -85,221 +194,363 @@ const CoachCard = ({ coach, onView }: { coach: any; onView: () => void }) => (
        </span>
     </div>
     <div className="flex flex-col gap-1">
-      <span className="text-[#3A86FF] text-[10px] font-bold uppercase tracking-widest">{coach.role}</span>
+      <span className="text-[#3A86FF] text-[10px] font-bold uppercase tracking-widest leading-none">{coach.role}</span>
       <h3 className="text-lg font-bold text-[#1F2D2E]">{coach.name}</h3>
     </div>
-    <div className="bg-[#F8FAFB] rounded-xl p-4 min-h-[80px]">
-      <p className="text-[#5F6F73] text-xs italic leading-relaxed">
+    <div className="bg-[#F3F4F6] rounded-xl p-4 min-h-[84px] flex items-center">
+      <p className="text-[#5F6F73] text-[11px] italic leading-relaxed">
         &quot;{coach.description}&quot;
       </p>
     </div>
     <button 
       onClick={onView}
-      className="w-full bg-[#6C91C2] text-white py-3 rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-[#5a7da9] transition-all group cursor-pointer"
+      className="w-full py-3.5 rounded-xl font-bold flex items-center justify-center gap-2 transition-all group bg-[#6C91C2] text-white hover:bg-[#5a7da9] text-sm"
     >
       View Profile
-      <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
-    </button>
-  </div>
-);
-
-const BrowseCard = ({ item, onAction }: { item: any; onAction: () => void }) => (
-  <div className="bg-white rounded-[16px] p-6 border border-[#3A86FF]/25 shadow-[0_2px_12px_rgba(0,0,0,0.02)] flex flex-col items-center text-center gap-4">
-    <div className="w-16 h-16 rounded-xl overflow-hidden">
-      <Image src={item.avatar} alt={item.name} width={64} height={64} className="object-cover w-full h-full" />
-    </div>
-    <div className="flex flex-col gap-1 items-center">
-      <span className="text-[#3A86FF] text-[10px] font-bold uppercase tracking-widest">{item.role}</span>
-      <h3 className="text-lg font-bold text-[#1F2D2E]">{item.name}</h3>
-      <div className="flex items-center gap-1 mt-1">
-        <Star size={14} className="text-orange-400 fill-orange-400" />
-        <span className="text-sm font-bold text-[#1F2D2E]">{item.rating}</span>
-      </div>
-    </div>
-    <button 
-      onClick={onAction}
-      className="w-full bg-[#6C91C2] text-white py-2.5 rounded-xl text-sm font-bold flex items-center justify-center gap-2 hover:bg-[#5a7da9] transition-all group cursor-pointer"
-    >
-      {item.isShop ? "View Shop" : "View Profile"}
       <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
     </button>
   </div>
 );
 
+const SupportTeamCard = ({ member, onMessage, onGoals }: { member: any; onMessage: () => void; onGoals: () => void }) => (
+  <div className="bg-white rounded-[16px] p-6 border border-[#3A86FF]/25 shadow-[0_4px_20px_rgba(0,0,0,0.03)] flex flex-col gap-5 min-w-[320px]">
+    <div className="flex items-start justify-between">
+      <div className="flex items-center gap-4">
+        <div className="w-14 h-14 rounded-xl overflow-hidden">
+          <Image src={member.avatar} alt={member.name} width={56} height={56} className="object-cover" />
+        </div>
+        <div className="flex flex-col">
+          <span className="text-[#3A86FF] text-[9px] font-bold uppercase tracking-widest">{member.role}</span>
+          <h3 className="text-base font-bold text-[#1F2D2E]">{member.name}</h3>
+          <p className="text-[#5F6F73] text-[10px] font-medium">Currently Support your goal</p>
+        </div>
+      </div>
+      <div className="flex items-center gap-1.5 px-3 py-1 rounded-full border border-[#10B981]/10 bg-[#ECFDF5]">
+        <div className="w-1.5 h-1.5 rounded-full bg-[#10B981]" />
+        <span className="text-[10px] font-bold text-[#10B981]">Active</span>
+      </div>
+    </div>
+    
+    <div className="flex items-center gap-3">
+      <button 
+        onClick={onMessage}
+        className="flex-1 bg-[#0FA4A9] text-white py-3 rounded-xl text-xs font-bold flex items-center justify-center gap-2 hover:bg-[#0d8d91] transition-all"
+      >
+        Message Coach
+        <MessageSquare size={14} />
+      </button>
+      <button 
+        onClick={onGoals}
+        className="flex-1 border border-gray-200 text-[#1F2D2E] py-3 rounded-xl text-xs font-bold flex items-center justify-center gap-2 hover:bg-gray-50 transition-all font-bold"
+      >
+        Shared Goal
+        <TrendingUp size={14} />
+      </button>
+    </div>
+  </div>
+);
 
-// --- Main Page ---
+const BrowseCard = ({ item, onView }: { item: any; onView: () => void }) => (
+  <div className="bg-white rounded-[16px] p-6 border border-[#3A86FF]/25 shadow-[0_4px_20px_rgba(0,0,0,0.03)] flex flex-col items-center text-center gap-4">
+    <div className="w-16 h-16 rounded-xl overflow-hidden">
+      <Image src={item.avatar} alt={item.name} width={64} height={64} className="object-cover w-full h-full" />
+    </div>
+    <div className="flex flex-col gap-1 items-center">
+      <span className="text-[#3A86FF] text-[10px] font-bold uppercase tracking-widest">{item.role}</span>
+      <h3 className="text-base font-bold text-[#1F2D2E]">{item.name}</h3>
+      <div className="flex items-center gap-1 mt-0.5">
+        <Star size={14} className="text-orange-400 fill-orange-400" />
+        <span className="text-sm font-bold text-[#1F2D2E]">{item.rating}</span>
+      </div>
+    </div>
+    <button 
+      onClick={onView}
+      className="w-full bg-[#6C91C2] text-white py-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-2 hover:bg-[#5a7da9] transition-all group"
+    >
+      {item.isShop ? "View Shop" : "View Profile"}
+      <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
+    </button>
+  </div>
+);
+
+// --- Main Pages ---
 
 const SupportPage = () => {
-  const [step, setStep] = useState<"list" | "detail" | "chat" | "success">("list");
-  const [selectedCoach, setSelectedCoach] = useState(RECOMMENDED_COACHES[0]);
+  const [view, setView] = useState<"dashboard" | "chat" | "goals" | "detail" | "success">("dashboard");
+  const [selectedCoach, setSelectedCoach] = useState<any>(RECOMMENDED_COACHES[0]);
 
   const handleSelectCoach = (coach: any) => {
     setSelectedCoach(coach);
-    setStep("detail");
+    setView("detail");
   };
 
-  if (step === "list") {
+  if (view === "chat") {
     return (
-      <div className="flex flex-col gap-10 p-6 md:p-8 container mx-auto pb-20">
-        <div className="flex flex-col gap-6">
-          <Link href="/user-dashboard">
-            <button className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-lg text-[#5F6F73] text-xs font-semibold hover:bg-gray-50 transition-all cursor-pointer">
-              <ArrowLeft size={14} />
-              Back to Dashboard
-            </button>
-          </Link>
-
+      <div className="flex flex-col h-[calc(100vh-100px)] container mx-auto p-4 md:p-8">
+        <div className="flex items-center justify-between mb-8">
           <div className="flex flex-col gap-1">
-            <h1 className="text-2xl font-bold text-[#1F2D2E]">Support</h1>
-            <p className="text-[#5F6F73] text-sm font-medium">Get personalized help based on your health data</p>
+            <h1 className="text-[32px] font-bold text-[#1F2D2E]">Messages</h1>
+            <p className="text-[#5F6F73] text-[15px] font-medium font-bold">Communicate with your Trainer</p>
           </div>
+          <button 
+            onClick={() => setView("success")}
+            className="bg-[#0FA4A9] text-white px-8 py-3.5 rounded-xl font-bold text-[15px] hover:bg-[#0d8d91] transition-all cursor-pointer shadow-lg shadow-[#0FA4A9]/20"
+          >
+            Connect With This Coach
+          </button>
         </div>
 
-        {/* Recommended for you */}
-        <div className="flex flex-col gap-6">
-          <div className="flex items-center gap-2">
-             <div className="flex items-center gap-2 text-[#3A86FF] font-bold text-sm tracking-wide">
-               <Sparkles size={16} className="fill-[#3A86FF]" />
-               RECOMMENDED FOR YOU
+        <div className="flex-1 bg-white rounded-[16px] border border-[#3A86FF]/25 shadow-sm flex flex-col overflow-hidden relative">
+          {/* Coach Meta Bar */}
+          <div className="px-6 py-4 border-b border-gray-100 flex items-center bg-white/80 backdrop-blur-sm sticky top-0 z-10">
+             <div className="flex items-center gap-4">
+               <div className="w-12 h-12 rounded-full overflow-hidden shrink-0 border-2 border-white shadow-sm">
+                 <Image src={selectedCoach.avatar} alt={selectedCoach.name} width={48} height={48} className="object-cover" />
+               </div>
+               <div className="flex flex-col">
+                 <h3 className="text-[15px] font-bold text-[#1F2D2E] leading-tight">{selectedCoach.name}</h3>
+                 <span className="text-[11px] font-bold text-[#8B5CF6] uppercase tracking-[0.05em]">{selectedCoach.role}</span>
+               </div>
              </div>
           </div>
-          <p className="text-[#5F6F73] text-sm -mt-4">Based on your health data and projections, these professionals can help you most right now.</p>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-             {RECOMMENDED_COACHES.map(coach => (
-               <CoachCard key={coach.id} coach={coach} onView={() => handleSelectCoach(coach)} />
-             ))}
+
+          {/* Messages */}
+          <div className="flex-1 overflow-y-auto p-6 md:p-10 flex flex-col gap-8 bg-[#F8FAFB]/40">
+            {/* Date separator */}
+            <div className="flex items-center gap-4 py-2">
+              <span className="text-[11px] font-bold text-[#9BAFB3] uppercase tracking-widest whitespace-nowrap">Today - 8:30 AM</span>
+            </div>
+
+            <div className="flex flex-col gap-8">
+              {MESSAGES.filter(m => !m.isStatus).map((msg) => {
+                if (msg.sender === "coach") {
+                  return (
+                    <div key={msg.id} className="flex flex-col gap-2 max-w-[85%]">
+                      <div className="bg-white text-[#1F2D2E] p-6 rounded-[24px] rounded-tl-none border border-gray-100 shadow-sm text-[16px] leading-[1.6]">
+                        {msg.content}
+                      </div>
+                    </div>
+                  );
+                }
+
+                return (
+                  <div key={msg.id} className="flex flex-col items-end gap-2 ml-auto max-w-[85%]">
+                    <div className="bg-[#BCF1DD] text-[#1F2D2E] p-6 rounded-[24px] rounded-tr-none text-[16px] leading-[1.6] shadow-sm font-medium">
+                      {msg.content}
+                    </div>
+                    <span className="text-[10px] font-bold text-[#9BAFB3] mr-2">Today - 8:30 AM</span>
+                  </div>
+                );
+              })}
+            </div>
           </div>
-        </div>
 
-        {/* Your support team */}
-        <div className="flex flex-col gap-6">
-           <h2 className="text-xl font-bold text-[#1F2D2E]">Your support team</h2>
-           <div className="bg-white rounded-[16px] p-4 border border-[#3A86FF]/25 shadow-[0_2px_12px_rgba(0,0,0,0.02)] max-w-sm flex items-center gap-4">
-              <div className="w-16 h-16 rounded-xl overflow-hidden bg-gray-100">
-                <Image src="https://images.unsplash.com/photo-1594824476967-48c8b964273f?q=80&w=150&h=150&auto=format&fit=crop" alt="Elena Rossi" width={64} height={64} className="object-cover w-full h-full" />
-              </div>
-              <div className="flex flex-col gap-0.5">
-                <h3 className="text-sm font-bold text-[#1F2D2E]">Dr. Elena Rossi</h3>
-                <p className="text-[#5F6F73] text-xs">Primary Physician</p>
-                <div className="flex items-center gap-1.5 mt-1">
-                  <div className="w-2 h-2 rounded-full bg-[#10B981]" />
-                  <span className="text-[10px] font-bold text-[#1F2D2E]">Active</span>
-                </div>
-              </div>
-           </div>
-        </div>
-
-        {/* Browse all professionals */}
-        <div className="flex flex-col gap-6">
-           <div className="flex items-center justify-between">
-              <h2 className="text-xl font-bold text-[#1F2D2E]">Browse all professionals</h2>
-              <button className="text-[#3A86FF] text-sm font-bold hover:underline">View More</button>
-           </div>
-           <p className="text-[#5F6F73] text-sm -mt-4">Discover expert help across the BioVue network.</p>
-           
-           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {ALL_PROFESSIONALS.map(item => (
-                <BrowseCard key={item.id} item={item} onAction={() => {}} />
-              ))}
-           </div>
-        </div>
-
-        {/* Footer Banner */}
-        <div className="bg-[#E9F3F5] rounded-[16px] p-6 flex flex-col md:flex-row items-center gap-6 border border-[#0FA4A9]/10">
-
-           <div className="w-12 h-12 rounded-xl bg-[#0FA4A9] flex items-center justify-center shrink-0">
-             <Heart size={24} className="text-white fill-white" />
-           </div>
-           <div className="flex flex-col gap-2">
-             <h3 className="text-lg font-bold text-[#1F2D2E]">Why professional support matters</h3>
-             <p className="text-[#5F6F73] text-sm leading-relaxed">
-               Working with a coach or clinic can dramatically improve your progress and long-term outcomes. BioVue data shows users with dedicated support hit their 5-year goals faster.
-             </p>
-           </div>
+          {/* Input Area */}
+          <div className="p-6 md:p-8 bg-white border-t border-gray-100">
+            <div className="relative flex items-center bg-white rounded-2xl px-8 border border-gray-200 group focus-within:border-[#0FA4A9] focus-within:ring-4 focus-within:ring-[#0FA4A9]/5 transition-all shadow-sm">
+              <input 
+                type="text" 
+                placeholder="Type your message..." 
+                className="flex-1 bg-transparent py-6 outline-none text-base text-[#1F2D2E] placeholder:text-[#9BAFB3]"
+              />
+              <button className="text-[#1F2D2E] hover:text-[#0FA4A9] transition-all p-2 ml-4">
+                <Send size={28} className="-rotate-12" />
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     );
   }
 
-  if (step === "detail") {
+  if (view === "goals") {
     return (
-      <div className="flex flex-col gap-8 p-4 md:p-6 container mx-auto pb-16 ">
+      <div className="flex flex-col gap-8 container mx-auto p-4 md:p-8 pb-20">
+        <div className="flex flex-col gap-6">
+          <button 
+            onClick={() => setView("dashboard")}
+            className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-100 rounded-lg text-[#5F6F73] text-xs font-semibold hover:bg-gray-50 transition-all w-fit"
+          >
+            <ArrowLeft size={14} />
+            Back to Support
+          </button>
+
+          <div className="flex flex-col gap-1">
+            <h1 className="text-2xl font-bold text-[#1F2D2E]">Shared Goals</h1>
+            <p className="text-[#5F6F73] text-sm font-medium">Goals aligned between you and your coach to guide your progress</p>
+          </div>
+        </div>
+
+        <div className="flex flex-col gap-6">
+          {SHARED_GOALS.map((goal, idx) => (
+            <div key={idx} className="bg-white rounded-[16px] p-8 border border-[#3A86FF]/25 shadow-[0_4px_30px_rgba(0,0,0,0.02)] flex flex-col gap-8 relative overflow-hidden">
+              <div className="flex flex-col md:flex-row md:items-start justify-between gap-6">
+                <div className="flex gap-5">
+                  <div className="w-14 h-14 rounded-2xl bg-[#EFF6FF] flex items-center justify-center shrink-0">
+                    {goal.icon}
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    <span className="text-[#5F6F73] text-[9px] font-bold uppercase tracking-widest">{goal.category}</span>
+                    <h3 className="text-xl font-bold text-[#1F2D2E]">{goal.title}</h3>
+                    
+                    <div className="flex flex-wrap items-center gap-6 mt-4">
+                      <div className="flex items-center gap-3">
+                        <Target size={16} className="text-[#9BAFB3]" />
+                        <div className="flex flex-col">
+                          <span className="text-[10px] font-bold text-[#9BAFB3] uppercase tracking-wider">Target</span>
+                          <span className="text-sm font-bold text-[#1F2D2E]">{goal.target}</span>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <Clock size={16} className="text-[#9BAFB3]" />
+                        <div className="flex flex-col">
+                          <span className="text-[10px] font-bold text-[#9BAFB3] uppercase tracking-wider">Timeframe</span>
+                          <span className="text-sm font-bold text-[#1F2D2E]">{goal.timeframe}</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-2 mt-6 px-3 py-1.5 rounded-lg border border-[#10B981]/10 bg-[#ECFDF5] w-fit">
+                      <CircleCheck size={14} className="text-[#10B981]" />
+                      <span className="text-[10px] font-bold text-[#10B981] uppercase tracking-wider">{goal.secondaryStatus}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex flex-col gap-4 min-w-[280px]">
+                  <div className={cn("px-4 py-1.5 rounded-full text-[10px] font-bold tracking-wider self-end", goal.statusColor)}>
+                    ● {goal.status}
+                  </div>
+                  <div className="bg-[#F8FAFB] rounded-2xl p-6 border border-gray-50">
+                    <div className="flex flex-col gap-1.5">
+                      <span className="text-[9px] font-bold text-[#9BAFB3] uppercase tracking-widest">COACH NOTE</span>
+                      <p className="text-[11px] text-[#5F6F73] italic leading-relaxed font-semibold">
+                        &quot;{goal.coachNote}&quot;
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex flex-col gap-2">
+                <div className="flex items-center justify-between text-[11px] font-bold text-[#1F2D2E]">
+                   <span className="text-[#9BAFB3] uppercase tracking-widest">Current Progress</span>
+                   <span>{goal.progress}%</span>
+                </div>
+                <div className="h-2 w-full bg-[#E5E7EB] rounded-full overflow-hidden">
+                  <div 
+                    className="h-full bg-[#0FA4A9] rounded-full" 
+                    style={{ width: `${goal.progress}%` }}
+                  />
+                </div>
+                <span className="text-xs font-bold text-[#1F2D2E] mt-1">{goal.logCount}</span>
+              </div>
+
+              <div className="flex items-center gap-4">
+                <button className="bg-[#0FA4A9] text-white px-6 py-3.5 rounded-xl text-xs font-bold hover:bg-[#0d8d91] transition-all shadow-lg shadow-[#0FA4A9]/10 font-bold">
+                  View Habit Progress
+                </button>
+                <button className="border border-gray-200 text-[#1F2D2E] px-6 py-3.5 rounded-xl text-xs font-bold hover:bg-gray-50 transition-all bg-white font-bold">
+                  Log Today&apos;s Habit
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <div className="bg-[#F4FAFB] rounded-[16px] p-6 flex gap-5 border border-[#3A86FF]/25 bg-white">
+          <div className="w-12 h-12 rounded-xl bg-[#EFF6FF] flex items-center justify-center shrink-0">
+             <Info size={24} className="text-[#3A86FF]" />
+          </div>
+          <div className="flex flex-col gap-1">
+             <h3 className="text-sm font-bold text-[#1F2D2E]">Coach Guidance Note</h3>
+             <p className="text-[12px] text-[#5F6F73] leading-relaxed">
+               Your coach reviews these goals regularly. Adjustments may occur as your habits evolve or as your biological markers respond to these targets. This is a collaborative roadmap designed for sustainable wellness.
+             </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (view === "detail") {
+    return (
+      <div className="flex flex-col gap-8 p-4 md:p-8 container mx-auto pb-20">
         <button 
-          onClick={() => setStep("list")}
-          className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-lg text-[#5F6F73] text-xs font-semibold hover:bg-gray-50 transition-all w-fit cursor-pointer"
+          onClick={() => setView("dashboard")}
+          className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-100 rounded-lg text-[#5F6F73] text-xs font-semibold hover:bg-gray-50 transition-all w-fit cursor-pointer shadow-sm"
         >
           <ArrowLeft size={14} />
           Back to Support
         </button>
 
-        <div className="bg-white rounded-[16px] p-4 md:p-6 border border-[#3A86FF]/25 shadow-[0_2px_30px_rgba(0,0,0,0.03)] flex flex-col items-center text-center gap-6 relative overflow-hidden">
+        <div className="bg-white rounded-[16px] p-8 md:p-12 border border-[#3A86FF]/25 shadow-[0_4px_30px_rgba(0,0,0,0.02)] flex flex-col items-center text-center gap-8 relative overflow-hidden">
           <div className="relative">
-             <div className="w-32 h-32 rounded-[24px] overflow-hidden border-4 border-[#3A86FF20]">
-               <Image src={selectedCoach.avatar} alt={selectedCoach.name} width={128} height={128} className="object-cover w-full h-full" />
+             <div className="w-40 h-40 rounded-[32px] overflow-hidden border-8 border-[#3A86FF]/5">
+               <Image src={selectedCoach.avatar} alt={selectedCoach.name} width={160} height={160} className="object-cover w-full h-full" />
              </div>
-             <div className="absolute -bottom-2 -right-2 w-8 h-8 rounded-lg bg-[#0FA4A9] flex items-center justify-center text-white border-2 border-white">
-               <Check size={16} strokeWidth={3} />
+             <div className="absolute -bottom-3 -right-3 w-10 h-10 rounded-xl bg-[#0FA4A9] flex items-center justify-center text-white border-4 border-white shadow-lg">
+               <Check size={20} strokeWidth={3} />
              </div>
           </div>
 
-          <div className="flex flex-col gap-2 items-center">
-            <div className="flex items-center gap-2">
-               <h1 className="text-3xl font-bold text-[#1F2D2E]">{selectedCoach.name}</h1>
-               <div className="flex items-center gap-1 bg-[#E4EFFF] text-[#3A86FF] px-2 py-0.5 rounded text-[10px] font-bold border border-[#3A86FF20]">
-                 <Check size={12} strokeWidth={3} />
+          <div className="flex flex-col gap-3 items-center">
+            <div className="flex items-center gap-3">
+               <h1 className="text-4xl font-bold text-[#1F2D2E]">{selectedCoach.name}</h1>
+               <div className="flex items-center gap-1.5 bg-[#E4EFFF] text-[#3A86FF] px-3 py-1 rounded-lg text-[11px] font-bold border border-[#3A86FF]/10">
+                 <Check size={14} strokeWidth={3} />
                  VERIFIED
                </div>
             </div>
-            <span className="text-[#3A86FF] font-bold text-sm tracking-widest uppercase">{selectedCoach.role}</span>
+            <span className="text-[#3A86FF] font-bold text-base tracking-[0.2em] uppercase">{selectedCoach.role}</span>
           </div>
 
-          <p className="text-[#5F6F73] text-base  leading-relaxed italic">
+          <p className="text-[#5F6F73] text-lg leading-relaxed italic max-w-2xl">
             &quot;Helps busy professionals improve body composition, energy, and consistency through data-driven lifestyle adjustments.&quot;
           </p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
            {/* Specialties */}
-           <div className="bg-white rounded-[16px] p-8 border border-[#3A86FF]/25 shadow-sm flex flex-col gap-6">
-              <div className="flex items-center gap-3">
-                 <div className="w-10 h-10 rounded-xl bg-orange-50 flex items-center justify-center">
-                   <Sparkles size={20} className="text-orange-400" />
+           <div className="bg-white rounded-[16px] p-8 md:p-10 border border-[#3A86FF]/25 shadow-sm flex flex-col gap-8">
+              <div className="flex items-center gap-4">
+                 <div className="w-12 h-12 rounded-2xl bg-orange-50 flex items-center justify-center shadow-inner">
+                   <Sparkles size={24} className="text-orange-400" />
                  </div>
-                 <h2 className="text-xl font-bold text-[#1F2D2E]">Specialties</h2>
+                 <h2 className="text-2xl font-bold text-[#1F2D2E]">Specialties</h2>
               </div>
-              <div className="flex flex-col gap-4">
+              <div className="flex flex-col gap-5">
                  {["Fat loss", "Strength", "Habit building", "Nutrition guidance"].map((item, i) => (
-                   <div key={i} className="flex items-center gap-3">
-                      <div className="w-6 h-6 rounded-full bg-[#E4EFFF] flex items-center justify-center shrink-0">
-                        <Check size={14} className="text-[#3A86FF]" strokeWidth={3} />
+                   <div key={i} className="flex items-center gap-4">
+                      <div className="w-7 h-7 rounded-full bg-[#E4EFFF] flex items-center justify-center shrink-0">
+                        <Check size={16} className="text-[#3A86FF]" strokeWidth={3} />
                       </div>
-                      <span className="text-[#5F6F73] font-medium">{item}</span>
+                      <span className="text-[#5F6F73] text-[17px] font-semibold">{item}</span>
                    </div>
                  ))}
               </div>
            </div>
 
            {/* What this coach will do for you */}
-           <div className="bg-white rounded-[16px] p-6 border border-[#3A86FF]/25 shadow-sm flex flex-col gap-6">
-              <div className="flex items-center gap-3">
-                 <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center">
-                   <Check size={20} className="text-blue-400" />
+           <div className="bg-white rounded-[16px] p-8 md:p-10 border border-[#3A86FF]/25 shadow-sm flex flex-col gap-8">
+              <div className="flex items-center gap-4">
+                 <div className="w-12 h-12 rounded-2xl bg-blue-50 flex items-center justify-center shadow-inner">
+                   <Check size={24} className="text-blue-400" />
                  </div>
-                 <h2 className="text-xl font-bold text-[#1F2D2E]">What this coach will do for you</h2>
+                 <h2 className="text-2xl font-bold text-[#1F2D2E]">What this coach will do for you</h2>
               </div>
-              <div className="flex flex-col gap-4">
+              <div className="flex flex-col gap-5">
                  {[
                    "Set personalized goals",
                    "Monitor your progress",
                    "Provide weekly guidance",
                    "Adjust targets based on your data"
                  ].map((item, i) => (
-                   <div key={i} className="flex items-center gap-3">
-                      <div className="w-6 h-6 rounded-full bg-[#E4EFFF] flex items-center justify-center shrink-0">
-                        <Check size={14} className="text-[#3A86FF]" strokeWidth={3} />
+                   <div key={i} className="flex items-center gap-4">
+                      <div className="w-7 h-7 rounded-full bg-[#E4EFFF] flex items-center justify-center shrink-0">
+                        <Check size={16} className="text-[#3A86FF]" strokeWidth={3} />
                       </div>
-                      <span className="text-[#5F6F73] font-medium">{item}</span>
+                      <span className="text-[#5F6F73] text-[17px] font-semibold">{item}</span>
                    </div>
                  ))}
               </div>
@@ -307,12 +558,11 @@ const SupportPage = () => {
         </div>
 
         {/* Footer Actions */}
-        <div className="bg-[#E9F3F5] rounded-[16px] p-8 flex flex-col md:flex-row items-center justify-center gap-6">
-           
-           <div className="flex flex-col  items-stretch gap-4 w-full max-w-2xl">
+        <div className="bg-[#F4FBFA] rounded-[16px] p-10 flex flex-col md:flex-row items-center justify-center gap-8 border border-[#3A86FF]/25 bg-white">
+           <div className="flex flex-col items-stretch gap-5 w-full max-w-2xl">
               <button 
-                onClick={() => setStep("chat")}
-                className="flex-1 bg-[#0FA4A9] text-white py-4 rounded-xl font-bold text-center hover:bg-[#0d8d91] transition-all cursor-pointer shadow-lg shadow-[#0FA4A9]/20"
+                onClick={() => setView("chat")}
+                className="flex-1 bg-[#0FA4A9] text-white py-5 rounded-2xl font-bold text-lg hover:bg-[#0d8d91] transition-all cursor-pointer shadow-xl shadow-[#0FA4A9]/20 font-bold"
               >
                 Connect With This Coach
               </button>
@@ -320,10 +570,13 @@ const SupportPage = () => {
                 <input 
                   type="text" 
                   placeholder="Pre-Hire Inquiries" 
-                  className="w-full h-full bg-white border border-gray-100 rounded-xl py-4 px-6 text-sm md:text-base outline-none pr-12"
+                  className="w-full h-full bg-white border border-gray-100 rounded-2xl py-5 px-8 text-base md:text-lg outline-none pr-16 shadow-sm"
                 />
-                <button className="absolute right-4 top-1/2 -translate-y-1/2 text-[#1F2D2E] hover:text-[#0FA4A9] transition-colors">
-                  <Send size={20} className="rotate-[-30deg]" />
+                <button 
+                  onClick={() => setView("chat")}
+                  className="absolute right-6 top-1/2 -translate-y-1/2 text-[#1F2D2E] hover:text-[#0FA4A9] transition-all"
+                >
+                  <Send size={24} className="rotate-[-30deg]" />
                 </button>
               </div>
            </div>
@@ -332,78 +585,13 @@ const SupportPage = () => {
     );
   }
 
-  if (step === "chat") {
+  if (view === "success") {
     return (
-      <div className="flex flex-col h-screen overflow-hidden bg-white">
-        <div className="px-8 py-6 flex items-center justify-between border-b border-gray-50">
-           <div className="flex flex-col">
-             <h1 className="text-2xl font-bold text-[#1F2D2E]">Messages</h1>
-             <p className="text-[#5F6F73] text-sm font-medium">Communicate with your Trainer</p>
-           </div>
-           <button 
-             onClick={() => setStep("success")}
-             className="bg-[#0FA4A9] text-white px-6 py-2.5 rounded-xl font-bold hover:bg-[#0d8d91] transition-all cursor-pointer shadow-md"
-           >
-             Connect With This Coach
-           </button>
-        </div>
-
-        <div className="flex-1 overflow-y-auto bg-[#F8FAFB] p-8 flex flex-col gap-8">
-           {/* Date separator */}
-           <div className="flex flex-col gap-1 items-start">
-             <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full overflow-hidden border border-gray-100">
-                  <Image src={selectedCoach.avatar} alt="mini" width={40} height={40} className="object-cover" />
-                </div>
-                <div className="flex flex-col">
-                  <span className="text-sm font-bold text-[#1F2D2E]">{selectedCoach.name.split(",")[0]}</span>
-                  <span className="text-[#3A86FF] text-[10px] font-bold tracking-widest uppercase">{selectedCoach.role}</span>
-                </div>
-             </div>
-             <div className="h-px bg-gray-100 w-full mt-2" />
-           </div>
-
-           {/* Messages */}
-           <div className="flex flex-col gap-6 max-w-4xl w-full mx-auto self-start">
-              <div className="flex flex-col gap-2 items-start self-start max-w-[80%]">
-                 <div className="bg-white rounded-2xl p-6 border border-gray-50 shadow-sm text-[#1F2D2E] text-base leading-relaxed">
-                   Hello! I saw your body projection goals. I&apos;d love to help you reach that body fat target safely.
-                 </div>
-                 <span className="text-[10px] font-bold text-[#5F6F73] ml-2 uppercase">Today - 8:30 AM</span>
-              </div>
-
-              <div className="flex flex-col gap-2 items-end self-end max-w-[80%]">
-                 <div className="bg-[#C7F5CB] rounded-2xl p-6 shadow-sm text-[#1F2D2E] text-base leading-relaxed">
-                   Hi coach, feeling good about this week!
-                 </div>
-                 <span className="text-[10px] font-bold text-[#5F6F73] mr-2 uppercase">Today - 8:30 AM</span>
-              </div>
-           </div>
-        </div>
-
-        <div className="p-8 bg-[#F8FAFB]">
-           <div className="max-w-4xl mx-auto relative group">
-              <input 
-                type="text" 
-                placeholder="Type your message..." 
-                className="w-full bg-white border border-gray-100 rounded-2xl py-5 px-8 pr-16 text-base outline-none shadow-sm focus:ring-2 focus:ring-[#0FA4A9]/20 transition-all" 
-              />
-              <button className="absolute right-6 top-1/2 -translate-y-1/2 text-[#1F2D2E] hover:text-[#0FA4A9] transition-all">
-                <Send size={28} className="rotate-[-30deg]" />
-              </button>
-           </div>
-        </div>
-      </div>
-    );
-  }
-
-  if (step === "success") {
-    return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#F4FBFA]">
-         <div className="bg-white rounded-[16px] p-12 md:p-16 max-w-xl w-full shadow-[0_20px_50px_rgba(0,0,0,0.05)] border border-[#3A86FF]/25 flex flex-col items-center text-center gap-8 relative">
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#F4FBFA]/80 backdrop-blur-sm p-4">
+         <div className="bg-white rounded-[16px] p-10 md:p-14 max-w-xl w-full shadow-[0_20px_50px_rgba(0,0,0,0.1)] border border-[#3A86FF]/25 flex flex-col items-center text-center gap-8 relative">
             <button 
-              onClick={() => setStep("list")}
-              className="absolute top-8 right-8 text-[#1F2D2E] hover:bg-gray-50 p-2 rounded-full transition-all cursor-pointer outline-none"
+              onClick={() => setView("dashboard")}
+              className="absolute top-6 right-6 text-[#1F2D2E] hover:bg-gray-50 p-2 rounded-full transition-all cursor-pointer outline-none"
             >
               <X size={24} />
             </button>
@@ -416,23 +604,118 @@ const SupportPage = () => {
 
             <div className="flex flex-col gap-3">
               <h2 className="text-3xl font-bold text-[#1F2D2E]">Connection Secured</h2>
-              <p className="text-[#5F6F73] text-base leading-relaxed max-w-sm">
-                You are now synced with Dr. Sarah Chen. Your projection data is being shared securely.
+              <p className="text-[#5F6F73] text-base leading-relaxed max-w-sm font-medium">
+                You are now synced with {selectedCoach.name}. Your projection data is being shared securely.
               </p>
             </div>
 
             <button 
-              onClick={() => setStep("list")}
-              className="w-full bg-[#0FA4A9] text-white py-5 rounded-2xl font-bold text-lg hover:bg-[#0d8d91] transition-all cursor-pointer shadow-xl shadow-[#0FA4A9]/20"
+              onClick={() => setView("dashboard")}
+              className="w-full bg-[#0FA4A9] text-white py-4.5 rounded-2xl font-bold text-lg hover:bg-[#0d8d91] transition-all cursor-pointer shadow-xl shadow-[#0FA4A9]/20"
             >
               Back To Dashboard
             </button>
          </div>
       </div>
-    )
+    );
   }
 
-  return null;
+  return (
+    <div className="flex flex-col gap-12 p-4 md:p-8 container mx-auto pb-24">
+      {/* Header */}
+      <div className="flex flex-col gap-6">
+        <Link href="/user-dashboard">
+          <button className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-100 rounded-lg text-[#5F6F73] text-xs font-semibold hover:bg-gray-50 transition-all cursor-pointer shadow-sm">
+            <ArrowLeft size={14} />
+            Back to Dashboard
+          </button>
+        </Link>
+
+        <div className="flex flex-col gap-1">
+          <h1 className="text-2xl font-bold text-[#1F2D2E]">Support</h1>
+          <p className="text-[#5F6F73] text-sm font-medium">Get personalized help based on your health data</p>
+        </div>
+      </div>
+
+      {/* Recommended Area */}
+      <div className="flex flex-col gap-6">
+        <div className="flex flex-col gap-1.5">
+          <div className="flex items-center gap-2 text-[#3A86FF] font-bold text-[11px] tracking-[0.1em] uppercase">
+            <Sparkles size={16} className="fill-[#3A86FF]" />
+            Other professionals you may explore
+          </div>
+          <p className="text-[#5F6F73] text-xs font-medium">Based on your health data and projections, these professionals can help you most right now.</p>
+        </div>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+           {RECOMMENDED_COACHES.map(coach => (
+             <RecommendationCard key={coach.id} coach={coach} onView={() => handleSelectCoach(coach)} />
+           ))}
+        </div>
+      </div>
+
+      {/* Your Support Team */}
+      <div className="flex flex-col gap-6 ">
+         <div className="flex items-center justify-between">
+           <h2 className="text-xl font-bold text-[#1F2D2E]">Your support team</h2>
+           <div className="flex items-center gap-2">
+             <button className="p-2 rounded-full border border-gray-100 bg-white hover:bg-gray-50 transition-all text-[#1F2D2E]">
+               <ChevronLeft size={18} />
+             </button>
+             <button className="p-2 rounded-full border border-gray-100 bg-white hover:bg-gray-50 transition-all text-[#1F2D2E]">
+               <ChevronRight size={18} />
+             </button>
+           </div>
+         </div>
+         
+         <div className="flex gap-6 overflow-x-auto pb-4 scrollbar-hide">
+            {SUPPORT_TEAM.map((member) => (
+              <SupportTeamCard 
+                key={member.id} 
+                member={member} 
+                onMessage={() => setView("chat")}
+                onGoals={() => setView("goals")}
+              />
+            ))}
+         </div>
+      </div>
+
+      {/* Browse All Professionals */}
+      <div className="flex flex-col gap-6">
+         <div className="flex items-center justify-between">
+            <h2 className="text-xl font-bold text-[#1F2D2E]">Browse all professionals</h2>
+            <div className="flex items-center gap-2">
+              <button className="p-2 rounded-full border border-gray-100 bg-white hover:bg-gray-50 transition-all text-[#1F2D2E]">
+                <ChevronLeft size={18} />
+              </button>
+              <button className="p-2 rounded-full border border-gray-100 bg-white hover:bg-gray-50 transition-all text-[#1F2D2E]">
+                <ChevronRight size={18} />
+              </button>
+            </div>
+         </div>
+         <p className="text-[#5F6F73] text-[13px] font-medium -mt-4">Discover expert help across the BioVue network.</p>
+         
+         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {ALL_PROFESSIONALS.map(item => (
+              <BrowseCard key={item.id} item={item} onView={() => handleSelectCoach(item)} />
+            ))}
+         </div>
+      </div>
+
+      {/* Footer Banner */}
+      <div className="bg-white rounded-[16px] p-8 md:p-10 flex flex-col md:flex-row items-center gap-8 border border-[#3A86FF]/25 relative overflow-hidden">
+         <div className="w-16 h-16 rounded-[20px] bg-[#0FA4A9] flex items-center justify-center shrink-0 shadow-lg shadow-[#0FA4A920]">
+           <Heart size={32} className="text-white fill-white" />
+         </div>
+         <div className="flex flex-col gap-2 text-center md:text-left">
+           <h3 className="text-xl font-bold text-[#1F2D2E]">Why professional support matters</h3>
+           <p className="text-[#5F6F73] text-[15px] leading-relaxed max-w-2xl">
+             Working with a coach or clinic can dramatically improve your progress and long-term outcomes. BioVue data shows users with dedicated support hit their 5-year goals faster.
+           </p>
+         </div>
+      </div>
+    </div>
+  );
 };
 
 export default SupportPage;
