@@ -1,7 +1,16 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Badge, Eye, Settings } from "lucide-react";
+import {
+  AlertCircle,
+  ArrowLeft,
+  Eye,
+  Focus,
+  History,
+  Notebook,
+  Save,
+  Settings,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
@@ -33,11 +42,11 @@ export default function CoachingDashboard() {
             <h1 className="text-2xl font-semibold text-[#111827]">
               {clientDetails.name}
             </h1>
-            <Badge
-              className={`${statusConfig[clientDetails.status]} border-none capitalize`}
+            <p
+              className={`${statusConfig[clientDetails.status]} px-3 rounded-full  border-none capitalize`}
             >
               {clientDetails.status.replace("-", " ")}
-            </Badge>
+            </p>
           </div>
           <p className="text-base font-medium text-[#6B7280]">
             {clientDetails.primaryGoal.subtitle}
@@ -46,7 +55,7 @@ export default function CoachingDashboard() {
 
         {/* Program Context */}
         <div className="mb-8">
-          <h2 className="mb-4 text-sm font-semibold uppercase tracking-wide text-[#0F172A]">
+          <h2 className="mb-4 text-xl font-semibold tracking-wide text-[#0F172A]">
             Program Context
           </h2>
           <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
@@ -67,12 +76,12 @@ export default function CoachingDashboard() {
             ].map(({ label, value }) => (
               <Card
                 key={label}
-                className="rounded-lg border border-[#E5E7EB] bg-white p-4 shadow-none"
+                className="rounded-lg border border-[#E5E7EB] bg-white p-6 shadow-none"
               >
-                <p className="text-xs font-semibold uppercase text-[#6B7280]">
+                <p className="text-sm font-semibold uppercase text-[#5F6F73]">
                   {label}
                 </p>
-                <p className="mt-2 text-sm font-semibold text-[#111827]">
+                <p className="mt-3 text-base font-semibold text-[#111827]">
                   {value}
                 </p>
               </Card>
@@ -82,25 +91,25 @@ export default function CoachingDashboard() {
 
         {/* AI-Observed Metrics */}
         <div className="mb-8">
-          <h2 className="mb-4 text-sm font-semibold text-[#0F172A]">
+          <h2 className="mb-4 text-xl font-semibold text-[#0F172A]">
             AI-Observed Metrics
           </h2>
           <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
             {clientDetails.aiObservedMetrics.map((metric) => (
-              <div key={metric.id} className="rounded-xl border bg-white p-4">
-                <p className="text-xs font-semibold text-gray-500 uppercase">
+              <div key={metric.id} className="rounded-xl border bg-white p-5">
+                <p className="text-base font-medium text-black uppercase">
                   {metric.label}
                 </p>
 
-                <p className="mt-1 text-lg font-semibold text-gray-900">
+                <p className="mt-2 text-xl font-medium text-gray-900">
                   {metric.value}
                 </p>
 
-                <p className="mt-1 text-xs text-purple-600 flex items-center gap-1">
+                <p className="mt-2 text-sm text-[#8746E7] flex items-center gap-1">
                   ● {metric.tag.text}
                 </p>
 
-                <p className="mt-1 text-xs text-gray-400">
+                <p className="mt-2 text-sm text-[#5F6F73]">
                   {metric.updatedTime}
                 </p>
               </div>
@@ -111,34 +120,34 @@ export default function CoachingDashboard() {
         {/* Bottom Section */}
         <div className="mb-8 grid grid-cols-1 gap-4 md:grid-cols-2">
           {/* Coach Set Targets */}
-          <Card className="rounded-lg border border-[#E5E7EB] bg-white p-6 shadow-none">
+          <Card className="rounded-lg border border-[#E5E7EB] bg-white py-8 px-6 shadow-none">
             <div className="mb-4 flex items-center gap-2">
               <Settings className="h-4 w-4 text-[#0F172A]" />
-              <h3 className="text-sm font-semibold text-[#0F172A]">
+              <h3 className="text-lg font-medium text-[#0F172A]">
                 Coach Set Targets
               </h3>
             </div>
 
-            <div className="space-y-4">
+            <div className="space-y-6">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="text-xs font-medium text-[#6B7280]">
+                  <label className="text-base font-medium text-[#6B7280]">
                     Target Weight (lbs)
                   </label>
                   <div className="mt-2 flex items-center gap-2">
                     <input
                       type="number"
                       defaultValue={175}
-                      className="flex-1 rounded border border-[#D1D5DB] bg-white px-3 py-2 text-sm font-semibold text-[#111827] placeholder-[#9CA3AF]"
+                      className="flex-1 rounded border border-[#D1D5DB] bg-white px-3 py-2 text-base font-semibold text-[#5F6F73] placeholder-[#9CA3AF]"
                     />
                   </div>
                 </div>
                 <div>
-                  <label className="text-xs font-medium text-[#6B7280]">
+                  <label className="text-base font-medium text-[#6B7280]">
                     Weekly Workouts
                   </label>
                   <div className="mt-2">
-                    <select className="w-full rounded border border-[#D1D5DB] bg-white px-3 py-2 text-sm font-semibold text-[#111827]">
+                    <select className="w-full rounded border border-[#D1D5DB] bg-white px-3 py-2 text-base font-semibold text-[#5F6F73]">
                       <option>4 Sessions / Week</option>
                       <option>3 Sessions / Week</option>
                       <option>5 Sessions / Week</option>
@@ -149,19 +158,28 @@ export default function CoachingDashboard() {
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="text-xs font-medium text-[#6B7280]">
-                    Sleep Target (hrs)
+                  <label className="text-base font-medium text-[#6B7280]">
+                    Sleep Target Range (hrs)
                   </label>
-                  <div className="mt-2">
-                    <input
-                      type="number"
-                      defaultValue={7}
-                      className="w-full rounded border border-[#D1D5DB] bg-white px-3 py-2 text-sm font-semibold text-[#111827]"
-                    />
+                  <div className="flex items-center gap-2">
+                    <div className="mt-2">
+                      <input
+                        type="number"
+                        defaultValue={7}
+                        className="w-full rounded border border-[#D1D5DB] bg-white px-3 py-2 text-base font-semibold text-[#5F6F73]"
+                      />
+                    </div>
+                    <div className="mt-2">
+                      <input
+                        type="number"
+                        defaultValue={8}
+                        className="w-full rounded border border-[#D1D5DB] bg-white px-3 py-2 text-base font-semibold text-[#5F6F73]"
+                      />
+                    </div>
                   </div>
                 </div>
                 <div>
-                  <label className="text-xs font-medium text-[#6B7280]">
+                  <label className="text-base font-medium text-[#6B7280]">
                     Hydration Target (L)
                   </label>
                   <div className="mt-2">
@@ -169,26 +187,62 @@ export default function CoachingDashboard() {
                       type="number"
                       defaultValue={3.5}
                       step="0.5"
-                      className="w-full rounded border border-[#D1D5DB] bg-white px-3 py-2 text-sm font-semibold text-[#111827]"
+                      className="w-full rounded border border-[#D1D5DB] bg-white px-3 py-2 text-base font-semibold text-[#5F6F73]"
                     />
                   </div>
                 </div>
               </div>
             </div>
+          </Card>
 
-            <div className="mt-6 space-y-3 border-t border-[#E5E7EB] pt-4">
+          {/* Client Visibility Controls */}
+          <Card className="rounded-lg border border-[#E5E7EB] bg-white py-8 px-6  shadow-none">
+            <h3 className="mb-6 flex items-center gap-2 text-lg font-semibold text-[#0F172A]">
+              <Eye className="h-4 w-4" />
+              Client Visibility Controls
+            </h3>
+
+            <div className="space-y-4">
+              {clientDetails.visibilityControls.map((control) => (
+                <div
+                  key={control.label}
+                  className="flex items-center justify-between"
+                >
+                  <p className="text-sm text-[#5F6F73]">{control.label}</p>
+                  <Switch defaultChecked={control.enabled} />
+                </div>
+              ))}
+            </div>
+          </Card>
+
+          <Card className="rounded-lg border border-[#E5E7EB] bg-white py-8 px-6  shadow-none">
+            <h3 className="mb-6 flex items-center gap-2 text-lg font-semibold text-[#0F172A]">
+              <Focus className="h-4 w-4" />
+              Focus & Intensity Adjustment
+            </h3>
+            <div className="space-y-4">
               <div>
-                <label className="text-xs font-medium text-[#6B7280]">
+                <label className="text-base font-medium text-[#6B7280]">
+                  Program
+                </label>
+                <div className="mt-3">
+                  <select className="w-full rounded border border-[#D1D5DB] bg-white px-3 py-2 text-base font-semibold text-[#5F6F73]">
+                    <option>Fat Loss</option>
+                    <option>Bulking</option>
+                    <option>Weight Gain</option>
+                  </select>
+                </div>
+              </div>
+              <div className="">
+                <label className="text-base font-medium text-[#6B7280]">
                   Primary Focus Area
                 </label>
-                <div className="mt-3 flex gap-2">
+                <div className="mt-4 flex gap-2 bg-[#0FA4A91A] rounded-lg px-6 py-2">
                   {["Low", "Medium", "High", "Elite"].map((level) => (
                     <button
                       key={level}
-                      className={`rounded-md px-3 py-1 text-xs font-medium ${
-                        level === "High"
-                          ? "bg-[#E0F2FE] text-[#0369A1]"
-                          : "bg-[#F3F4F6] text-[#6B7280]"
+                      className={`rounded-md px-3 py-1 text-base font-medium ${
+                        level === "High" ? "bg-white " : "bg-transparent "
                       }`}
                     >
                       {level}
@@ -196,34 +250,31 @@ export default function CoachingDashboard() {
                   ))}
                 </div>
               </div>
-              <p className="text-xs text-[#DC5D57]">
-                Is this override the template intensity
+              <p className="text-sm text-[#E5A966] flex items-center gap-1 uppercase">
+                <AlertCircle size={14} />
+                <span>This overrides the template intensity</span>
               </p>
             </div>
           </Card>
 
-          {/* Client Visibility Controls */}
-          <Card className="rounded-lg border border-[#E5E7EB] bg-white p-6 shadow-none">
-            <h3 className="mb-4 flex items-center gap-2 text-sm font-semibold text-[#0F172A]">
-              <Eye className="h-4 w-4" />
-              Client Visibility Controls
+          <Card className="rounded-lg border border-[#E5E7EB] bg-white py-8 px-6  shadow-none">
+            <h3 className="mb-6 flex items-center gap-2 text-lg font-semibold text-[#0F172A]">
+              <Notebook className="h-4 w-4" />
+              Internal Coach Notes (Private)
             </h3>
 
-            <div className="space-y-3">
-              {clientDetails.visibilityControls.map((control) => (
-                <div
-                  key={control.label}
-                  className="flex items-center justify-between"
-                >
-                  <p className="text-sm text-[#111827]">{control.label}</p>
-                  <Switch defaultChecked={control.enabled} />
-                </div>
-              ))}
-            </div>
-
-            <div className="mt-6 border-t border-[#E5E7EB] pt-4">
-              <p className="text-xs text-[#7C3AED]">
-                <Eye /> Clients cannot see this section. Only visible to BioVue
+            <div className="space-y-4">
+              <div>
+                <textarea
+                  placeholder="Add private observations, risks, or follow-up reminders..."
+                  className="px-3 py-2 border rounded-lg w-full h-40 resize-none focus:outline-none focus:ring-2 focus:ring-[#0D9488]"
+                />
+              </div>
+              <p className="text-sm  flex items-center gap-1 text-[#8746E7]">
+                <Eye />
+                <span>
+                  Clients cannot see this section. Only visible to BioVue
+                </span>
                 staff.
               </p>
             </div>
@@ -231,15 +282,15 @@ export default function CoachingDashboard() {
         </div>
 
         {/* Action Buttons */}
-        <div className="flex items-center justify-between gap-4">
+        <div className="flex items-center justify-end gap-6">
           <Button
             variant="outline"
-            className="border-[#D1D5DB] text-[#111827] hover:bg-[#F9FAFB]"
+            className="border-[#D1D5DB] cursor-pointer text-sm text-[#111827] hover:bg-[#F9FAFB]"
           >
-            Reset to Program Defaults
+            <History /> Reset to Program Defaults
           </Button>
-          <Button className="bg-[#0D9488] hover:bg-[#0F766E]">
-            Save Adjustments
+          <Button className="bg-[#0D9488] cursor-pointer hover:bg-[#0F766E]">
+            <Save /> Save Adjustments
           </Button>
         </div>
       </div>
