@@ -1,0 +1,92 @@
+"use client";
+import { Program } from "./ProgramsData";
+import { MoreVertical } from "lucide-react";
+
+interface ProgramsTableProps {
+  programs: Program[];
+}
+
+export default function ProgramsTable({ programs }: ProgramsTableProps) {
+  const getIntensityStyles = (intensity: string) => {
+    if (intensity === "Aggressive") {
+      return "text-[#DC2626] font-semibold";
+    } else if (intensity === "Light") {
+      return "bg-[#DBEAFE] text-[#1E40AF] px-3 py-1 rounded text-sm font-semibold";
+    }
+    return "";
+  };
+
+  return (
+    <div className="overflow-x-auto border border-[#E5E7EB] rounded-lg bg-white">
+      <table className="w-full">
+        <thead>
+          <tr className="border-b border-[#E5E7EB] bg-white">
+            <th className="px-6 py-4 text-left text-xs font-semibold text-[#111827] uppercase">
+              Program Name
+            </th>
+            <th className="px-6 py-4 text-left text-xs font-semibold text-[#111827] uppercase">
+              Primary Goal
+            </th>
+            <th className="px-6 py-4 text-left text-xs font-semibold text-[#111827] uppercase">
+              Intensity
+            </th>
+            <th className="px-6 py-4 text-left text-xs font-semibold text-[#111827] uppercase">
+              Clients
+            </th>
+            <th className="px-6 py-4 text-left text-xs font-semibold text-[#111827] uppercase">
+              Status
+            </th>
+            <th className="px-6 py-4 text-left text-xs font-semibold text-[#111827] uppercase">
+              Updated
+            </th>
+            <th className="px-6 py-4 text-left text-xs font-semibold text-[#0F766E] uppercase">
+              Actions
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          {programs.map((program) => (
+            <tr
+              key={program.id}
+              className="border-b border-[#E5E7EB] hover:bg-[#F9FAFB]"
+            >
+              <td className="px-6 py-4">
+                <div className="text-sm font-semibold text-[#111827]">
+                  {program.name}
+                </div>
+                <div className="text-xs text-[#6B7280]">{program.duration}</div>
+              </td>
+              <td className="px-6 py-4 text-sm font-medium text-[#111827]">
+                {program.primaryGoal}
+              </td>
+              <td className="px-6 py-4">
+                <span className={getIntensityStyles(program.intensity)}>
+                  {program.intensity}
+                </span>
+              </td>
+              <td className="px-6 py-4 text-sm font-medium text-[#111827]">
+                {program.clients} CLIENTS
+              </td>
+              <td className="px-6 py-4 text-sm font-medium text-[#111827]">
+                {program.status}
+              </td>
+              <td className="px-6 py-4 text-sm font-medium text-[#111827]">
+                {program.updatedAgo}
+              </td>
+              <td className="px-6 py-4">
+                <div className="flex items-center gap-3">
+                  <button className="text-sm font-semibold text-[#0F766E] hover:text-[#0D5A52]">
+                    VIEW
+                  </button>
+                  <button className="text-[#9CA3AF] hover:text-[#6B7280]">
+                    <MoreVertical size={20} />
+                  </button>
+                </div>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
