@@ -6,8 +6,8 @@ import { activities } from "./data";
 
 export default function RecentActivity() {
   return (
-    <Card className="p-5">
-      <h3 className="text-lg font-semibold text-foreground">Recent Activity</h3>
+    <Card className="p-5 bg-white">
+      <h3 className="text-lg mb-3 font-semibold text-foreground">Recent Activity</h3>
       <div className="space-y-5">
         {activities.map((activity) => (
           <div key={activity.id} className="flex items-start gap-3">

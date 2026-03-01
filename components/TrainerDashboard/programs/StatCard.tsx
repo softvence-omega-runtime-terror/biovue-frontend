@@ -1,39 +1,45 @@
 "use client";
 
-import { Users, AlertCircle, MessageSquare, Calendar } from "lucide-react";
+import {
+  Users,
+  AlertCircle,
+  MessageSquare,
+  Calendar,
+  Activity,
+  User,
+} from "lucide-react";
 import { Card } from "@/components/ui/card";
-import { StatCard } from "./data";
 
+export interface StatCard {
+  icon: React.ReactNode;
+  number: string | number;
+  label: string;
+  description: string;
+}
 const statCards: StatCard[] = [
   {
-    icon: <Users className="w-6 h-6" />,
-    number: 24,
-    label: "Active Clients",
-    description: "Currently coached",
+    icon: <Activity className="w-6 h-6" />,
+    number: 3,
+    label: "Active Programs",
+    description: "Currently assigned to clients",
   },
   {
     icon: <AlertCircle className="w-6 h-6" />,
-    number: 5,
-    label: "Clients Needing Attention",
-    description: "Off-track or low activity",
+    number: 2,
+    label: "Draft Programs",
+    description: "Not yet assigned",
   },
   {
-    icon: <MessageSquare className="w-6 h-6" />,
-    number: 3,
-    label: "Pending Messages",
-    description: "Unread client messages",
-  },
-  {
-    icon: <Calendar className="w-6 h-6" />,
-    number: 7,
-    label: "Todays Check-ins",
-    description: "Scheduled Today",
+    icon: <User className="w-6 h-6" />,
+    number: 18,
+    label: "Clients in Programs",
+    description: "Active participants",
   },
 ];
 
 export default function StatCards() {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 mb-8">
       {statCards.map((stat, index) => (
         <Card key={index} className="p-5 bg-white">
           <div className="flex flex-col items-start gap-4">

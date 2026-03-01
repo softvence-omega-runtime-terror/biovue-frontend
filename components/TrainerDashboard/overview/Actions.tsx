@@ -37,9 +37,9 @@ export default function Actions() {
       </h3>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
         {actionCards.map((action, index) => (
-          <Card key={index} className="p-5">
+          <Card key={index} className="p-5 bg-white">
             <div className="flex items-start">
-              <div className="p-3 w-13 h-13 bg-[#9AAEB233] rounded-lg text-[#0D9488]">
+              <div className="p-3 w-13 h-13 mb-2 bg-[#9AAEB233] rounded-lg text-[#0D9488]">
                 {action.icon}
               </div>
             </div>
