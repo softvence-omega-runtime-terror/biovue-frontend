@@ -100,14 +100,16 @@ const PersonalizeJourneyPage = () => {
             </div>
 
             {/* Continue Button */}
+            <Link href="/personalize-journey/today" className="w-full">
             <button className="w-full bg-[#0FA4A9] text-white py-3  rounded-xl font-bold text-lg hover:bg-opacity-95 transition-all flex items-center justify-center gap-2 group shadow-lg shadow-[#0FA4A9]/10 cursor-pointer mb-6">
+             
               Continue
               <ArrowRight
                 size={22}
                 className="group-hover:translate-x-1 transition-transform"
               />
             </button>
-
+            </Link>
             {/* Skip Link */}
             <button className="text-[#98A2B3] text-sm md:text-base font-semibold hover:text-[#041228] transition-colors">
               Skip All Permissions
