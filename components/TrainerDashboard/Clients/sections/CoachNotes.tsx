@@ -17,14 +17,14 @@ export default function CoachNotes({ notes }: { notes: string[] }) {
   ];
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center gap-2 text-[#111827]">
+    <div className="space-y-4 py-6 rounded-lg bg-white">
+      <div className="flex px-6 items-center gap-2 text-[#111827]">
         <FileText size={20} className="text-[#374151]" />
-        <h2 className="text-lg font-bold text-[#111827]">Internal Coach Notes (Private)</h2>
+        <h2 className="text-xl  font-medium text-[#111827]">Internal Coach Notes (Private)</h2>
       </div>
 
-      <Card className="border-none shadow-xs bg-white">
-        <CardContent className="p-6 space-y-6">
+      <Card className="border-none">
+        <CardContent className="space-y-6">
           {/* New Note Input */}
           <div className="relative">
             <textarea 
