@@ -9,6 +9,7 @@ import {
 } from "@/components/TrainerDashboard/programs/ProgramsData";
 import { Funnel, Plus, ArrowDownUp } from "lucide-react";
 import ProgramsTable from "@/components/TrainerDashboard/programs/ProgramsTable";
+import CreateProgramModal from "@/components/TrainerDashboard/programs/CreateProgramsModal";
 
 export default function ProgramsPage() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -18,7 +19,7 @@ export default function ProgramsPage() {
   const [sortOption, setSortOption] = useState("Most Recent Activity");
   const [showStatusDropdown, setShowStatusDropdown] = useState(false);
   const [showSortDropdown, setShowSortDropdown] = useState(false);
-
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   // Derive dropdown options from programs data
   const statusOptions = [
     { value: "all", label: "All Programs" },
@@ -72,9 +73,12 @@ export default function ProgramsPage() {
           subheading="Create, manage, and assign coaching programs to your clients"
         />
         <div className="mb-6 flex justify-end items-center">
-          <button className="flex cursor-pointer items-center gap-2 px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700">
+          <button
+            onClick={() => setIsCreateModalOpen(true)}
+            className="flex cursor-pointer items-center gap-2 px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700"
+          >
             <Plus size={18} />
-            Invite Client
+            Create Program
           </button>
         </div>
       </div>
@@ -171,6 +175,11 @@ export default function ProgramsPage() {
       </div>
 
       <ProgramsTable programs={filteredPrograms} />
+
+      <CreateProgramModal
+        isOpen={isCreateModalOpen}
+        onClose={() => setIsCreateModalOpen(false)}
+      />
     </div>
   );
 }
