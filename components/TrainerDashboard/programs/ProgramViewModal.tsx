@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import { X } from "lucide-react";
 import ProgramView from "./ProgramView";
 import { Program } from "./ProgramsData";
@@ -31,6 +30,7 @@ export default function ProgramViewModal({
         {/* Program Content */}
         <ProgramView
           program={{
+            id: program.id,
             name: program.name,
             duration: program.duration,
             primaryGoal: program.primaryGoal,
