@@ -16,8 +16,8 @@ export interface ProgramFormData {
   targetIntensity: string;
   focusAreas: string[];
   wellnessMetrics: {
-    water: string;
-    creatine: boolean;
+    protein: string;
+    calories: string;
     carbs: string;
     fat: string;
   };
@@ -55,8 +55,8 @@ export default function CreateProgramModal({
     targetIntensity: "light",
     focusAreas: [],
     wellnessMetrics: {
-      water: "",
-      creatine: false,
+      protein: "",
+      calories: "",
       carbs: "",
       fat: "",
     },
@@ -103,8 +103,8 @@ export default function CreateProgramModal({
       targetIntensity: "light",
       focusAreas: [],
       wellnessMetrics: {
-        water: "",
-        creatine: false,
+        protein: "",
+        calories: "",
         carbs: "",
         fat: "",
       },
@@ -142,11 +142,16 @@ export default function CreateProgramModal({
             />
           )}
           {currentStep === 2 && (
-            <Step2GoalsAndFocus onClose={onClose} formData={formData} setFormData={setFormData} />
+            <Step2GoalsAndFocus
+              onClose={onClose}
+              formData={formData}
+              setFormData={setFormData}
+            />
           )}
           {currentStep === 3 && (
             <Step3NutritionAndSupplements
               formData={formData}
+              onClose={onClose}
               setFormData={setFormData}
             />
           )}

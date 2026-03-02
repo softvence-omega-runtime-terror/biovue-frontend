@@ -16,18 +16,12 @@ export default function Step4ReviewProgram({ formData }: Step4Props) {
   const [showAssign, setShowAssign] = useState(false);
   const [search, setSearch] = useState("");
   const [selected, setSelected] = useState<string[]>([]);
-  const habits = ["Sleep", "Nutrition", "Activity"];
-
-  const focusAreas = [
-    "Weight Loss",
-    "Performance Improvement",
-    "Body Composition",
-  ];
+  const habits = formData.habitFocus;
 
   const macros = [
     {
       title: "Calories",
-      value: "2100",
+      value: formData.wellnessMetrics.calories,
       unit: " kcal",
       bg: "bg-[#e0f2f1]",
       border: "border-[#26a69a]",
@@ -36,8 +30,8 @@ export default function Step4ReviewProgram({ formData }: Step4Props) {
     },
     {
       title: "Protein",
-      value: "160",
-      unit: "g",
+      value: formData.wellnessMetrics.protein,
+      unit: " g",
       bg: "bg-[#1b5e20]",
       border: "border-[#1b5e20]",
       titleColor: "text-[#a5d6a7]",
@@ -45,8 +39,8 @@ export default function Step4ReviewProgram({ formData }: Step4Props) {
     },
     {
       title: "Carbs",
-      value: "200",
-      unit: "g",
+      value: formData.wellnessMetrics.carbs,
+      unit: " g",
       bg: "bg-[#c8e6c9]",
       border: "border-[#a5d6a7]",
       titleColor: "text-[#2e7d32]",
@@ -54,16 +48,26 @@ export default function Step4ReviewProgram({ formData }: Step4Props) {
     },
     {
       title: "Fat",
-      value: "70",
-      unit: "g",
+      value: formData.wellnessMetrics.fat,
+      unit: " g",
       bg: "bg-[#dcedc8]",
       border: "border-[#c5e1a5]",
       titleColor: "text-[#558b2f]",
       valueColor: "text-[#33691e]",
     },
   ];
+  const focusAreaLabelMap: Record<string, string> = {
+    "weight-loss": "Weight Loss",
+    performance: "Performance Improvement",
+    "body-comp": "Body Composition",
+    energy: "Energy & Recovery",
+    health: "Overall Health Improvement",
+  };
 
-  const supplements = ["Protein", "Creatine", "Omega-3"];
+  const focusAreas = formData.focusAreas.map((id) => focusAreaLabelMap[id]);
+  const supplements = Object.entries(formData.supplementRecommendations)
+    .filter(([, value]) => value)
+    .map(([key]) => key);
 
   const filteredUsers = useMemo(() => {
     return USERS_DATA.filter(
@@ -78,17 +82,29 @@ export default function Step4ReviewProgram({ formData }: Step4Props) {
       prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
     );
   };
+  const supplementLabelMap: Record<string, string> = {
+    protein: "Protein",
+    creatine: "Creatine",
+    multivitamin: "Multivitamin",
+    omega3: "Omega-3",
+    electrolytes: "Electrolytes",
+    vitaminD: "Vitamin D",
+    magnesium: "Magnesium",
+    aminoAcids: "Amino Acids",
+    preWorkout: "Pre-Workout",
+    other: "Other",
+  };
 
   return (
     <div className="min-h-screen ">
-      <div className="">
+      <div className="py-5">
         <div className=" rounded-2xl space-y-5">
           {/* Header */}
           <div className="mb-2">
-            <h2 className="text-[22px] font-bold text-gray-900 leading-tight">
+            <h2 className="text-3xl font-bold text-[#111827] leading-tight">
               Step 4 of 4 – Review Program
             </h2>
-            <p className="text-[13px] text-gray-400 mt-1">
+            <p className="text-base text-[#6B7280] mt-1">
               Confirm all details before creating the program
             </p>
           </div>
@@ -100,33 +116,21 @@ export default function Step4ReviewProgram({ formData }: Step4Props) {
             </p>
 
             <h3 className="text-[18px] font-bold text-gray-900">
-              Advanced Fat Loss Program
+              {formData.programName}
             </h3>
 
-            <div className="flex gap-12">
-              <div>
-                <p className="text-[11px] text-gray-400 font-medium mb-0.5">
-                  Duration
-                </p>
-                <p className="text-[13px] font-bold text-gray-900">12 Weeks</p>
-              </div>
+            <p className="text-[13px] font-bold text-gray-900">
+              {formData.duration}
+            </p>
 
-              <div>
-                <p className="text-[11px] text-gray-400 font-medium mb-0.5">
-                  Primary Goal
-                </p>
-                <p className="text-[13px] font-bold text-gray-900">Fat Loss</p>
-              </div>
+            <p className="text-[13px] font-bold text-gray-900">
+              {formData.primaryGoal}
+            </p>
 
-              <div>
-                <p className="text-[11px] text-gray-400 font-medium mb-0.5">
-                  Target Intensity
-                </p>
-                <span className="inline-block px-3 py-0.5 rounded-full bg-orange-100 text-orange-500 text-[13px] font-semibold">
-                  Moderate
-                </span>
-              </div>
-            </div>
+            <span className="inline-block px-3 py-0.5 rounded-full bg-orange-100 text-orange-500 text-[13px] font-semibold">
+              {formData.targetIntensity.charAt(0).toUpperCase() +
+                formData.targetIntensity.slice(1)}
+            </span>
           </div>
 
           {/* Habit Focus */}
@@ -237,7 +241,8 @@ export default function Step4ReviewProgram({ formData }: Step4Props) {
                   </div>
 
                   <span className="text-[13px] font-medium text-gray-800">
-                    {supp}
+                    {/* {supp} */}
+                    {supplementLabelMap[supp] ?? supp}
                   </span>
                 </div>
               ))}
