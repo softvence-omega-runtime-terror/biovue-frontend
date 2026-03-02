@@ -4,56 +4,65 @@ import { useRouter } from "next/navigation";
 import { ProgramFormData } from "../CreateProgramsModal";
 import { useMemo, useState } from "react";
 import { USERS_DATA } from "@/components/AdminDashboard/Data";
+import { Check, Search, UserPlus, X } from "lucide-react";
 
 interface Step4Props {
   formData: ProgramFormData;
+  showSuccess: boolean;
+  setShowSuccess: (v: boolean) => void;
+  onClose: () => void;
 }
 
-export default function Step4ReviewProgram({ formData }: Step4Props) {
+export default function Step4ReviewProgram({
+  formData,
+  showSuccess,
+  setShowSuccess,
+  onClose,
+}: Step4Props) {
   const router = useRouter();
 
-  const [showSuccess, setShowSuccess] = useState(false);
   const [showAssign, setShowAssign] = useState(false);
   const [search, setSearch] = useState("");
   const [selected, setSelected] = useState<string[]>([]);
   const habits = formData.habitFocus;
-
+  const [showAssignSuccess, setShowAssignSuccess] = useState(false);
+  const [showNoClientSelected, setShowNoClientSelected] = useState(false);
   const macros = [
     {
       title: "Calories",
       value: formData.wellnessMetrics.calories,
       unit: " kcal",
-      bg: "bg-[#e0f2f1]",
+      bg: "bg-[#FEF3C7]",
       border: "border-[#26a69a]",
-      titleColor: "text-[#00897b]",
-      valueColor: "text-[#00695c]",
+      titleColor: "text-[#92400E]",
+      valueColor: "text-[#92400E]",
     },
     {
       title: "Protein",
       value: formData.wellnessMetrics.protein,
       unit: " g",
-      bg: "bg-[#1b5e20]",
+      bg: "bg-[#DBEAFE]",
       border: "border-[#1b5e20]",
-      titleColor: "text-[#a5d6a7]",
-      valueColor: "text-white",
+      titleColor: "text-[#1E40AF]",
+      valueColor: "text-[#1E40AF]",
     },
     {
       title: "Carbs",
       value: formData.wellnessMetrics.carbs,
       unit: " g",
-      bg: "bg-[#c8e6c9]",
+      bg: "bg-[#FCE7F3]",
       border: "border-[#a5d6a7]",
-      titleColor: "text-[#2e7d32]",
-      valueColor: "text-[#1b5e20]",
+      titleColor: "text-[#9F1239]",
+      valueColor: "text-[#9F1239]",
     },
     {
       title: "Fat",
       value: formData.wellnessMetrics.fat,
       unit: " g",
-      bg: "bg-[#dcedc8]",
+      bg: "bg-[#D1FAE5]",
       border: "border-[#c5e1a5]",
-      titleColor: "text-[#558b2f]",
-      valueColor: "text-[#33691e]",
+      titleColor: "text-[#065F46]",
+      valueColor: "text-[#065F46]",
     },
   ];
   const focusAreaLabelMap: Record<string, string> = {
@@ -94,189 +103,183 @@ export default function Step4ReviewProgram({ formData }: Step4Props) {
     preWorkout: "Pre-Workout",
     other: "Other",
   };
-
+  const handleSearch = () => {
+    console.log("Searching for:", search);
+  };
   return (
     <div className="min-h-screen ">
       <div className="py-5">
-        <div className=" rounded-2xl space-y-5">
+        <div className=" rounded-2xl">
           {/* Header */}
-          <div className="mb-2">
-            <h2 className="text-3xl font-bold text-[#111827] leading-tight">
-              Step 4 of 4 – Review Program
-            </h2>
-            <p className="text-base text-[#6B7280] mt-1">
-              Confirm all details before creating the program
-            </p>
-          </div>
-
-          {/* Program Basics */}
-          <div className="bg-white rounded-xl border border-gray-200 p-6 space-y-4">
-            <p className="text-[11px] uppercase font-bold tracking-wide text-gray-400">
-              Program Basics
-            </p>
-
-            <h3 className="text-[18px] font-bold text-gray-900">
-              {formData.programName}
-            </h3>
-
-            <p className="text-[13px] font-bold text-gray-900">
-              {formData.duration}
-            </p>
-
-            <p className="text-[13px] font-bold text-gray-900">
-              {formData.primaryGoal}
-            </p>
-
-            <span className="inline-block px-3 py-0.5 rounded-full bg-orange-100 text-orange-500 text-[13px] font-semibold">
-              {formData.targetIntensity.charAt(0).toUpperCase() +
-                formData.targetIntensity.slice(1)}
-            </span>
-          </div>
-
-          {/* Habit Focus */}
-          <div className="bg-white rounded-xl border border-gray-200 p-6">
-            <div className="flex justify-between items-center mb-3">
-              <p className="text-[11px] uppercase font-bold tracking-wide text-gray-400">
-                Habit Focus
+          <div className="border-b bg-white flex justify-between items-start">
+            <div className="mb-2">
+              <h2 className="text-3xl font-bold text-[#111827] leading-tight">
+                Step 4 of 4 – Review Program
+              </h2>
+              <p className="text-base text-[#6B7280] mt-1">
+                Confirm all details before creating the program
               </p>
-              <span className="text-[12px] text-gray-400">
-                {habits.length} selected
-              </span>
             </div>
-
-            <div className="flex gap-2">
-              {habits.map((habit) => (
-                <span
-                  key={habit}
-                  className="px-3.5 py-1.5 rounded-full border border-gray-300 bg-gray-50 text-gray-700 text-[12px] font-medium"
-                >
-                  {habit}
-                </span>
-              ))}
-            </div>
+            <button
+              onClick={onClose}
+              className="cursor-pointer rounded-full border-2 p-1 hover:opacity-80"
+            >
+              <X />
+            </button>
           </div>
 
-          {/* Program Focus */}
-          <div className="bg-white rounded-xl border border-gray-200 p-6 space-y-3">
-            <p className="text-[11px] uppercase font-bold tracking-wide text-gray-400 mb-3">
-              Program Focus
-            </p>
+          <div className="space-y-3 md:space-y-5 pt-4 md:pt-8">
+            {/* Program Basics */}
+            <div className="bg-white rounded-xl shadow-md p-6 space-y-4">
+              <p className="text-sm uppercase font-bold tracking-wide text-[#6B7280]">
+                Program Basics
+              </p>
 
-            {focusAreas.map((area) => (
-              <div
-                key={area}
-                className="flex items-center gap-3 bg-emerald-50 border border-emerald-200 rounded-lg px-4 py-3"
-              >
-                <div className="w-5 h-5 rounded-full bg-emerald-500 flex items-center justify-center shrink-0">
-                  <svg width="11" height="9" viewBox="0 0 11 9" fill="none">
-                    <path
-                      d="M1 4.5L3.5 7L9.5 1"
-                      stroke="white"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
+              <h3 className="text-xl md:text-3xl font-bold text-[#111827]">
+                {formData.programName}
+              </h3>
+
+              <div className="flex items-center justify-between w-full">
+                <div className="text-left">
+                  <p className="text-sm font-medium text-[#6B7280]">Duration</p>
+                  <p className="text-base font-semibold text-[#111827]">
+                    {formData.duration}
+                  </p>
                 </div>
-                <span className="text-[13px] font-medium text-gray-800">
-                  {area}
+                <div className="text-center">
+                  <p className="text-sm font-medium text-[#6B7280]">
+                    Primary Goal
+                  </p>
+                  <p className="text-base font-semibold text-[#111827]">
+                    {formData.primaryGoal}
+                  </p>
+                </div>
+                <div className="text-right">
+                  <p className="text-base font-semibold text-[#111827]">
+                    Target Intensity
+                  </p>
+                  <span className="inline-block px-3 py-0.5 rounded-full bg-[#F59E0B15] text-[#F59E0B] text-base font-semibold">
+                    {formData.targetIntensity.charAt(0).toUpperCase() +
+                      formData.targetIntensity.slice(1)}
+                  </span>
+                </div>
+              </div>
+            </div>
+            {/* Habit Focus */}
+            <div className="bg-white rounded-xl shadow-md p-6">
+              <div className="flex justify-between items-center mb-3">
+                <p className="text-sm uppercase font-semibold tracking-wide text-[#6B7280]">
+                  Habit Focus
+                </p>
+                <span className="text-[12px] text-gray-400">
+                  {habits.length} selected
                 </span>
               </div>
-            ))}
-          </div>
 
-          {/* Wellness Macros */}
-          <div className="bg-white rounded-xl border border-gray-200 p-6">
-            <p className="text-[11px] uppercase font-bold tracking-wide text-gray-400 mb-4">
-              Wellness Macros
-            </p>
-
-            <div className="grid grid-cols-4 gap-3">
-              {macros.map((macro) => (
-                <div
-                  key={macro.title}
-                  className={`rounded-lg p-3.5 ${macro.bg} border-l-4 ${macro.border}`}
-                >
-                  <p
-                    className={`text-[11px] font-medium mb-1 ${macro.titleColor}`}
+              <div className="flex gap-2">
+                {habits.map((habit) => (
+                  <span
+                    key={habit}
+                    className="px-3.5 py-1.5 rounded-full  bg-[#EEF2FF] text-[#4F46E5] text-sm font-medium"
                   >
-                    {macro.title}
-                  </p>
-
-                  <p
-                    className={`text-[20px] font-bold leading-tight ${macro.valueColor}`}
-                  >
-                    {macro.value}
-                    <span className="text-[14px] font-semibold">
-                      {macro.unit}
-                    </span>
-                  </p>
-                </div>
-              ))}
+                    {habit}
+                  </span>
+                ))}
+              </div>
             </div>
-          </div>
+            {/* Program Focus */}
+            <div className="bg-white rounded-xl shadow-md p-6 space-y-3">
+              <p className="text-sm uppercase font-semibold tracking-wide text-[#6B7280] mb-3">
+                Program Focus
+              </p>
 
-          {/* Supplements */}
-          <div className="bg-white rounded-xl border border-gray-200 p-6">
-            <p className="text-[11px] uppercase font-bold tracking-wide text-gray-400 mb-4">
-              Supplements
-            </p>
-
-            <div className="grid grid-cols-2 gap-3">
-              {supplements.map((supp) => (
+              {focusAreas.map((area) => (
                 <div
-                  key={supp}
-                  className="flex items-center gap-2.5 border border-gray-200 rounded-lg px-4 py-2.5"
+                  key={area}
+                  className="flex items-center gap-3 bg-[#F0FDF4] rounded-lg p-4"
                 >
-                  <div className="w-5 h-5 rounded-lg bg-teal-700 flex items-center justify-center shrink-0">
-                    <svg width="11" height="9" viewBox="0 0 11 9">
-                      <path
-                        d="M1 4.5L3.5 7L9.5 1"
-                        stroke="white"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      />
-                    </svg>
+                  <div className="w-5 h-5 rounded-full bg-[#10B981] flex items-center justify-center shrink-0">
+                    <Check size={14} className="text-white" />
                   </div>
-
-                  <span className="text-[13px] font-medium text-gray-800">
-                    {/* {supp} */}
-                    {supplementLabelMap[supp] ?? supp}
+                  <span className="text-base font-medium text-gray-800">
+                    {area}
                   </span>
                 </div>
               ))}
             </div>
-          </div>
+            {/* Wellness Macros */}
+            <div className="bg-white rounded-xl shadow-md p-6">
+              <p className="text-sm uppercase font-semibold tracking-wide text-[#6B7280] mb-4">
+                Wellness Macros
+              </p>
 
-          {/* Footer Buttons */}
-          <div className="flex justify-between items-center pt-2">
-            <button
-              onClick={() => router.back()}
-              className="px-5 py-2.5 rounded-lg border border-gray-300 bg-white text-[13px] text-gray-600 font-medium hover:bg-gray-50 transition-colors"
-            >
-              ← Back
-            </button>
+              <div className="grid grid-cols-4 gap-3">
+                {macros.map((macro) => (
+                  <div
+                    key={macro.title}
+                    className={`rounded-lg p-4 ${macro.bg}`}
+                  >
+                    <p
+                      className={`text-sm font-medium mb-1 ${macro.titleColor}`}
+                    >
+                      {macro.title}
+                    </p>
 
-            <button
-              onClick={() => setShowSuccess(true)}
-              className="px-6 py-2.5 rounded-lg bg-red-500 text-white text-[13px] font-semibold hover:bg-red-600 transition-colors"
-            >
-              Save Program
-            </button>
+                    <p
+                      className={`text-[20px] font-bold leading-tight ${macro.valueColor}`}
+                    >
+                      {macro.value}
+                      <span className="text-xl font-semibold">
+                        {macro.unit}
+                      </span>
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </div>
+            {/* Supplements */}
+            <div className="bg-white rounded-xl shadow-md p-6">
+              <p className="text-sm uppercase font-semibold tracking-wide text-[#6B7280] mb-4">
+                Supplements
+              </p>
+
+              <div className="grid grid-cols-2 gap-3">
+                {supplements.map((supp) => (
+                  <div
+                    key={supp}
+                    className="flex items-center gap-2.5 border border-gray-200 rounded-lg px-4 py-2.5"
+                  >
+                    <div className="w-5 h-5 rounded-lg bg-[#6366F1] flex items-center justify-center shrink-0">
+                      <Check size={14} className="text-white" />
+                    </div>
+
+                    <span className="text-base font-medium text-gray-800">
+                      {/* {supp} */}
+                      {supplementLabelMap[supp] ?? supp}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
 
           {/* SUCCESS MODAL */}
           {showSuccess && (
-            <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-100">
-              <div className="bg-white w-105 rounded-2xl p-8 text-center">
-                <div className="w-16 h-16 bg-teal-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  ✓
+            <div
+              onClick={() => setShowSuccess(false)}
+              className="fixed inset-0 bg-black/40 flex items-center justify-center z-100"
+            >
+              <div
+                onClick={(e) => e.stopPropagation()}
+                className="bg-white max-w-xl rounded-2xl p-6 text-center"
+              >
+                <div className="w-16 h-16 bg-[#0FA4A926] rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Check size={36} className="text-[#0FA4A9]" />
                 </div>
 
-                <h3 className="text-xl font-bold">Program Created!</h3>
+                <h3 className="text-2xl font-semibold">Program Created!</h3>
 
-                <p className="text-gray-400 text-sm mt-2">
+                <p className="text-[#8C9094] text-sm mt-2">
                   "Power Recomp" has been successfully saved to your dashboard.
                 </p>
 
@@ -285,14 +288,18 @@ export default function Step4ReviewProgram({ formData }: Step4Props) {
                     setShowSuccess(false);
                     setShowAssign(true);
                   }}
-                  className="mt-6 w-full bg-teal-600 text-white py-3 rounded-lg"
+                  className="mt-6 flex items-center justify-center gap-2 cursor-pointer hover:opacity-80 w-full bg-[#0FA4A9] text-white py-3 rounded-lg"
                 >
-                  Assign To Clients
+                  <UserPlus /> <span>Assign To Clients</span>
                 </button>
 
                 <button
-                  onClick={() => router.push("/trainer-dashboard/programs")}
-                  className="mt-3 w-full border py-3 rounded-lg text-gray-600"
+                  onClick={() => {
+                    setShowSuccess(false);
+                    onClose();
+                    router.push("/trainer-dashboard/programs");
+                  }}
+                  className="mt-3 w-full font-medium cursor-pointer hover:opacity-80 border py-3 rounded-lg text-[#0D9488]"
                 >
                   Return To Programs
                 </button>
@@ -302,69 +309,157 @@ export default function Step4ReviewProgram({ formData }: Step4Props) {
 
           {/* ASSIGN CLIENT MODAL */}
           {showAssign && (
-            <div className="fixed inset-0 bg-black/40 flex justify-center items-center z-100">
-              <div className="bg-white w-160 rounded-2xl p-6">
+            <div
+              onClick={() => setShowSuccess(false)}
+              className="fixed inset-0 bg-black/40 flex justify-center items-center z-100"
+            >
+              <div
+                onClick={(e) => e.stopPropagation()}
+                className="bg-white mx-auto w-xl md:w-3xl  rounded-2xl p-4 md:p-8"
+              >
                 {/* header */}
-                <div className="flex justify-between">
+                <div className="flex items-start justify-between">
                   <div>
-                    <h3 className="text-lg font-semibold">Assign Program</h3>
+                    <h3 className="text-xl mb-3 md:text-2xl text-[#1F2D2E] font-medium">
+                      Assign Program
+                    </h3>
 
-                    <p className="text-sm text-gray-400">
-                      Select clients to assign
+                    <p className="text-base text-[#5F6F73]">
+                      Select clients to assign to Holistic Habit Transformation
                     </p>
                   </div>
 
-                  <button onClick={() => setShowAssign(false)}>✕</button>
+                  <button onClick={() => setShowAssign(false)}>
+                    <X className="cursor-pointer hover:opacity-80" />
+                  </button>
                 </div>
-
                 {/* info */}
-                <div className="bg-cyan-50 text-cyan-700 text-xs p-3 rounded mt-4">
+                <div className="bg-[#0FA4A91A] text-[#0FA4A9] text-sm px-3 md:px-7 py-2 md:py-5 rounded-lg mt-4">
                   Clients will see goals & targets but cannot edit structure.
                 </div>
-
                 {/* search */}
-                <input
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  placeholder="Search clients..."
-                  className="w-full border rounded-lg px-4 py-2 mt-4"
-                />
-
+                <div className="relative w-full mt-4">
+                  <input
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    placeholder="Search clients by name or email..."
+                    className="w-full placeholder:text-[#9AAEB2] border rounded-lg px-4 py-2 pl-10 "
+                  />
+                  <button
+                    onClick={handleSearch}
+                    className="absolute left-3 top-1/2 transform -translate-y-1/2 text-black  py-1 rounded-lg hover:bg-teal-700"
+                  >
+                    <Search className="w-4 h-4" />
+                  </button>
+                </div>
                 {/* list */}
-                <div className="mt-4 max-h-75 overflow-y-auto">
+                <div className="mt-4 max-h-44 md:max-h-80 overflow-y-auto custom-scrollbar">
                   {filteredUsers.map((u) => (
                     <div
                       key={u.id}
-                      className="flex justify-between items-center py-3 border-b"
+                      className="flex  justify-between items-center py-3 border-b border-[#E3ECEB]"
                     >
-                      <div>
-                        <p className="font-medium">{u.name}</p>
-
-                        <p className="text-xs text-gray-400">{u.email}</p>
+                      {/* user info */}
+                      <div className="px-3 md:px-6 py-2 md:py-4">
+                        <p className="font-medium text-base mb-2">{u.name}</p>
+                        <p className="text-sm text-[#5F6F73]">{u.email}</p>
                       </div>
 
-                      <input
-                        type="checkbox"
-                        checked={selected.includes(u.id)}
-                        onChange={() => toggleUser(u.id)}
-                      />
+                      {/* checkbox */}
+                      <div className="pr-3  md:pr-6">
+                        <input
+                          type="checkbox"
+                          checked={selected.includes(u.id)}
+                          onChange={() => toggleUser(u.id)}
+                          className="w-6 cursor-pointer h-6"
+                        />
+                      </div>
                     </div>
                   ))}
                 </div>
-
                 {/* footer */}
                 <div className="flex justify-between mt-4">
                   <button
-                    onClick={() => router.push("/trainer-dashboard/programs")}
-                    className="border px-4 py-2 rounded-lg"
+                    onClick={() => {
+                      setShowAssign(false);
+                      router.push("/trainer-dashboard/programs");
+                    }}
+                    className="border hover:opacity-80 cursor-pointer px-4 py-2 rounded-lg"
                   >
                     Skip For Now
                   </button>
 
-                  <button className="bg-teal-600 text-white px-5 py-2 rounded-lg">
+                  <button
+                    onClick={() => {
+                      if (selected.length === 0) {
+                        setShowNoClientSelected(true);
+                        return;
+                      }
+                      setShowAssignSuccess(true);
+                    }}
+                    className="bg-[#0D9488] cursor-pointer hover:opacity-80 text-white px-5 py-2 rounded-lg"
+                  >
                     Assign Program
                   </button>
                 </div>
+              </div>
+            </div>
+          )}
+
+          {showAssignSuccess && (
+            <div
+              onClick={() => setShowSuccess(false)}
+              className="fixed inset-0 bg-black/40 flex items-center justify-center z-200"
+            >
+              <div
+                onClick={(e) => e.stopPropagation()}
+                className="bg-white max-w-md rounded-2xl p-6 text-center"
+              >
+                <div className="w-16 h-16 bg-[#0FA4A926] rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Check size={36} className="text-[#0FA4A9]" />
+                </div>
+
+                <h3 className="text-2xl font-semibold">Program Assigned!</h3>
+                <p className="text-[#8C9094] text-sm mt-2">
+                  The program has been successfully assigned to selected
+                  clients.
+                </p>
+
+                <button
+                  onClick={() => {
+                    setShowAssignSuccess(false);
+                    setShowAssign(false);
+                    router.push("/trainer-dashboard/programs");
+                  }}
+                  className="mt-6 cursor-pointer w-full bg-[#0FA4A9] text-white py-3 rounded-lg hover:opacity-80"
+                >
+                  OK
+                </button>
+              </div>
+            </div>
+          )}
+          {showNoClientSelected && (
+            <div
+              onClick={() => setShowSuccess(false)}
+              className="fixed inset-0 bg-black/40 flex items-center justify-center z-200"
+            >
+              <div
+                onClick={(e) => e.stopPropagation()}
+                className="bg-white max-w-md rounded-2xl p-6 text-center"
+              >
+                <h3 className="text-2xl font-semibold text-red-600">
+                  No Client Selected!
+                </h3>
+                <p className="text-[#8C9094] text-sm mt-2">
+                  Please select at least one client to assign the program.
+                </p>
+
+                <button
+                  onClick={() => setShowNoClientSelected(false)}
+                  className="mt-6 cursor-pointer w-full bg-[#0FA4A9] text-white py-3 rounded-lg hover:opacity-80"
+                >
+                  OK
+                </button>
               </div>
             </div>
           )}

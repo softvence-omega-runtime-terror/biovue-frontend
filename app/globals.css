@@ -5,11 +5,11 @@
 
 :root {
   /* BioVue Brand Colors */
-  --primary: #0FA4A9;  
-  --accent: #0D9488;
-  --landing: #F4FBFA;
-  --Main-Text-Clor: #1F2D2E;
-  --para-text-clor: #5F6F73;
+  --primary: #0fa4a9;
+  --accent: #0d9488;
+  --landing: #f4fbfa;
+  --Main-Text-Clor: #1f2d2e;
+  --para-text-clor: #5f6f73;
   --radius: 0.625rem;
 
   /* shadcn/ui Base Variables (Neutral) */
@@ -107,14 +107,14 @@ body {
   --card-foreground: oklch(0.985 0 0);
   --popover: oklch(0.205 0 0);
   --popover-foreground: oklch(0.985 0 0);
-  --primary: #0FA4A9;
+  --primary: #0fa4a9;
   /* Keep BioVue primary in dark mode or adjust as needed */
   --primary-foreground: oklch(0.205 0 0);
   --secondary: oklch(0.269 0 0);
   --secondary-foreground: oklch(0.985 0 0);
   --muted: oklch(0.269 0 0);
   --muted-foreground: oklch(0.708 0 0);
-  --accent: #0D9488;
+  --accent: #0d9488;
   /* Keep BioVue accent in dark mode */
   --accent-foreground: oklch(0.985 0 0);
   --destructive: oklch(0.704 0.191 22.216);
@@ -144,4 +144,19 @@ body {
   body {
     @apply bg-background text-foreground;
   }
+}
+
+/* custom scrollbar for the modal list */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 8px; /* width of scrollbar */
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: #f1f1f1; /* track color */
+  border-radius: 8px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background-color: #0d9488; /* scrollbar color */
+  border-radius: 8px;
 }
