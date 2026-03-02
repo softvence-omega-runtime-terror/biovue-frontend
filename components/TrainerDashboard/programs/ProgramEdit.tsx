@@ -16,7 +16,6 @@ import {
 import { Label } from "@/components/ui/label";
 import SuccessModal from "./SuccessModal";
 
-
 interface Program {
   id: string;
   name: string;
@@ -180,14 +179,14 @@ export default function ProgramEdit({ program }: ProgramEditProps) {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="max-w-4xl mx-auto p-6">
+    <div className="min-h-screen">
+      <div className="">
         {/* Back Button */}
         <button
           onClick={handleCancel}
-          className="mb-6 flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900 font-medium"
+          className="mb-6 border-2 cursor-pointer rounded-lg border-[#3A86FF25] px-3 py-2 flex items-center gap-2 text-sm text-gray-500 hover:text-gray-700"
         >
-          <ChevronLeft size={16} /> Back to Program
+          &larr; Back to Programs
         </button>
 
         <form onSubmit={handleSubmit} className="space-y-8">

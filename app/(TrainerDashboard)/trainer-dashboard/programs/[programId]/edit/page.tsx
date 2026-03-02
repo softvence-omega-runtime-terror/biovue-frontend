@@ -1,14 +1,11 @@
+"use client";
+
+import { useParams } from "next/navigation";
 import ProgramEdit from "@/components/TrainerDashboard/programs/ProgramEdit";
 import {
   programs,
   Program,
 } from "@/components/TrainerDashboard/programs/ProgramsData";
-
-interface EditProgramPageProps {
-  params: {
-    id: string;
-  };
-}
 
 function mapProgramToEdit(program: Program) {
   return {
@@ -36,13 +33,14 @@ function mapProgramToEdit(program: Program) {
   };
 }
 
-export default function EditProgramPage({ params }: EditProgramPageProps) {
-  const { id } = params;
+export default function EditProgramPage() {
+  const params = useParams();
+  const programId = params.programId as string;
 
-  const foundProgram = programs.find((p) => p.id === id);
+  const foundProgram = programs.find((p) => p.id === programId);
 
   if (!foundProgram) {
-    return <div className="p-6">Program not found</div>;
+    return <div className="p-6">Program not found (ID: {programId})</div>;
   }
 
   const program = mapProgramToEdit(foundProgram);
