@@ -47,7 +47,7 @@ export default function SupplierDashboardLayout({
   };
 
   return (
-    <div className="flex h-screen bg-[#F8FBFA] overflow-hidden">
+    <div className="flex h-screen bg-[#F3F8FF] overflow-hidden">
       {/* Sidebar */}
       <aside
         className={cn(
