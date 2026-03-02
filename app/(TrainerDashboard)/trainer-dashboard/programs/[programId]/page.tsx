@@ -20,6 +20,7 @@ export default function ProgramDetailsPage() {
   return (
     <ProgramView
       program={{
+        id: program.id,
         name: program.name,
         duration: program.duration,
         primaryGoal: program.primaryGoal,

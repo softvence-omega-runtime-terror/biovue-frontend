@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 
 interface ProgramViewProps {
   program: {
+    id: string;
     name: string;
     duration: string;
     primaryGoal: string;
@@ -28,6 +29,10 @@ export default function ProgramView({ program }: ProgramViewProps) {
   const handleViewClick = () => {
     router.push(`/trainer-dashboard/programs`);
   };
+  const handleEditClick = () => {
+    router.push(`/trainer-dashboard/programs/${program.id}/edit`);
+  };
+
   const supplementOptions = [
     "Protein Powder",
     "Creatine Monohydrate",
@@ -41,12 +46,12 @@ export default function ProgramView({ program }: ProgramViewProps) {
     <div className=" min-h-screen">
       <button
         onClick={handleViewClick}
-        className="mb-6 border-2 rounded-lg border-[#3A86FF25] px-3 py-2 flex items-center gap-2 text-sm text-gray-500 hover:text-gray-700"
+        className="mb-6 border-2 cursor-pointer rounded-lg border-[#3A86FF25] px-3 py-2 flex items-center gap-2 text-sm text-gray-500 hover:text-gray-700"
       >
         &larr; Back to Programs
       </button>
 
-      <div className=" border-t-2 pt-5 border-[#BDBDBD] space-y-6">
+      <div className=" border-t-2 pt-5 md:pt-10 border-[#BDBDBD] space-y-6">
         {/* Header */}
         <div className="flex justify-between items-start">
           <div>
@@ -64,7 +69,10 @@ export default function ProgramView({ program }: ProgramViewProps) {
               <span> • Created January 15, 2026</span>
             </div>
           </div>
-          <button className="px-4 py-2 flex items-center gap-2 cursor-pointer rounded-lg bg-indigo-600 text-white  hover:bg-indigo-700 text-base">
+          <button
+            onClick={handleEditClick}
+            className="px-4 py-2 flex items-center gap-2 cursor-pointer rounded-lg bg-indigo-600 text-white  hover:bg-indigo-700 text-base"
+          >
             <EditIcon size={14} /> <span>Edit Program</span>
           </button>
         </div>

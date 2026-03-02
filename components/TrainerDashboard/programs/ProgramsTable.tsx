@@ -1,8 +1,6 @@
 "use client";
 import { useState } from "react";
 import { Program } from "./ProgramsData";
-import { MoreVertical } from "lucide-react";
-import ProgramViewModal from "./ProgramViewModal";
 import { useRouter } from "next/navigation";
 
 interface ProgramsTableProps {
@@ -88,12 +86,9 @@ export default function ProgramsTable({ programs }: ProgramsTableProps) {
                 <div className="flex items-center gap-3">
                   <button
                     onClick={() => handleViewClick(program)}
-                    className="text-sm font-semibold text-[#111827]"
+                    className="text-sm cursor-pointer font-semibold text-[#111827]"
                   >
                     VIEW
-                  </button>
-                  <button className="text-[#9CA3AF] hover:text-[#6B7280]">
-                    <MoreVertical size={20} />
                   </button>
                 </div>
               </td>
@@ -101,14 +96,6 @@ export default function ProgramsTable({ programs }: ProgramsTableProps) {
           ))}
         </tbody>
       </table>
-
-      {/* {isViewOpen && selectedProgram && (
-        <ProgramViewModal
-          program={selectedProgram}
-          isOpen={isViewOpen}
-          onClose={() => setIsViewOpen(false)}
-        />
-      )} */}
     </div>
   );
 }
