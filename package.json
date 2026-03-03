@@ -9,16 +9,12 @@
     "lint": "eslint"
   },
   "dependencies": {
-<<<<<<< HEAD
-<<<<<<< HEAD
+
     "@radix-ui/react-avatar": "^1.1.11",
     "@radix-ui/react-scroll-area": "^1.2.10",
-=======
+
     "@reduxjs/toolkit": "^2.11.2",
->>>>>>> 95fb3277329df0f3f3d046f3e3db0a59848f0afe
-=======
-    "@reduxjs/toolkit": "^2.11.2",
->>>>>>> 69ca535b50f83bb1365cbc443022bcb302aa9d9a
+
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "framer-motion": "^12.34.3",
