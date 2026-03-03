@@ -4,13 +4,26 @@ import React, { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Mail, ChevronLeft, ArrowRight } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useForgotPasswordMutation } from "@/redux/features/api/auth/authApi";
+import { toast } from "sonner";
 
 const ForgotPasswordPage = () => {
+  const router = useRouter();
   const [email, setEmail] = useState("");
+  const [forgotPassword, { isLoading }] = useForgotPasswordMutation();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Recovering password for:", email);
+    try {
+      const res = await forgotPassword({ email }).unwrap();
+      if (res?.success || res?.status === "success") {
+        toast.success(res?.message || "Password reset link sent to your email!");
+        router.push(`/reset-password?email=${email}`);
+      }
+    } catch (err: any) {
+      toast.error(err?.data?.message || "Failed to send reset link. Please try again.");
+    }
   };
 
   return (
@@ -80,15 +93,14 @@ const ForgotPasswordPage = () => {
 
             {/* Verify Button */}
             <div className="pt-2">
-              <Link href="/verify-otp">
-                <button
-                  type="submit"
-                  className="w-full bg-[#0FA4A9] text-white py-3 rounded-xl font-bold text-lg hover:bg-opacity-90 transition-all flex items-center justify-center gap-2 group shadow-lg shadow-[#0FA4A9]/10 cursor-pointer"
-                >
-                  Verify
-                <ArrowRight size={22} className="group-hover:translate-x-1 transition-transform" />
+              <button
+                type="submit"
+                disabled={isLoading}
+                className="w-full bg-[#0FA4A9] text-white py-3 rounded-xl font-bold text-lg hover:bg-opacity-90 transition-all flex items-center justify-center gap-2 group shadow-lg shadow-[#0FA4A9]/10 cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed"
+              >
+                {isLoading ? "Sending..." : "Verify"}
+                {!isLoading && <ArrowRight size={22} className="group-hover:translate-x-1 transition-transform" />}
               </button>
-              </Link>
             </div>
           </form>
         </div>
