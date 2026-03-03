@@ -3,8 +3,6 @@
 import { useState, useRef, useEffect } from "react";
 import { Send } from "lucide-react";
 
-import { ScrollArea } from "@/components/ui/scroll-area";
-
 interface Message {
   id: string;
   senderRole: "client" | "coach";
@@ -69,18 +67,16 @@ export default function ChatArea({ clientId }: ChatAreaProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    // Wrap in a micro-task to avoid synchronous state update warning
     const timer = setTimeout(() => {
       setMessages(mockMessages[clientId] || []);
     }, 0);
-
     return () => clearTimeout(timer);
   }, [clientId]);
 
-  // Auto-scroll to bottom when messages update
-  useEffect(() => {
-    scrollRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+  // Scroll to bottom whenever messages change
+  //   useEffect(() => {
+  //     scrollRef.current?.scrollIntoView({ behavior: "smooth" });
+  //   }, [messages]);
 
   const handleSendMessage = () => {
     if (!inputValue.trim()) return;
@@ -99,17 +95,14 @@ export default function ChatArea({ clientId }: ChatAreaProps) {
   };
 
   return (
-    <div className="flex-1 flex flex-col ">
-      {/* Messages Area */}
-      <div
-        className="flex-1 p-6 overflow-y-auto
-      "
-      >
-        <div className="space-y-6">
+    <div className="flex flex-col flex-1 h-full">
+      {/* Scrollable Messages */}
+      <div className="flex-1 overflow-y-auto p-6">
+        <div className="space-y-4">
           {messages.map((msg) => (
             <div
               key={msg.id}
-              className={`flex  ${msg.senderRole === "coach" ? "justify-end" : "justify-start"}`}
+              className={`flex ${msg.senderRole === "coach" ? "justify-end" : "justify-start"}`}
             >
               <div className="max-w-xs">
                 <div
@@ -129,19 +122,19 @@ export default function ChatArea({ clientId }: ChatAreaProps) {
         </div>
       </div>
 
-      {/* Input Area */}
-      <div className="border-t mt-auto border-gray-200 p-4">
-        <div className="flex gap-2 ">
+      {/* Input Box - Always at bottom */}
+      <div className="border-t border-gray-200 p-4 flex-shrink-0">
+        <div className="flex gap-2">
           <input
             placeholder="Type your message..."
-            className="flex-1 text-sm px-3 bg-white py-4 border rounded-lg"
+            className="flex-1 px-3 py-3 text-sm border rounded-lg bg-white"
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && handleSendMessage()}
           />
           <button
             onClick={handleSendMessage}
-            className="cursor-pointer hover:opacity-80 text-black"
+            className="text-black hover:opacity-80"
           >
             <Send className="w-5 h-5" />
           </button>
