@@ -1,19 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import SuccessModal from "./SuccessModal";
+import { AlertCircle } from "lucide-react";
 
 interface Program {
   id: string;
@@ -95,6 +89,9 @@ export default function ProgramEdit({ program }: ProgramEditProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [formData, setFormData] = useState<Program>(program);
+  useEffect(() => {
+    setFormData(program);
+  }, [program]);
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
@@ -191,177 +188,143 @@ export default function ProgramEdit({ program }: ProgramEditProps) {
         <form onSubmit={handleSubmit} className="space-y-8">
           {/* Program Basics */}
           <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
-            <h2 className="text-xl font-medium text-[#0FA4A9] mb-6">
+            <h2 className="text-lg md:text-xl font-medium text-[#0FA4A9] mb-4 md:mb-6">
               Program Basics
             </h2>
-
             <div className="space-y-4">
               {/* Program Name */}
               <div className="w-full">
                 <Label
                   htmlFor="name"
-                  className="text-gray-600 text-md md:text-lg font-medium"
+                  className="text-gray-700 text-md md:text-lg font-medium"
                 >
                   Program Name
                 </Label>
-
-                <Select
+                <select
                   value={formData.name}
-                  onValueChange={(value) => handleSelectChange("name", value)}
+                  onChange={(e) => handleSelectChange("name", e.target.value)}
+                  className="mt-2 w-full h-11 rounded-xl border border-gray-200 text-gray-500 text-sm px-3"
                 >
-                  <SelectTrigger className="mt-2 w-full h-11 rounded-xl border border-gray-200 text-gray-500 text-sm text-left justify-start">
-                    <SelectValue placeholder="Select program name" />
-                  </SelectTrigger>
-
-                  <SelectContent>
-                    {PROGRAM_NAMES.map((name) => (
-                      <SelectItem key={name} value={name} className="text-left">
-                        {name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                  <option value="">Select program name</option>
+                  {PROGRAM_NAMES.map((name) => (
+                    <option key={name} value={name}>
+                      {name}
+                    </option>
+                  ))}
+                </select>
               </div>
 
               {/* Duration + Primary Goal */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {/* Duration */}
                 <div>
-                  <Label className="text-gray-700 text-md md:text-lg font-medium">Duration</Label>
-
-                  <Select
+                  <Label className="text-gray-700 text-md md:text-lg font-medium">
+                    Duration
+                  </Label>
+                  <select
                     value={formData.duration}
-                    onValueChange={(value) =>
-                      handleSelectChange("duration", value)
+                    onChange={(e) =>
+                      handleSelectChange("duration", e.target.value)
                     }
+                    className="mt-2 w-full h-11 rounded-xl border border-gray-200 text-gray-500 text-sm px-3"
                   >
-                    <SelectTrigger className="mt-2 w-full h-11 text-left justify-start">
-                      <SelectValue placeholder="Select duration" />
-                    </SelectTrigger>
-
-                    <SelectContent>
-                      {DURATIONS.map((duration) => (
-                        <SelectItem
-                          key={duration}
-                          value={duration}
-                          className="text-left"
-                        >
-                          {duration}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                    <option value="">Select duration</option>
+                    {DURATIONS.map((d) => (
+                      <option key={d} value={d}>
+                        {d}
+                      </option>
+                    ))}
+                  </select>
                 </div>
-
-                {/* Primary Goal */}
                 <div>
-                  <Label className="text-gray-700 font-medium">
+                  <Label className="text-gray-700 text-md md:text-lg font-medium">
                     Primary Goal
                   </Label>
-
-                  <Select
+                  <select
                     value={formData.primaryGoal}
-                    onValueChange={(value) =>
-                      handleSelectChange("primaryGoal", value)
+                    onChange={(e) =>
+                      handleSelectChange("primaryGoal", e.target.value)
                     }
+                    className="mt-2 w-full h-11 rounded-xl border border-gray-200 text-gray-500 text-sm px-3"
                   >
-                    <SelectTrigger className="mt-2 w-full h-11 text-left justify-start">
-                      <SelectValue placeholder="Select goal" />{" "}
-                      {formData.primaryGoal}
-                    </SelectTrigger>
-
-                    <SelectContent>
-                      {PRIMARY_GOALS.map((goal) => (
-                        <SelectItem
-                          key={goal}
-                          value={goal}
-                          className="text-left"
-                        >
-                          {goal}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                    <option value="">Select goal</option>
+                    {PRIMARY_GOALS.map((goal) => (
+                      <option key={goal} value={goal}>
+                        {goal}
+                      </option>
+                    ))}
+                  </select>
                 </div>
-              </div> 
+              </div>
 
+              {/* Intensity */}
               <div>
                 <Label className="text-gray-600 text-md md:text-lg font-medium">
                   Target Intensity
                 </Label>
                 <div className="mt-3 flex items-center gap-0 bg-[#0FA4A926] rounded-xl py-2 md:py-4 px-4 md:px-8">
-                  {INTENSITIES.map((intensity) => {
-                    const isActive = formData.intensity === intensity;
-                    return (
-                      <button
-                        key={intensity}
-                        type="button"
-                        onClick={() =>
-                          handleSelectChange("intensity", intensity)
-                        }
-                        className={`flex-1 py-2 rounded-lg text-base font-medium transition-all duration-150 ${
-                          isActive
-                            ? "bg-white text-gray-800 shadow-sm"
-                            : "text-gray-500 hover:text-gray-700"
-                        }`}
-                      >
-                        {intensity}
-                      </button>
-                    );
-                  })}
+                  {INTENSITIES.map((intensity) => (
+                    <button
+                      key={intensity}
+                      type="button"
+                      onClick={() => handleSelectChange("intensity", intensity)}
+                      className={`flex-1 py-2 rounded-lg text-base font-medium transition-all duration-150 ${
+                        formData.intensity === intensity
+                          ? "bg-white text-gray-800 shadow-sm"
+                          : "text-gray-500 hover:text-gray-700"
+                      }`}
+                    >
+                      {intensity}
+                    </button>
+                  ))}
                 </div>
               </div>
             </div>
           </div>
-          
 
           {/* Program Structure */}
           <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
-            <h2 className="text-lg font-semibold text-gray-900 mb-6">
+            <h2 className="text-lg md:text-xl font-medium text-[#0FA4A9] mb-4 md:mb-6">
               Program Structure
             </h2>
-
             <div className="space-y-4">
               <div>
                 <Label
                   htmlFor="weeklyActivityTarget"
-                  className="text-gray-700 font-medium"
+                  className="text-gray-700 text-md md:text-lg font-medium"
                 >
                   Weekly Activity Target
                 </Label>
-                <Select
+                <select
                   value={formData.weeklyActivityTarget}
-                  onValueChange={(value) =>
-                    handleSelectChange("weeklyActivityTarget", value)
+                  onChange={(e) =>
+                    handleSelectChange("weeklyActivityTarget", e.target.value)
                   }
+                  className="mt-2 w-full h-11 rounded-xl border border-gray-200 text-gray-500 text-sm px-3"
                 >
-                  <SelectTrigger className="mt-2">
-                    <SelectValue placeholder="Select target" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {WEEKLY_ACTIVITY_TARGETS.map((target) => (
-                      <SelectItem key={target} value={target}>
-                        {target}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                  <option value="">Select target</option>
+                  {WEEKLY_ACTIVITY_TARGETS.map((target) => (
+                    <option key={target} value={target}>
+                      {target}
+                    </option>
+                  ))}
+                </select>
               </div>
 
+              {/* Habit Focus */}
               <div>
-                <Label className="text-gray-700 font-medium">
+                <Label className="text-gray-700 text-md md:text-lg font-medium">
                   Habit Focus Areas
                 </Label>
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mt-3">
+                <div className="flex items-center gap-3 mt-3">
                   {HABIT_FOCUS_OPTIONS.map((habit) => (
                     <button
                       key={habit}
                       type="button"
                       onClick={() => handleHabitFocusToggle(habit)}
-                      className={`p-3 rounded-lg text-sm font-medium transition-colors text-center ${
+                      className={`py-2 px-6 rounded-full text-sm font-medium text-center transition-colors ${
                         formData.habitFocus.includes(habit)
                           ? "bg-indigo-100 text-indigo-700 border-2 border-indigo-300"
-                          : "bg-gray-100 text-gray-700 border-2 border-gray-200 hover:border-gray-300"
+                          : "bg-transparent text-gray-700 border-2 border-gray-200 hover:border-gray-300"
                       }`}
                     >
                       {habit}
@@ -370,8 +333,9 @@ export default function ProgramEdit({ program }: ProgramEditProps) {
                 </div>
               </div>
 
+              {/* Program Focus */}
               <div>
-                <Label className="text-gray-700 font-medium">
+                <Label className="text-gray-700 text-md md:text-lg font-medium">
                   Program Focus
                 </Label>
                 <div className="space-y-2 mt-3">
@@ -386,7 +350,7 @@ export default function ProgramEdit({ program }: ProgramEditProps) {
                         onChange={() => handleProgramFocusToggle(focus)}
                         className="w-4 h-4 rounded"
                       />
-                      <span className="text-sm font-medium text-gray-700">
+                      <span className="text-sm md:text-base font-medium text-gray-700">
                         {focus}
                       </span>
                     </label>
@@ -397,90 +361,95 @@ export default function ProgramEdit({ program }: ProgramEditProps) {
           </div>
 
           {/* Wellness Targets */}
-          <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
-            <h2 className="text-lg font-semibold text-gray-900 mb-6">
+          <div className="bg-white space-y-4 rounded-lg p-6 shadow-sm border border-gray-200">
+            <h2 className="text-lg md:text-xl font-medium text-[#0FA4A9] mb-4 md:mb-6">
               Wellness Targets
             </h2>
 
-            <div className="space-y-4">
-              <p className="text-sm text-cyan-600 bg-cyan-50 p-3 rounded-lg">
-                ℹ These are Wellness Targets, Not Medical Prescriptions. Clients
-                Cannot Edit These Values.
-              </p>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <Label
+                  htmlFor="calories"
+                  className="text-[#5F6F73] text-md md:text-lg font-medium"
+                >
+                  Calories (kcal)
+                </Label>
+                <Input
+                  type="number"
+                  id="calories"
+                  placeholder="e.g. 2000-2200"
+                  value={formData.wellnessMacros.calories}
+                  onChange={(e) =>
+                    handleMacroChange("calories", e.target.value)
+                  }
+                  className="mt-2"
+                />
+              </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <Label
-                    htmlFor="calories"
-                    className="text-gray-700 font-medium"
-                  >
-                    Calories (kcal)
-                  </Label>
-                  <Input
-                    type="number"
-                    id="calories"
-                    placeholder="e.g. 2000-2200"
-                    value={formData.wellnessMacros.calories}
-                    onChange={(e) =>
-                      handleMacroChange("calories", e.target.value)
-                    }
-                    className="mt-2"
-                  />
-                </div>
+              <div>
+                <Label
+                  htmlFor="protein"
+                  className="text-[#5F6F73] text-md md:text-lg font-medium"
+                >
+                  Protein (g)
+                </Label>
+                <Input
+                  type="number"
+                  id="protein"
+                  placeholder="e.g. 160"
+                  value={formData.wellnessMacros.protein}
+                  onChange={(e) => handleMacroChange("protein", e.target.value)}
+                  className="mt-2"
+                />
+              </div>
 
-                <div>
-                  <Label
-                    htmlFor="protein"
-                    className="text-gray-700 font-medium"
-                  >
-                    Protein (g)
-                  </Label>
-                  <Input
-                    type="number"
-                    id="protein"
-                    placeholder="e.g. 160"
-                    value={formData.wellnessMacros.protein}
-                    onChange={(e) =>
-                      handleMacroChange("protein", e.target.value)
-                    }
-                    className="mt-2"
-                  />
-                </div>
+              <div>
+                <Label
+                  htmlFor="carbs"
+                  className="text-[#5F6F73] text-md md:text-lg font-medium"
+                >
+                  Carbs (g)
+                </Label>
+                <Input
+                  type="number"
+                  id="carbs"
+                  placeholder="e.g. 200"
+                  value={formData.wellnessMacros.carbs}
+                  onChange={(e) => handleMacroChange("carbs", e.target.value)}
+                  className="mt-2"
+                />
+              </div>
 
-                <div>
-                  <Label htmlFor="carbs" className="text-gray-700 font-medium">
-                    Carbs (g)
-                  </Label>
-                  <Input
-                    type="number"
-                    id="carbs"
-                    placeholder="e.g. 200"
-                    value={formData.wellnessMacros.carbs}
-                    onChange={(e) => handleMacroChange("carbs", e.target.value)}
-                    className="mt-2"
-                  />
-                </div>
-
-                <div>
-                  <Label htmlFor="fat" className="text-gray-700 font-medium">
-                    Fat (g)
-                  </Label>
-                  <Input
-                    type="number"
-                    id="fat"
-                    placeholder="e.g. 70"
-                    value={formData.wellnessMacros.fat}
-                    onChange={(e) => handleMacroChange("fat", e.target.value)}
-                    className="mt-2"
-                  />
-                </div>
+              <div>
+                <Label
+                  htmlFor="fat"
+                  className="text-[#5F6F73] text-md md:text-lg font-medium"
+                >
+                  Fat (g)
+                </Label>
+                <Input
+                  type="number"
+                  id="fat"
+                  placeholder="e.g. 70"
+                  value={formData.wellnessMacros.fat}
+                  onChange={(e) => handleMacroChange("fat", e.target.value)}
+                  className="mt-2"
+                />
               </div>
             </div>
+
+            <p className="text-sm text-[#0FA4A9] flex gap-1 items-center bg-[#0FA4A91A] py-3 md:px-6 px-4 rounded-lg">
+              <AlertCircle size={14} />
+              <span>
+                These are Wellness Targets, Not Medical Prescriptions. Clients
+                Cannot Edit These Values.
+              </span>
+            </p>
           </div>
 
           {/* Supplement Recommendations */}
           <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
-            <h2 className="text-lg font-semibold text-gray-900 mb-6">
+            <h2 className="text-lg md:text-xl font-medium text-[#0FA4A9] mb-4 md:mb-6">
               Supplement Recommendations (Optional)
             </h2>
 
@@ -488,7 +457,7 @@ export default function ProgramEdit({ program }: ProgramEditProps) {
               {SUPPLEMENT_OPTIONS.map((supplement) => (
                 <label
                   key={supplement}
-                  className="flex items-center gap-3 p-3 rounded-lg border-2 border-gray-200 cursor-pointer hover:bg-gray-50"
+                  className="flex items-center gap-3 px-4 md:px-6 py-3 rounded-lg border-2 border-[#5F6F73] cursor-pointer hover:bg-gray-50"
                 >
                   <input
                     type="checkbox"
@@ -506,7 +475,7 @@ export default function ProgramEdit({ program }: ProgramEditProps) {
 
           {/* Internal Program Notes */}
           <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
-            <h2 className="text-lg font-semibold text-gray-900 mb-6">
+            <h2 className="text-lg md:text-xl font-medium text-[#0FA4A9] mb-4 md:mb-6">
               Internal Program Notes (Private)
             </h2>
 
@@ -515,7 +484,7 @@ export default function ProgramEdit({ program }: ProgramEditProps) {
               value={formData.internalNotes}
               onChange={handleInputChange}
               placeholder="Focus on adherence during weeks 4-6. Client needs more motivation on weekend tracking."
-              className="min-h-32"
+              className="min-h-32 placeholder:text-[#9AAEB2]"
             />
           </div>
 
@@ -526,13 +495,14 @@ export default function ProgramEdit({ program }: ProgramEditProps) {
               variant="outline"
               onClick={handleCancel}
               disabled={isLoading}
+              className="hover:opacity-80 cursor-pointer"
             >
               Cancel
             </Button>
             <Button
               type="submit"
               disabled={isLoading}
-              className="bg-indigo-600 hover:bg-indigo-700"
+              className="bg-[#0FA4A9] px-6 py-4 hover:opacity-80 cursor-pointer"
             >
               {isLoading ? "Saving..." : "Save Changes"}
             </Button>
