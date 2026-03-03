@@ -48,6 +48,7 @@ export const SIDEBAR_MENU = {
       label: "Subscription Plans",
       icon: CreditCard,
       href: "/admin-dashboard/subscription-plans",
+      /*
       children: [
         {
           label: "Individual Plans",
@@ -58,6 +59,7 @@ export const SIDEBAR_MENU = {
           href: "/admin-dashboard/subscription-plans?type=professional",
         },
       ],
+      */
     },
     { label: "Reports", icon: FileText, href: "/admin-dashboard/reports" },
     {

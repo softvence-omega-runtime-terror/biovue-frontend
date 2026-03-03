@@ -4,8 +4,11 @@ import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { LogOut, Menu, X, ChevronDown } from "lucide-react";
+import { LogOut, Menu, X } from "lucide-react";
 import { SIDEBAR_MENU } from "./SidebarMenu";
+
+import { useDispatch } from "react-redux";
+import { logout } from "@/redux/features/slice/authSlice";
 
 type Role = "user" | "trainer" | "admin";
 
@@ -17,10 +20,15 @@ export default function Sidebar({ role }: SidebarProps) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const router = useRouter();
+  const dispatch = useDispatch();
   const menu = SIDEBAR_MENU[role];
 
+  const handleLogout = () => {
+    dispatch(logout());
+    router.push("/login");
+  };
+
   const [isExpanded, setIsExpanded] = useState(false);
-  const [isSubmenuExpanded, setIsSubmenuExpanded] = useState(false);
 
   const currentType = searchParams.get("type") || "all";
 
@@ -75,13 +83,8 @@ export default function Sidebar({ role }: SidebarProps) {
         <nav className="flex flex-col gap-1 flex-1">
           {menu.map((item) => {
             const Icon = item.icon;
-            const isSubscription =
-              item.href === "/admin-dashboard/subscription-plans";
-
             const isRootDashboard = item.href === "/user-dashboard" || item.href === "/trainer-dashboard/overview" || item.href === "/admin-dashboard/overview";
-            const isActive = isSubscription
-              ? pathname === item.href && !searchParams.get("type")
-              : isRootDashboard 
+            const isActive = isRootDashboard 
                 ? pathname === item.href 
                 : pathname.startsWith(item.href);
             return (
@@ -89,14 +92,8 @@ export default function Sidebar({ role }: SidebarProps) {
                 {/* Parent Menu Item */}
                 <button
                   onClick={() => {
-                    if (isSubscription) {
-                      router.push(item.href);
-                      setIsSubmenuExpanded(true);
-                      setIsExpanded(true);
-                    } else {
-                      router.push(item.href);
-                      setIsExpanded(false);
-                    }
+                    router.push(item.href);
+                    setIsExpanded(false);
                   }}
                   className={`w-full cursor-pointer flex items-center gap-3 px-2 py-2.5 rounded-lg text-sm font-medium transition-all duration-300 whitespace-nowrap ${
                     isActive
@@ -110,42 +107,8 @@ export default function Sidebar({ role }: SidebarProps) {
                     <span className="hidden md:inline">{item.label}</span>
                   )}
 
-                  {isSubscription && (
-                    <ChevronDown
-                      size={18}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setIsSubmenuExpanded((prev) => !prev);
-                      }}
-                      className={`ml-auto transition-transform ${
-                        isSubmenuExpanded ? "rotate-180" : ""
-                      }`}
-                    />
-                  )}
                 </button>
 
-                {/* Submenu */}
-                {isSubscription && isSubmenuExpanded && (
-                  <div className="ml-9 mt-1 flex flex-col gap-1 animate-in fade-in slide-in-from-top-1">
-                    {[
-                      { label: "Individual", type: "individual" },
-                      { label: "Professional", type: "professional" },
-                    ].map((sub) => (
-                      <Link
-                        key={sub.type}
-                        href={`/admin-dashboard/subscription-plans?type=${sub.type}`}
-                        onClick={() => setIsExpanded(false)}
-                        className={`text-sm px-3 py-1.5 rounded-md transition-colors ${
-                          currentType === sub.type
-                            ? "bg-blue-100 text-blue-600 font-medium"
-                            : "text-gray-500 hover:bg-gray-100"
-                        }`}
-                      >
-                        - {sub.label}
-                      </Link>
-                    ))}
-                  </div>
-                )}
               </div>
             );
           })}
@@ -153,6 +116,7 @@ export default function Sidebar({ role }: SidebarProps) {
 
         {/* Sign Out Button */}
         <button
+          onClick={handleLogout}
           className={`flex items-center gap-3 text-gray-600 px-4 py-2 rounded-lg hover:bg-gray-100 transition-all duration-300 whitespace-nowrap cursor-pointer ${
             isExpanded ? "" : "justify-center px-2 md:px-4 md:justify-start"
           }`}

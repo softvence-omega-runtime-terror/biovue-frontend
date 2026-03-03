@@ -22,6 +22,9 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { USERS_DATA, UserType } from "@/components/AdminDashboard/Data";
 import DashboardHeading from "@/components/common/DashboardHeading";
+import { useGetAdminUsersQuery, useDeleteAdminUserMutation } from "@/redux/features/api/adminDashboard/users";
+import { toast } from "sonner";
+import Swal from "sweetalert2";
 
 const getSubscriptionColor = (
   subscription: string,
@@ -41,28 +44,68 @@ const getSubscriptionColor = (
 };
 
 const getTypeColor = (type: string) => {
-  return type === "Professional"
+  return type?.toLowerCase() === "professional"
     ? "bg-[#0FA4A926] text-[#0FA4A9] border-[#0FA4A9]"
     : "bg-[#8746E726] text-[#8746E7] border-[#8746E7]";
 };
 
 export default function UsersPage() {
-  const [selectedUser, setSelectedUser] = useState<UserType | null>(null);
-  const [filterType, setFilterType] = useState<
-    "all" | "individual" | "professional"
-  >("all");
+  const { data, isLoading, error } = useGetAdminUsersQuery({});
+  const [deleteUser, { isLoading: isDeleting }] = useDeleteAdminUserMutation();
+
+  const [selectedUser, setSelectedUser] = useState<any | null>(null);
+  const [filterType, setFilterType] = useState<"all" | "individual" | "professional">("all");
   const [searchQuery, setSearchQuery] = useState("");
 
-  const filteredUsers = USERS_DATA.filter((user) => {
+  const users = data?.users_table || [];
+
+  const filteredUsers = users.filter((user: any) => {
     const matchesType =
       filterType === "all" ||
-      (filterType === "individual" && user.type === "Individual") ||
-      (filterType === "professional" && user.type === "Professional");
-    const matchesSearch = user.name
-      .toLowerCase()
-      .includes(searchQuery.toLowerCase());
+      user.user_type?.toLowerCase() === filterType;
+    const matchesSearch = user.name?.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                         user.email?.toLowerCase().includes(searchQuery.toLowerCase());
     return matchesType && matchesSearch;
   });
+
+  const handleDeleteUser = async (id: number) => {
+    Swal.fire({
+      title: "Are you sure?",
+      text: "You won't be able to revert this!",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Yes, delete it!"
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        try {
+          await deleteUser(id).unwrap();
+          Swal.fire({
+            title: "Deleted!",
+            text: "User has been deleted.",
+            icon: "success"
+          });
+        } catch (err: any) {
+          Swal.fire({
+            title: "Error!",
+            text: err?.data?.message || "Failed to delete user",
+            icon: "error"
+          });
+        }
+      }
+    });
+  };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#0FA4A9]"></div>
+      </div>
+    );
+  }
+
+
 
   return (
     <div className="flex flex-col lg:flex-row gap-6 min-h-screen ">
@@ -144,23 +187,23 @@ export default function UsersPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredUsers.map((user) => (
+                {filteredUsers.map((user: any) => (
                   <TableRow
                     key={user.id}
                     className=" hover:bg-gray-50 border-b border-gray-200 transition-colors"
                   >
                     <TableCell className="font-medium text-gray-900 text-sm px-4 py-4">
-                      {user.name}
+                      {user.name || "N/A"}
                     </TableCell>
                     <TableCell className="text-gray-600 text-sm px-4 py-4">
                       {user.email}
                     </TableCell>
-                    <TableCell className="px-4 py-4">
+                    <TableCell className="px-4 py-4 capitalize">
                       <Badge
                         variant="outline"
-                        className={`${getTypeColor(user.type)} text-xs`}
+                        className={`${getTypeColor(user.user_type)} text-xs`}
                       >
-                        {user.type}
+                        {user.user_type}
                       </Badge>
                     </TableCell>
                     <TableCell className="px-4 py-4">
@@ -173,11 +216,11 @@ export default function UsersPage() {
                     </TableCell>
                     <TableCell className="px-4 py-4">
                       <span className="text-green-600 font-medium text-sm">
-                        ● {user.status}
+                        ● {user.account_status}
                       </span>
                     </TableCell>
                     <TableCell className="text-gray-600 text-sm px-4 py-4">
-                      {user.joinedDate}
+                      {user.joined_date?.split(' ')[0]}
                     </TableCell>
                     <TableCell className="px-4 py-4">
                       <DropdownMenu>
@@ -204,10 +247,10 @@ export default function UsersPage() {
                           </DropdownMenuItem>
 
                           <DropdownMenuItem
-                            className="text-red-600 cursor-pointer hover:opacity-80"
+                            className="text-red-600 cursor-pointer hover:bg-red-50"
                             onClick={(e) => {
                               e.stopPropagation();
-                              console.log("Delete user", user.id);
+                              handleDeleteUser(user.id);
                             }}
                           >
                             Delete User
@@ -224,16 +267,15 @@ export default function UsersPage() {
           {/* Mobile Card View */}
           <div className="md:hidden">
             <div className="divide-y divide-gray-200">
-              {filteredUsers.map((user) => (
+              {filteredUsers.map((user: any) => (
                 <div
                   key={user.id}
                   className="p-4 hover:bg-gray-50 cursor-pointer transition-colors border-b border-gray-100 last:border-b-0"
-                  //   onClick={() => setSelectedUser(user)}
                 >
                   <div className="flex items-start justify-between mb-3">
                     <div className="flex-1">
                       <h3 className="font-semibold text-gray-900 text-sm">
-                        {user.name}
+                        {user.name || "N/A"}
                       </h3>
                       <p className="text-xs text-gray-600">{user.email}</p>
                     </div>
@@ -254,7 +296,7 @@ export default function UsersPage() {
                         <DropdownMenuItem
                           onClick={(e) => {
                             e.stopPropagation();
-                            setSelectedUser(user); // OPEN PROFILE
+                            setSelectedUser(user);
                           }}
                         >
                           View Details
@@ -264,7 +306,7 @@ export default function UsersPage() {
                           className="text-red-600"
                           onClick={(e) => {
                             e.stopPropagation();
-                            console.log("Delete user", user.id);
+                            handleDeleteUser(user.id);
                           }}
                         >
                           Delete User
@@ -275,9 +317,9 @@ export default function UsersPage() {
                   <div className="flex flex-wrap gap-2 mb-3">
                     <Badge
                       variant="outline"
-                      className={`${getTypeColor(user.type)} text-xs`}
+                      className={`${getTypeColor(user.user_type)} text-xs capitalize`}
                     >
-                      {user.type}
+                      {user.user_type}
                     </Badge>
                     <Badge
                       variant={getSubscriptionColor(user.subscription)}
@@ -288,9 +330,9 @@ export default function UsersPage() {
                   </div>
                   <div className="flex items-center justify-between text-xs">
                     <span className="text-green-600 font-medium">
-                      ● {user.status}
+                      ● {user.account_status}
                     </span>
-                    <span className="text-gray-600">{user.joinedDate}</span>
+                    <span className="text-gray-600">{user.joined_date?.split(' ')[0]}</span>
                   </div>
                 </div>
               ))}
@@ -301,8 +343,8 @@ export default function UsersPage() {
 
       {/* details Modal */}
       {selectedUser && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-          <Card className="w-full max-w-md shadow-xl rounded-xl relative p-6">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 ">
+          <Card className="w-full max-w-md shadow-xl rounded-xl relative p-6 bg-white">
             {/* Header */}
             <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle className="text-lg font-semibold">
@@ -322,41 +364,48 @@ export default function UsersPage() {
             <CardContent className="space-y-6">
               {/* Avatar */}
               <div className="flex items-center gap-4 pb-3 border-b">
-                <div className="w-12 h-12 rounded-full bg-linear-to-br from-blue-400 to-blue-600 flex items-center justify-center">
-                  <User className="w-6 h-6 text-white" />
+                <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-[#0FA4A926]">
+                  {selectedUser.profile_image ? (
+                    <img 
+                      src={selectedUser.profile_image} 
+                      alt={selectedUser.name} 
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <div className="w-full h-full bg-linear-to-br from-[#0FA4A9] to-[#3A86FF] flex items-center justify-center">
+                      <User className="w-8 h-8 text-white" />
+                    </div>
+                  )}
                 </div>
                 <div>
-                  <h3 className="font-semibold text-gray-900">
-                    {selectedUser.name}
+                  <h3 className="font-bold text-xl text-[#041228]">
+                    {selectedUser.name || "N/A"}
                   </h3>
-                  <p className="text-sm text-gray-600">{selectedUser.email}</p>
+                  <p className="text-sm text-[#5F6F73]">{selectedUser.email}</p>
                 </div>
               </div>
 
-              <div className="flex flex-col md:flex-row justify-between">
-                <div className="space-y-2">
-                  <p className="text-sm text-black uppercase">User Type</p>
-                  <p className="text-sm text-[#5F6F73]">{selectedUser.type}</p>
+              <div className="grid grid-cols-2 gap-6">
+                <div className="space-y-1">
+                  <p className="text-[10px] font-bold text-[#5F6F73] uppercase tracking-wider">User Type</p>
+                  <p className="text-sm font-semibold text-[#1F2D2E] capitalize">{selectedUser.user_type}</p>
                 </div>
-                <div className="space-y-2">
-                  <p className="text-sm text-black uppercase">Status</p>
-                  <p className="text-sm text-[#5F6F73]">
-                    {selectedUser.status}
-                  </p>
+                <div className="space-y-1">
+                  <p className="text-[10px] font-bold text-[#5F6F73] uppercase tracking-wider">Status</p>
+                  <div className="flex items-center gap-1.5 text-sm font-semibold text-[#10B981]">
+                    <span className="w-2 h-2 rounded-full bg-[#10B981]"></span>
+                    {selectedUser.account_status}
+                  </div>
                 </div>
-              </div>
-              <div className="flex flex-col md:flex-row justify-between">
-                <div className="space-y-2">
-                  <p className="text-sm text-black uppercase">Subscription</p>
-                  <p className="text-sm text-[#5F6F73]">
-                    {selectedUser.subscription}
-                  </p>
+                <div className="space-y-1">
+                  <p className="text-[10px] font-bold text-[#5F6F73] uppercase tracking-wider">Subscription</p>
+                  <p className="text-sm font-semibold text-[#3A86FF]">{selectedUser.subscription}</p>
                 </div>
 
-                <div className="space-y-2">
-                  <p className="text-sm text-black uppercase">Member Since</p>
-                  <p className="text-sm text-[#5F6F73]">
-                    {selectedUser.joinedDate}
+                <div className="space-y-1">
+                  <p className="text-[10px] font-bold text-[#5F6F73] uppercase tracking-wider">Member Since</p>
+                  <p className="text-sm font-semibold text-[#1F2D2E]">
+                    {selectedUser.joined_date?.split(' ')[0]}
                   </p>
                 </div>
               </div>
