@@ -5,6 +5,7 @@ import { Send } from "lucide-react";
 
 import ChatArea from "@/components/TrainerDashboard/messages/ChatArea";
 import ClientsListSidebar from "@/components/TrainerDashboard/messages/ClientListSidebar";
+import MotivationModal from "@/components/TrainerDashboard/messages/MotivationModal";
 
 export interface Client {
   id: string;
@@ -18,28 +19,28 @@ const mockClients: Client[] = [
   {
     id: "1",
     name: "Sarah Jenkins",
-    avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Sarah",
+    // avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Sarah",
     lastMessage: "Great progress this week keep going!",
     timestamp: "Just now",
   },
   {
     id: "2",
     name: "Michael Scott",
-    avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Michael",
+    // avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Michael",
     lastMessage: "Remember the meeting tomorrow",
     timestamp: "5 hrs ago",
   },
   {
     id: "3",
     name: "Jim Halpert",
-    avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Jim",
+    // avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Jim",
     lastMessage: "Check this out!",
     timestamp: "Yesterday",
   },
   {
     id: "4",
     name: "Pam Beesly",
-    avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Pam",
+    // avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Pam",
     lastMessage: "Can we reschedule?",
     timestamp: "Just now",
   },
@@ -48,7 +49,7 @@ const mockClients: Client[] = [
 export default function MessagesPage() {
   const [selectedClientId, setSelectedClientId] = useState("1");
   const [searchQuery, setSearchQuery] = useState("");
-
+  const [openMotivation, setOpenMotivation] = useState(false);
   const selectedClient = mockClients.find((c) => c.id === selectedClientId);
   const filteredClients = mockClients.filter((c) =>
     c.name.toLowerCase().includes(searchQuery.toLowerCase()),
@@ -69,7 +70,10 @@ export default function MessagesPage() {
             Communicate with your clients and support their progress.
           </p>
         </div>
-        <button className="bg-[#0D9488] flex items-center cursor-pointer rounded-lg px-4 py-2.5 hover:opacity-90 transition-opacity text-white gap-2 font-medium">
+        <button
+          onClick={() => selectedClient && setOpenMotivation(true)}
+          className="bg-[#0D9488] flex items-center cursor-pointer rounded-lg px-4 py-2.5 hover:opacity-90 transition-opacity text-white gap-2 font-medium"
+        >
           <Send className="w-5 h-5 rotate-[-10deg]" />
           <span>Send Motivation</span>
         </button>
@@ -79,7 +83,11 @@ export default function MessagesPage() {
       <div className="flex flex-1 gap-0 border-t border-[#E5E7EB] -mx-6 px-6 pt-0 overflow-hidden">
         {/* Sidebar - Clients List */}
         <div className="w-[320px] border-r border-[#E5E7EB] pt-6 pr-4 h-full">
-          <Suspense fallback={<div className="w-full h-full animate-pulse bg-gray-50" />}>
+          <Suspense
+            fallback={
+              <div className="w-full h-full animate-pulse bg-gray-50" />
+            }
+          >
             <ClientsListSidebar
               clients={filteredClients}
               selectedClientId={selectedClientId}
@@ -107,6 +115,16 @@ export default function MessagesPage() {
           </main>
         </div>
       </div>
+      {selectedClient && (
+        <MotivationModal
+          open={openMotivation}
+          onClose={() => setOpenMotivation(false)}
+          clientName={selectedClient.name}
+          onSend={(message) => {
+            console.log("Send to:", selectedClient.name, message);
+          }}
+        />
+      )}
     </div>
   );
 }

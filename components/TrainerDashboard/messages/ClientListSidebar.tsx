@@ -1,6 +1,5 @@
 "use client";
 
-import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Search } from "lucide-react";
 import { Client } from "@/app/(TrainerDashboard)/trainer-dashboard/messages/page";
@@ -57,9 +56,9 @@ export default function ClientsListSidebar({
                 )}
 
                 {/* Avatar */}
-                <div className="relative w-12 h-12 flex-shrink-0">
+                <div className="relative w-12 h-12 shrink-0">
                   <Image
-                    src={client.avatar || "https://api.dicebear.com/7.x/avataaars/svg?seed=default"}
+                    src={client.avatar || "/images/user.png"}
                     alt={client.name}
                     fill
                     className="rounded-full object-cover border border-[#E5E7EB]"

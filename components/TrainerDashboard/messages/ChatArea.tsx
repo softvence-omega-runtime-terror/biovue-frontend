@@ -1,8 +1,8 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { Send, MoreVertical, ExternalLink } from "lucide-react";
-import { ScrollArea } from "@/components/ui/scroll-area";
+import { Send, MoreVertical } from "lucide-react";
+
 import Image from "next/image";
 
 interface Message {
@@ -98,13 +98,13 @@ export default function ChatArea({ clientId, clientName, clientAvatar }: ChatAre
   };
 
   return (
-    <div className="flex flex-col h-full bg-[#F9FAFB] border-l border-[#E5E7EB]">
+    <div className="flex flex-col h-full  border-l border-[#E5E7EB]">
       {/* Chat Header */}
-      <div className="flex items-center justify-between px-6 py-4 bg-white border-b border-[#E5E7EB]">
+      <div className="flex items-center justify-between px-6 py-4  border-b border-[#E5E7EB]">
         <div className="flex items-center gap-3">
           <div className="relative w-10 h-10">
             <Image
-              src={clientAvatar || "https://api.dicebear.com/7.x/avataaars/svg?seed=default"}
+              src={clientAvatar || "/images/user.png"}
               alt={clientName}
               fill
               className="rounded-full object-cover border border-[#E5E7EB]"
@@ -116,7 +116,7 @@ export default function ChatArea({ clientId, clientName, clientAvatar }: ChatAre
           </div>
         </div>
         <div className="flex items-center gap-4">
-          <button className="text-[#0D9488] text-sm font-medium hover:underline flex items-center gap-1">
+          <button className="text-[#0FA4A9] text-sm cursor-pointer font-medium hover:underline flex items-center gap-1">
             View client profile
           </button>
           <button className="text-[#6B7280] hover:text-[#111827]">
@@ -138,7 +138,7 @@ export default function ChatArea({ clientId, clientName, clientAvatar }: ChatAre
                 <div
                   className={`max-w-[80%] rounded-2xl px-5 py-3 text-sm leading-relaxed ${
                     isCoach
-                      ? "bg-[#0D948833] text-[#111827] rounded-tr-none"
+                      ? "bg-[#22C55E59] text-[#111827] rounded-tr-none"
                       : "bg-white border border-[#E5E7EB] text-[#374151] rounded-tl-none shadow-sm"
                   }`}
                 >
@@ -155,11 +155,11 @@ export default function ChatArea({ clientId, clientName, clientAvatar }: ChatAre
       </div>
 
       {/* Input Area */}
-      <div className="px-6 py-6 bg-white border-t border-[#E5E7EB]">
+      <div className="px-6 py-6  border-t border-[#E5E7EB]">
         <div className="relative group">
           <input
             placeholder="Type your message..."
-            className="w-full bg-white border border-[#E5E7EB] rounded-xl pl-5 pr-14 py-4 text-sm focus:outline-none focus:ring-1 focus:ring-[#0D9488] focus:border-[#0D9488] transition-all placeholder:text-[#9CA3AF]"
+            className="w-full bg-white rounded-xl pl-5 pr-14 py-4 text-sm focus:outline-none focus:ring-1 focus:ring-[#0D9488] focus:border-[#0D9488] transition-all placeholder:text-[#9CA3AF]"
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && handleSendMessage()}
@@ -167,7 +167,7 @@ export default function ChatArea({ clientId, clientName, clientAvatar }: ChatAre
           <button
             onClick={handleSendMessage}
             disabled={!inputValue.trim()}
-            className="absolute right-4 top-1/2 -translate-y-1/2 p-2 text-[#0D9488] hover:bg-[#0D948814] rounded-lg transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+            className="absolute right-4 top-1/2 -translate-y-1/2 p-2 cursor-pointer text-[#0D9488] hover:bg-[#0D948814] rounded-lg transition-all disabled:opacity-40 disabled:cursor-not-allowed"
           >
             <Send className="w-6 h-6 rotate-[-10deg]" />
           </button>
