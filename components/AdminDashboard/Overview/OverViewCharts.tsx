@@ -77,13 +77,26 @@ function SingleChart({
   );
 }
 
-export default function OverviewCharts() {
+export default function OverviewCharts({ userGrowth = [], revenueTrend = [] }: { userGrowth?: any[], revenueTrend?: any[] }) {
+  // Map API userGrowth data (month, count) to charts format (month, value)
+  const chartUserGrowthData = userGrowth.map(item => ({
+    month: item.month,
+    value: item.count
+  }));
+
+  // Map API revenueTrend data (month, amount/value) to charts format (month, value)
+  // Assuming revenueTrend also has a value or amount field
+  const chartRevenueTrendData = revenueTrend.map(item => ({
+    month: item.month,
+    value: item.amount || item.value || 0
+  }));
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-      <SingleChart title="User Growth" data={userGrowthData} color="#8B5CF6" />
+      <SingleChart title="User Growth" data={chartUserGrowthData} color="#8B5CF6" />
       <SingleChart
         title="Revenue Trend"
-        data={revenueTrendData}
+        data={chartRevenueTrendData}
         color="#0FA4A9"
       />
     </div>

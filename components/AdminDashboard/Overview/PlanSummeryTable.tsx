@@ -3,7 +3,7 @@
 
 import React from "react";
 
-export default function PlanSummaryTable() {
+export default function PlanSummaryTable({ data = [] }: { data?: any[] }) {
   return (
     <div className="bg-white rounded-xl border-2 border-[#F3F4F6]! p-6">
       <p className="text-sm border-b-2 pb-4 border-[#F3F4F6]! font-medium mb-4">
@@ -20,19 +20,20 @@ export default function PlanSummaryTable() {
           </tr>
         </thead>
         <tbody>
-          {[
-            ["Free Trial", "individual", "3,200", "$0"],
-            ["Plus", "individual", "1,400", "$33,600"],
-            ["Premium", "individual", "820", "$28,700"],
-            ["Trainer Pro", "professional", "110", "$5,500"],
-          ].map(([name, plan, users, rev]) => (
-            <tr key={name} className="border-b border-[#F3F4F6]!">
-              <td className="py-2">{name}</td>
-              <td className="py-2 text-center">{plan}</td>
-              <td className="text-center">{users}</td>
-              <td className="text-right">{rev}</td>
+          {data.length > 0 ? (
+            data.map((plan, index) => (
+              <tr key={index} className="border-b border-[#F3F4F6]!">
+                <td className="py-2">{plan.plan_name || plan.name}</td>
+                <td className="py-2 text-center capitalize">{plan.plan_type || plan.type}</td>
+                <td className="text-center">{plan.active_subscribers || plan.subscribers || 0}</td>
+                <td className="text-right">{plan.monthly_revenue || plan.revenue || "$0"}</td>
+              </tr>
+            ))
+          ) : (
+            <tr className="border-b border-[#F3F4F6]!">
+              <td colSpan={4} className="py-4 text-center text-gray-500">No plan summary data available</td>
             </tr>
-          ))}
+          )}
         </tbody>
       </table>
     </div>

@@ -7,9 +7,12 @@ import { Mail, Lock, Eye, EyeOff, ArrowLeft, ArrowRight } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useLoginMutation } from "@/redux/features/api/auth/authApi";
 import { toast } from "sonner";
+import { useDispatch } from "react-redux";
+import { setCredentials } from "@/redux/features/slice/authSlice";
 
 const LoginPage = () => {
   const router = useRouter();
+  const dispatch = useDispatch();
   const [login, { isLoading }] = useLoginMutation();
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
@@ -31,6 +34,12 @@ const LoginPage = () => {
       const res = await login(formData).unwrap();
       if (res?.success || res?.status === "success") {
         toast.success(res?.message || "Login successful!");
+        
+        // Save credentials to Redux and localStorage
+        dispatch(setCredentials({
+          user: res?.data?.user,
+          token: res?.data?.token
+        }));
         
         // Handle role-based redirection
         const userRole = res?.data?.user?.role;
