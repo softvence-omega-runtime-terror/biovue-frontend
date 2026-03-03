@@ -31,7 +31,14 @@ const LoginPage = () => {
       const res = await login(formData).unwrap();
       if (res?.success || res?.status === "success") {
         toast.success(res?.message || "Login successful!");
-        router.push("/user-dashboard"); // Or wherever the dashboard is
+        
+        // Handle role-based redirection
+        const userRole = res?.data?.user?.role;
+        if (userRole === "admin") {
+          router.push("/admin-dashboard/overview");
+        } else {
+          router.push("/user-dashboard");
+        }
       }
     } catch (err: any) {
       toast.error(err?.data?.message || "Login failed. Please check your credentials.");
@@ -68,7 +75,7 @@ const LoginPage = () => {
         {/* Header */}
         <div className="text-center mb-12">
           <h1 className="text-[32px] font-bold text-[#041228] mb-3">
-            Welocme
+            Welcome
           </h1>
         </div>
 
