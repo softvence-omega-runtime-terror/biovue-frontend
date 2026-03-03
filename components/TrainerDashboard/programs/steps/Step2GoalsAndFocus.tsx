@@ -33,6 +33,27 @@ export default function Step2GoalsAndFocus({
     });
   };
 
+  const habitOptions = [
+    "Sleep",
+    "Nutrition",
+    "Activity",
+    "Stress",
+    "Hydration",
+  ];
+  const toggleHabit = (habit: string) => {
+    if (formData.habitFocus.includes(habit)) {
+      setFormData({
+        ...formData,
+        habitFocus: formData.habitFocus.filter((h) => h !== habit),
+      });
+    } else if (formData.habitFocus.length < 3) {
+      setFormData({
+        ...formData,
+        habitFocus: [...formData.habitFocus, habit],
+      });
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div className="border-b bg-white flex justify-between items-start">
@@ -50,10 +71,38 @@ export default function Step2GoalsAndFocus({
         </button>
       </div>
 
+      {/* A. Habit Focus */}
+      <div>
+        <div className="flex justify-between mb-3">
+          <label className="text-lg font-medium text-gray-700">
+            A. Habit Focus Areas
+          </label>
+          <span className="text-base text-[#5F6F73]">Select up to 3</span>
+        </div>
+
+        <div className="flex gap-2 flex-wrap">
+          {habitOptions.map((habit) => {
+            const selected = formData.habitFocus.includes(habit);
+            return (
+              <button
+                key={habit}
+                onClick={() => toggleHabit(habit)}
+                className={`px-4 py-1.5 rounded-full text-base border cursor-pointer font-medium transition ${
+                  selected
+                    ? "bg-teal-600 text-white  border-teal-600"
+                    : "bg-white text-[#5F6F73]  border-gray-300 hover:bg-gray-100"
+                }`}
+              >
+                {habit}
+              </button>
+            );
+          })}
+        </div>
+      </div>
       {/* Focus Areas */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-3">
-          Select up to 5 Focus Areas
+        <label className="block text-lg font-medium text-gray-700 mb-3">
+          B.Program Focus
         </label>
         <div className="space-y-3">
           {focusAreaOptions.map((option) => (

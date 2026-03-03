@@ -1,12 +1,21 @@
 "use client";
+import { useState } from "react";
 import { Program } from "./ProgramsData";
-import { MoreVertical } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 interface ProgramsTableProps {
   programs: Program[];
 }
 
 export default function ProgramsTable({ programs }: ProgramsTableProps) {
+  const [selectedProgram, setSelectedProgram] = useState<Program | null>(null);
+  const [isViewOpen, setIsViewOpen] = useState(false);
+
+  const router = useRouter();
+
+  const handleViewClick = (program: Program) => {
+    router.push(`/trainer-dashboard/programs/${program.id}`);
+  };
   const getIntensityStyles = (intensity: string) => {
     if (intensity === "Aggressive") {
       return "text-[#C73434] bg-[#C73434]/5 px-3 py-1 rounded-full font-medium";
@@ -75,11 +84,11 @@ export default function ProgramsTable({ programs }: ProgramsTableProps) {
               </td>
               <td className="px-6 py-4">
                 <div className="flex items-center gap-3">
-                  <button className="text-sm font-semibold text-[#111827]">
+                  <button
+                    onClick={() => handleViewClick(program)}
+                    className="text-sm cursor-pointer font-semibold text-[#111827]"
+                  >
                     VIEW
-                  </button>
-                  <button className="text-[#9CA3AF] hover:text-[#6B7280]">
-                    <MoreVertical size={20} />
                   </button>
                 </div>
               </td>
