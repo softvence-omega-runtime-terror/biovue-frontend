@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, Suspense } from "react";
@@ -19,24 +18,28 @@ const mockClients: Client[] = [
   {
     id: "1",
     name: "Sarah Jenkins",
+    avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Sarah",
     lastMessage: "Great progress this week keep going!",
     timestamp: "Just now",
   },
   {
     id: "2",
     name: "Michael Scott",
+    avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Michael",
     lastMessage: "Remember the meeting tomorrow",
     timestamp: "5 hrs ago",
   },
   {
     id: "3",
     name: "Jim Halpert",
+    avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Jim",
     lastMessage: "Check this out!",
     timestamp: "Yesterday",
   },
   {
     id: "4",
     name: "Pam Beesly",
+    avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Pam",
     lastMessage: "Can we reschedule?",
     timestamp: "Just now",
   },
@@ -52,48 +55,52 @@ export default function MessagesPage() {
   );
 
   return (
-    <div className="flex flex-col min-h-screen  gap-5 ">
+    <div className="flex flex-col h-[calc(100vh-140px)] gap-6">
       {/* Header */}
       <div className="flex items-start justify-between">
-        <div className=" mb-4">
-          <div className="flex mb-2 items-center gap-3">
-            <h1 className="text-xl font-medium text-gray-900">Messages</h1>
-
-            <span className="bg-[#0D9488] text-white text-sm font-medium px-2 py-1 rounded-full">
+        <div>
+          <div className="flex items-center gap-3 mb-1">
+            <h1 className="text-2xl font-medium text-[#111827]">Messages</h1>
+            <span className="bg-[#0D9488] text-white text-xs font-medium px-3 py-1 rounded-full">
               Active Clients
             </span>
           </div>
-
-          <p className="text-xs">
+          <p className="text-sm text-[#6B7280]">
             Communicate with your clients and support their progress.
           </p>
         </div>
-        <button className="bg-[#0D9488] flex items-center cursor-pointer rounded-lg p-2 md:p-3 hover:opacity-80 text-white gap-2">
-          <Send className="w-4 h-4" />
+        <button className="bg-[#0D9488] flex items-center cursor-pointer rounded-lg px-4 py-2.5 hover:opacity-90 transition-opacity text-white gap-2 font-medium">
+          <Send className="w-5 h-5 rotate-[-10deg]" />
           <span>Send Motivation</span>
         </button>
       </div>
 
       {/* Main Layout */}
-      <div className="flex flex-1 gap-5 border-t border-[#E3ECEB] pt-5">
+      <div className="flex flex-1 gap-0 border-t border-[#E5E7EB] -mx-6 px-6 pt-0 overflow-hidden">
         {/* Sidebar - Clients List */}
-        <Suspense fallback={<div className="w-1/3 border-r border-gray-200" />}>
-          <ClientsListSidebar
-            clients={filteredClients}
-            selectedClientId={selectedClientId}
-            onSelectClient={setSelectedClientId}
-            searchQuery={searchQuery}
-            setSearchQuery={setSearchQuery}
-          />
-        </Suspense>
+        <div className="w-[320px] border-r border-[#E5E7EB] pt-6 pr-4 h-full">
+          <Suspense fallback={<div className="w-full h-full animate-pulse bg-gray-50" />}>
+            <ClientsListSidebar
+              clients={filteredClients}
+              selectedClientId={selectedClientId}
+              onSelectClient={setSelectedClientId}
+              searchQuery={searchQuery}
+              setSearchQuery={setSearchQuery}
+            />
+          </Suspense>
+        </div>
 
         {/* Main Chat Area */}
-        <div className="flex flex-col flex-1">
-          <main className="flex-1 ">
+        <div className="flex flex-col flex-1 h-full">
+          <main className="flex-1 h-full">
             {selectedClient ? (
-              <ChatArea clientId={selectedClient.id} />
+              <ChatArea
+                clientId={selectedClient.id}
+                clientName={selectedClient.name}
+                clientAvatar={selectedClient.avatar}
+              />
             ) : (
-              <div className="flex-1 flex items-center justify-center text-gray-500">
+              <div className="flex-1 flex items-center justify-center text-gray-500 h-full">
                 Select a client to start messaging
               </div>
             )}
