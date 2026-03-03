@@ -1,7 +1,9 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { Send } from "lucide-react";
+import { Send, MoreVertical } from "lucide-react";
+
+import Image from "next/image";
 
 interface Message {
   id: string;
@@ -57,9 +59,11 @@ const mockMessages: Record<string, Message[]> = {
 
 interface ChatAreaProps {
   clientId: string;
+  clientName: string;
+  clientAvatar?: string;
 }
 
-export default function ChatArea({ clientId }: ChatAreaProps) {
+export default function ChatArea({ clientId, clientName, clientAvatar }: ChatAreaProps) {
   const [messages, setMessages] = useState<Message[]>(
     mockMessages[clientId] || [],
   );
@@ -73,10 +77,9 @@ export default function ChatArea({ clientId }: ChatAreaProps) {
     return () => clearTimeout(timer);
   }, [clientId]);
 
-  // Scroll to bottom whenever messages change
-  //   useEffect(() => {
-  //     scrollRef.current?.scrollIntoView({ behavior: "smooth" });
-  //   }, [messages]);
+  useEffect(() => {
+    scrollRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
 
   const handleSendMessage = () => {
     if (!inputValue.trim()) return;
@@ -84,59 +87,87 @@ export default function ChatArea({ clientId }: ChatAreaProps) {
       id: Date.now().toString(),
       senderRole: "coach",
       text: inputValue,
-      timestamp: new Date().toLocaleTimeString("en-US", {
+      timestamp: `Today - ${new Date().toLocaleTimeString("en-US", {
         hour: "2-digit",
         minute: "2-digit",
         hour12: true,
-      }),
+      })}`,
     };
     setMessages([...messages, newMessage]);
     setInputValue("");
   };
 
   return (
-    <div className="flex flex-col flex-1 h-full">
-      {/* Scrollable Messages */}
-      <div className="flex-1 overflow-y-auto p-6">
-        <div className="space-y-4">
-          {messages.map((msg) => (
-            <div
-              key={msg.id}
-              className={`flex ${msg.senderRole === "coach" ? "justify-end" : "justify-start"}`}
-            >
-              <div className="max-w-xs">
+    <div className="flex flex-col h-full  border-l border-[#E5E7EB]">
+      {/* Chat Header */}
+      <div className="flex items-center justify-between px-6 py-4  border-b border-[#E5E7EB]">
+        <div className="flex items-center gap-3">
+          <div className="relative w-10 h-10">
+            <Image
+              src={clientAvatar || "/images/user.png"}
+              alt={clientName}
+              fill
+              className="rounded-full object-cover border border-[#E5E7EB]"
+            />
+          </div>
+          <div>
+            <h3 className="text-sm font-semibold text-[#111827]">{clientName}</h3>
+            <p className="text-xs text-[#6B7280]">{clientName}</p>
+          </div>
+        </div>
+        <div className="flex items-center gap-4">
+          <button className="text-[#0FA4A9] text-sm cursor-pointer font-medium hover:underline flex items-center gap-1">
+            View client profile
+          </button>
+          
+        </div>
+      </div>
+
+      {/* Messages Area */}
+      <div className="flex-1 overflow-y-auto px-6 py-8">
+        <div className="flex flex-col gap-8">
+          {messages.map((msg) => {
+            const isCoach = msg.senderRole === "coach";
+            return (
+              <div
+                key={msg.id}
+                className={`flex flex-col ${isCoach ? "items-end" : "items-start"}`}
+              >
                 <div
-                  className={`rounded-lg px-4 py-2 ${msg.senderRole === "coach" ? "bg-teal-100" : "bg-white border border-gray-200"}`}
+                  className={`max-w-[80%] rounded-2xl px-5 py-3 text-sm leading-relaxed ${
+                    isCoach
+                      ? "bg-[#22C55E59] text-[#111827] rounded-tr-none"
+                      : "bg-white border border-[#E5E7EB] text-[#374151] rounded-tl-none shadow-sm"
+                  }`}
                 >
-                  <p className="text-sm text-gray-900">{msg.text}</p>
+                  {msg.text}
                 </div>
-                <p
-                  className={`text-xs text-gray-500 mt-1 ${msg.senderRole === "coach" ? "text-right" : "text-left"}`}
-                >
+                <span className="text-[10px] text-[#9CA3AF] mt-2 px-1">
                   {msg.timestamp}
-                </p>
+                </span>
               </div>
-            </div>
-          ))}
+            );
+          })}
           <div ref={scrollRef} />
         </div>
       </div>
 
-      {/* Input Box - Always at bottom */}
-      <div className="border-t border-gray-200 p-4 flex-shrink-0">
-        <div className="flex gap-2">
+      {/* Input Area */}
+      <div className="px-6 py-6  border-t border-[#E5E7EB]">
+        <div className="relative group">
           <input
             placeholder="Type your message..."
-            className="flex-1 px-3 py-3 text-sm border rounded-lg bg-white"
+            className="w-full bg-white rounded-xl pl-5 pr-14 py-4 text-sm focus:outline-none focus:ring-1 focus:ring-[#0D9488] focus:border-[#0D9488] transition-all placeholder:text-[#9CA3AF]"
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && handleSendMessage()}
           />
           <button
             onClick={handleSendMessage}
-            className="text-black hover:opacity-80"
+            disabled={!inputValue.trim()}
+            className="absolute right-4 top-1/2 -translate-y-1/2 p-2 cursor-pointer text-[#0D9488] hover:bg-[#0D948814] rounded-lg transition-all disabled:opacity-40 disabled:cursor-not-allowed"
           >
-            <Send className="w-5 h-5" />
+            <Send className="w-6 h-6 rotate-[-10deg]" />
           </button>
         </div>
       </div>
