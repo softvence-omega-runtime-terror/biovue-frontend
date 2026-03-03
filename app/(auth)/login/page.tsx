@@ -4,8 +4,13 @@ import React, { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Mail, Lock, Eye, EyeOff, ArrowLeft, ArrowRight } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useLoginMutation } from "@/redux/features/api/auth/authApi";
+import { toast } from "sonner";
 
 const LoginPage = () => {
+  const router = useRouter();
+  const [login, { isLoading }] = useLoginMutation();
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
     email: "",
@@ -20,9 +25,17 @@ const LoginPage = () => {
     }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Logging in:", formData);
+    try {
+      const res = await login(formData).unwrap();
+      if (res?.success || res?.status === "success") {
+        toast.success(res?.message || "Login successful!");
+        router.push("/user-dashboard"); // Or wherever the dashboard is
+      }
+    } catch (err: any) {
+      toast.error(err?.data?.message || "Login failed. Please check your credentials.");
+    }
   };
 
   return (
@@ -124,10 +137,11 @@ const LoginPage = () => {
           <div className="">
             <button
               type="submit"
-              className="w-full bg-[#0FA4A9] text-white py-3 rounded-xl font-bold text-lg hover:bg-opacity-90 transition-all flex items-center justify-center gap-2 group shadow-lg shadow-[#0FA4A9]/10 cursor-pointer"
+              disabled={isLoading}
+              className="w-full bg-[#0FA4A9] text-white py-3 rounded-xl font-bold text-lg hover:bg-opacity-90 transition-all flex items-center justify-center gap-2 group shadow-lg shadow-[#0FA4A9]/10 cursor-pointer disabled:opacity-70"
             >
-              Log In
-              <ArrowRight size={22} className="group-hover:translate-x-1 transition-transform" />
+              {isLoading ? "Logging in..." : "Log In"}
+              {!isLoading && <ArrowRight size={22} className="group-hover:translate-x-1 transition-transform" />}
             </button>
           </div>
         </form>
