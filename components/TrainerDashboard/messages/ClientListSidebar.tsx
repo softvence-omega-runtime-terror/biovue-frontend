@@ -2,8 +2,9 @@
 
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Search } from "lucide-react";
-import { Client } from "@/app/(TrainerDashboard)/trainer-dashboard/messages/page";
+
 import Image from "next/image";
+import { Client } from "./MessageData";
 
 interface ClientsListSidebarProps {
   clients: Client[];

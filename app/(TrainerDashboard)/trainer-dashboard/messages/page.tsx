@@ -7,87 +7,11 @@ import ChatArea from "@/components/TrainerDashboard/messages/ChatArea";
 import ClientsListSidebar from "@/components/TrainerDashboard/messages/ClientListSidebar";
 import MotivationModal from "@/components/TrainerDashboard/messages/MotivationModal";
 import PreHireInquiries from "@/components/TrainerDashboard/messages/PreHireInqueries";
-
-export interface Client {
-  id: string;
-  name: string;
-  avatar?: string;
-  lastMessage: string;
-  timestamp: string;
-}
-
-const mockClients: Client[] = [
-  {
-    id: "5",
-    name: "Dwight Schrute",
-
-    lastMessage: "Bears. Beets. Battlestar Galactica.",
-    timestamp: "2 hrs ago",
-  },
-  {
-    id: "6",
-    name: "Andy Bernard",
-
-    lastMessage: "Did you get my voicemail?",
-    timestamp: "1 day ago",
-  },
-  {
-    id: "7",
-    name: "Stanley Hudson",
-
-    lastMessage: "Is this meeting mandatory?",
-    timestamp: "Yesterday",
-  },
-  {
-    id: "8",
-    name: "Kevin Malone",
-
-    lastMessage: "I brought snacks.",
-    timestamp: "Just now",
-  },
-  {
-    id: "9",
-    name: "Angela Martin",
-
-    lastMessage: "This is highly inappropriate.",
-    timestamp: "3 hrs ago",
-  },
-  {
-    id: "10",
-    name: "Oscar Martinez",
-
-    lastMessage: "Actually, that’s not correct.",
-    timestamp: "5 hrs ago",
-  },
-  {
-    id: "11",
-    name: "Phyllis Lapin",
-
-    lastMessage: "Close your mouth, sweetie.",
-    timestamp: "2 days ago",
-  },
-  {
-    id: "12",
-    name: "Ryan Howard",
-
-    lastMessage: "This is a great business idea.",
-    timestamp: "Yesterday",
-  },
-  {
-    id: "13",
-    name: "Kelly Kapoor",
-
-    lastMessage: "Why didn’t you text me back?",
-    timestamp: "Just now",
-  },
-  {
-    id: "14",
-    name: "Toby Flenderson",
-
-    lastMessage: "HR needs to talk to you.",
-    timestamp: "4 hrs ago",
-  },
-];
+import {
+  mockClients,
+  mockPreHireUsers,
+} from "@/components/TrainerDashboard/messages/MessageData";
+import PreHireChatArea from "@/components/TrainerDashboard/messages/PreHireChatArea";
 
 export default function MessagesPage() {
   const [selectedClientId, setSelectedClientId] = useState("1");
@@ -97,7 +21,9 @@ export default function MessagesPage() {
   const filteredClients = mockClients.filter((c) =>
     c.name.toLowerCase().includes(searchQuery.toLowerCase()),
   );
-
+  const [selectedPreHireId, setSelectedPreHireId] = useState<string | null>(
+    null,
+  );
   const [viewMode, setViewMode] = useState<"active" | "prehire">("active");
   const [openMenu, setOpenMenu] = useState(false);
 
@@ -164,7 +90,7 @@ export default function MessagesPage() {
 
       {/* Main Layout */}
       <div className="flex flex-1 gap-0 border-t border-[#E5E7EB] -mx-6 px-6 pt-0 overflow-hidden">
-        {viewMode === "active" ? (
+        {viewMode === "active" && (
           <div className="flex flex-1 gap-0 border-t border-[#E5E7EB] -mx-6 px-6 pt-0 overflow-hidden">
             {/* Sidebar */}
             <div className="w-[320px] border-r border-[#E5E7EB] pt-6 pr-4 h-full">
@@ -188,8 +114,28 @@ export default function MessagesPage() {
               )}
             </div>
           </div>
-        ) : (
-          <PreHireInquiries />
+        )}
+        {viewMode === "prehire" && (
+          <div className="flex flex-1 w-full">
+            {selectedPreHireId ? (
+              <PreHireChatArea
+                name={
+                  mockPreHireUsers.find((u) => u.id === selectedPreHireId)
+                    ?.name || ""
+                }
+                initialMessage={
+                  mockPreHireUsers.find((u) => u.id === selectedPreHireId)
+                    ?.message || ""
+                }
+                onBack={() => setSelectedPreHireId(null)}
+              />
+            ) : (
+              <PreHireInquiries
+                users={mockPreHireUsers}
+                onSelect={(id) => setSelectedPreHireId(id)}
+              />
+            )}
+          </div>
         )}
       </div>
       {selectedClient && (

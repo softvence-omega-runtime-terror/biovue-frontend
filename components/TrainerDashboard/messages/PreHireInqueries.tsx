@@ -1,37 +1,20 @@
 "use client";
 
 import Image from "next/image";
+import { PreHireUser } from "./MessageData";
 
-const inquiries = [
-  {
-    id: 1,
-    name: "David Chen",
-    tag: "FAT LOSS",
-    message:
-      "I've Been Struggling With Late-Night Snacking. How Does Your Program Handle Cravings?",
-  },
-  {
-    id: 2,
-    name: "Esther Howard",
-    tag: "Muscle Gain",
-    message:
-      "Do I Need A Full Gym Membership For This Or Can I Work From Home?",
-  },
-  {
-    id: 3,
-    name: "Cameron Williamson",
-    tag: "Sleep Recovery",
-    message:
-      "I've Been Struggling With Late-Night Snacking. How Does Your Program Handle Cravings?",
-  },
-];
+interface Props {
+  users: PreHireUser[];
+  onSelect: (id: string) => void;
+}
 
-export default function PreHireInquiries() {
+export default function PreHireInquiries({ users, onSelect }: Props) {
   return (
     <div className="flex-1 overflow-y-auto border-t border-[#E5E7EB] -mx-6 px-6 pt-6 space-y-6">
-      {inquiries.map((item) => (
+      {users.map((item) => (
         <div
           key={item.id}
+          onClick={() => onSelect(item.id)}
           className="bg-white rounded-2xl p-5 shadow-sm border border-[#E5E7EB] hover:border-[#0D9488] transition-all"
         >
           <div className="flex justify-between items-start mb-3">
