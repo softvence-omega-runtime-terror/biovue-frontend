@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { ChevronLeft } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -192,25 +191,31 @@ export default function ProgramEdit({ program }: ProgramEditProps) {
         <form onSubmit={handleSubmit} className="space-y-8">
           {/* Program Basics */}
           <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
-            <h2 className="text-lg font-semibold text-gray-900 mb-6">
+            <h2 className="text-xl font-medium text-[#0FA4A9] mb-6">
               Program Basics
             </h2>
 
             <div className="space-y-4">
-              <div>
-                <Label htmlFor="name" className="text-gray-700 font-medium">
+              {/* Program Name */}
+              <div className="w-full">
+                <Label
+                  htmlFor="name"
+                  className="text-gray-600 text-md md:text-lg font-medium"
+                >
                   Program Name
                 </Label>
+
                 <Select
                   value={formData.name}
                   onValueChange={(value) => handleSelectChange("name", value)}
                 >
-                  <SelectTrigger className="mt-2">
+                  <SelectTrigger className="mt-2 w-full h-11 rounded-xl border border-gray-200 text-gray-500 text-sm text-left justify-start">
                     <SelectValue placeholder="Select program name" />
                   </SelectTrigger>
+
                   <SelectContent>
                     {PROGRAM_NAMES.map((name) => (
-                      <SelectItem key={name} value={name}>
+                      <SelectItem key={name} value={name} className="text-left">
                         {name}
                       </SelectItem>
                     ))}
@@ -218,26 +223,29 @@ export default function ProgramEdit({ program }: ProgramEditProps) {
                 </Select>
               </div>
 
+              {/* Duration + Primary Goal */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* Duration */}
                 <div>
-                  <Label
-                    htmlFor="duration"
-                    className="text-gray-700 font-medium"
-                  >
-                    Duration
-                  </Label>
+                  <Label className="text-gray-700 text-md md:text-lg font-medium">Duration</Label>
+
                   <Select
                     value={formData.duration}
                     onValueChange={(value) =>
                       handleSelectChange("duration", value)
                     }
                   >
-                    <SelectTrigger className="mt-2">
+                    <SelectTrigger className="mt-2 w-full h-11 text-left justify-start">
                       <SelectValue placeholder="Select duration" />
                     </SelectTrigger>
+
                     <SelectContent>
                       {DURATIONS.map((duration) => (
-                        <SelectItem key={duration} value={duration}>
+                        <SelectItem
+                          key={duration}
+                          value={duration}
+                          className="text-left"
+                        >
                           {duration}
                         </SelectItem>
                       ))}
@@ -245,56 +253,67 @@ export default function ProgramEdit({ program }: ProgramEditProps) {
                   </Select>
                 </div>
 
+                {/* Primary Goal */}
                 <div>
-                  <Label
-                    htmlFor="primaryGoal"
-                    className="text-gray-700 font-medium"
-                  >
+                  <Label className="text-gray-700 font-medium">
                     Primary Goal
                   </Label>
+
                   <Select
                     value={formData.primaryGoal}
                     onValueChange={(value) =>
                       handleSelectChange("primaryGoal", value)
                     }
                   >
-                    <SelectTrigger className="mt-2">
-                      <SelectValue placeholder="Select goal" />
+                    <SelectTrigger className="mt-2 w-full h-11 text-left justify-start">
+                      <SelectValue placeholder="Select goal" />{" "}
+                      {formData.primaryGoal}
                     </SelectTrigger>
+
                     <SelectContent>
                       {PRIMARY_GOALS.map((goal) => (
-                        <SelectItem key={goal} value={goal}>
+                        <SelectItem
+                          key={goal}
+                          value={goal}
+                          className="text-left"
+                        >
                           {goal}
                         </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
                 </div>
-              </div>
+              </div> 
 
               <div>
-                <Label className="text-gray-700 font-medium">
+                <Label className="text-gray-600 text-md md:text-lg font-medium">
                   Target Intensity
                 </Label>
-                <div className="flex gap-3 mt-3">
-                  {INTENSITIES.map((intensity) => (
-                    <button
-                      key={intensity}
-                      type="button"
-                      onClick={() => handleSelectChange("intensity", intensity)}
-                      className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-                        formData.intensity === intensity
-                          ? "bg-cyan-100 text-cyan-700 border-2 border-cyan-300"
-                          : "bg-gray-100 text-gray-700 border-2 border-gray-200 hover:border-gray-300"
-                      }`}
-                    >
-                      {intensity}
-                    </button>
-                  ))}
+                <div className="mt-3 flex items-center gap-0 bg-[#0FA4A926] rounded-xl py-2 md:py-4 px-4 md:px-8">
+                  {INTENSITIES.map((intensity) => {
+                    const isActive = formData.intensity === intensity;
+                    return (
+                      <button
+                        key={intensity}
+                        type="button"
+                        onClick={() =>
+                          handleSelectChange("intensity", intensity)
+                        }
+                        className={`flex-1 py-2 rounded-lg text-base font-medium transition-all duration-150 ${
+                          isActive
+                            ? "bg-white text-gray-800 shadow-sm"
+                            : "text-gray-500 hover:text-gray-700"
+                        }`}
+                      >
+                        {intensity}
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
             </div>
           </div>
+          
 
           {/* Program Structure */}
           <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
