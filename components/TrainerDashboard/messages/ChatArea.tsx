@@ -119,9 +119,7 @@ export default function ChatArea({ clientId, clientName, clientAvatar }: ChatAre
           <button className="text-[#0FA4A9] text-sm cursor-pointer font-medium hover:underline flex items-center gap-1">
             View client profile
           </button>
-          <button className="text-[#6B7280] hover:text-[#111827]">
-            <MoreVertical className="w-5 h-5" />
-          </button>
+          
         </div>
       </div>
 
