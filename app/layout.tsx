@@ -4,6 +4,7 @@ import "./globals.css";
 
 // redux
 import ReduxProvider from "../redux/provider";
+import { Toaster } from "sonner";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -48,7 +49,10 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} ${roboto.variable} ${inter.variable} ${poppins.variable} antialiased`}
       >
-        <ReduxProvider>{children}</ReduxProvider>
+        <ReduxProvider>
+          {children}
+          <Toaster position="top-right" richColors />
+        </ReduxProvider>
       </body>
     </html>
   );

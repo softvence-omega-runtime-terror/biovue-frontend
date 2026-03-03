@@ -6,16 +6,21 @@ import Link from "next/link";
 import { Mail, Lock, Eye, EyeOff, ArrowLeft, ArrowRight, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useRouter } from "next/navigation";
+import { useRegisterMutation } from "@/redux/features/api/auth/authApi";
+import { toast } from "sonner";
+import { User } from "lucide-react";
 
 const BusinessRegister = () => {
   const router = useRouter();
+  const [register, { isLoading }] = useRegisterMutation();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [formData, setFormData] = useState({
+    name: "",
     email: "",
     password: "",
     confirmPassword: "",
-    professionType: "Supplement Supplier",
+    professionType: "trainer_coach",
     acceptTerms: false
   });
 
@@ -28,15 +33,35 @@ const BusinessRegister = () => {
     }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    router.push("/register/business/profile-setup");
+    
+    const payload = {
+      name: formData.name,
+      email: formData.email,
+      password: formData.password,
+      password_confirmation: formData.confirmPassword,
+      role: "individual", // Keeping role as individual per payload example
+      terms_accepted: formData.acceptTerms,
+      user_type: "professional",
+      profession_type: formData.professionType,
+    };
+
+    try {
+      const res = await register(payload).unwrap();
+      if (res?.success || res?.status === "success") {
+        toast.success(res?.message || "Registration successful! Please verify your OTP.");
+        router.push(`/register-otp-verify?email=${formData.email}`);
+      }
+    } catch (err: any) {
+      toast.error(err?.data?.message || "Registration failed. Please try again.");
+    }
   };
 
   return (
-    <div className="flex flex-col items-center w-full max-w-[600px] mx-auto py-4">
+    <div className="flex flex-col items-center w-full max-w-[600px] mx-auto py-3">
       {/* Logo at the top */}
-      <div className="mb-4">
+      <div className="mb-3">
         <Image
           src="/images/logo.png"
           alt="BioVue Logo"
@@ -48,9 +73,9 @@ const BusinessRegister = () => {
       </div>
 
       {/* Main Card */}
-      <div className="w-full bg-white rounded-3xl p-6 md:p-8 border border-[#D9E6FF] shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
+      <div className="w-full bg-white rounded-3xl p-4 md:p-6 border border-[#D9E6FF] shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
         {/* Back Button */}
-        <div className="flex justify-center mb-6">
+        <div className="flex justify-center mb-3">
           <Link 
             href="/register" 
             className="inline-flex items-center gap-2 text-[#3A86FF] hover:opacity-80 transition-opacity font-bold text-sm tracking-wider uppercase"
@@ -61,17 +86,37 @@ const BusinessRegister = () => {
         </div>
 
         {/* Header */}
-        <div className="text-center mb-6">
-          <h1 className="text-3xl md:text-[32px] font-bold text-[#041228] mb-3">
+        <div className="text-center mb-3">
+          <h1 className="text-3xl md:text-[32px] font-bold text-[#041228] mb-2">
             Create Your Account
           </h1>
           <p className="text-[#98A2B3] text-lg">
-            Setting up your individual profile.
+            Setting up your professional profile.
           </p>
         </div>
 
         {/* Form */}
-        <form onSubmit={handleSubmit} className="space-y-3">
+        <form onSubmit={handleSubmit} className="space-y-2">
+          {/* Name */}
+          <div className="space-y-2">
+            <label className="text-lg font-bold text-[#041228] block">
+              Full Name
+            </label>
+            <div className="relative">
+              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[#98A2B3]">
+                <User size={22} strokeWidth={1.5} />
+              </span>
+              <input
+                type="text"
+                name="name"
+                value={formData.name}
+                onChange={handleChange as any}
+                placeholder="John Doe"
+                className="w-full bg-[#F5F5F5] border-none rounded-xl py-3.5 pl-12 pr-4 focus:outline-none focus:ring-2 focus:ring-[#3A86FF]/10 text-[#041228] placeholder:text-[#98A2B3] font-medium"
+                required
+              />
+            </div>
+          </div>
           {/* Email */}
           <div className="space-y-2">
             <label className="text-lg font-bold text-[#041228] block">
@@ -161,10 +206,10 @@ const BusinessRegister = () => {
                 onChange={handleChange}
                 className="w-full bg-[#F5F5F5] border-none rounded-xl py-3 px-4 pr-12 focus:outline-none focus:ring-2 focus:ring-[#3A86FF]/10 text-[#98A2B3] font-medium appearance-none cursor-pointer"
               >
-                <option value="Supplement Supplier">Supplement Supplier</option>
-                <option value="Coach">Coach</option>
-                <option value="Trainer">Trainer</option>
-                <option value="Wellness Professional">Nutrition</option>
+               
+                <option value="trainer_coach">trainer_coach</option>
+                <option value="nutritionist">nutritionist</option>
+                <option value="wellness_professional">supplement_supplier</option>
               </select>
               <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[#98A2B3] pointer-events-none">
                 <ChevronDown size={22} />
@@ -189,19 +234,20 @@ const BusinessRegister = () => {
           </div>
 
           {/* Submit Button */}
-          <div className="pt-4">
+          <div className="pt-3">
             <button
               type="submit"
-              className="w-full bg-primary text-white py-3 rounded-xl font-bold text-xl hover:bg-opacity-90 transition-all flex items-center justify-center gap-2 group shadow-lg shadow-[#0FA4A9]/10 cursor-pointer"
+              disabled={isLoading}
+              className="w-full bg-primary text-white py-3 rounded-xl font-bold text-xl hover:bg-opacity-90 transition-all flex items-center justify-center gap-2 group shadow-lg shadow-[#0FA4A9]/10 cursor-pointer disabled:opacity-70"
             >
-              Continue
-              <ArrowRight size={22} className="group-hover:translate-x-1 transition-transform" />
+              {isLoading ? "Creating Account..." : "Continue"}
+              {!isLoading && <ArrowRight size={22} className="group-hover:translate-x-1 transition-transform" />}
             </button>
           </div>
         </form>
 
         {/* Footer */}
-        <div className="mt-6 text-center">
+        <div className="mt-4 text-center">
           <p className="text-[#041228] text-[15px] font-bold">
             Already have an account?{" "}
             <Link href="/login" className="text-[#3A86FF] hover:underline ml-1">

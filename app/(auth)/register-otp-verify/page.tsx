@@ -1,15 +1,20 @@
 "use client";
 
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, Suspense } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { ChevronLeft, ArrowRight } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useVerifyOtpMutation } from "@/redux/features/api/auth/authApi";
+import { toast } from "sonner";
 
-const VerifyOTPPage = () => {
+const RegisterOTPVerifyContent = () => {
   const [otp, setOtp] = useState(["", "", "", "", ""]);
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const email = searchParams.get("email") || "yourmail@gmail.com";
+  const [verifyOtp, { isLoading }] = useVerifyOtpMutation();
 
   const handleChange = (value: string, index: number) => {
     if (!/^[0-9]?$/.test(value)) return;
@@ -60,29 +65,37 @@ const VerifyOTPPage = () => {
     inputRefs.current[lastPastedIndex]?.focus();
   };
 
-  // const handleSubmit = (e: React.FormEvent) => {
-  //   e.preventDefault();
-  //   console.log("Verifying OTP:", otp.join(""));
-  // };
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const otpValue = otp.join("");
+    if (otpValue.length < 5) {
+      toast.error("Please enter the 5-digit code.");
+      return;
+    }
 
-const handleSubmit = (e: React.FormEvent) => {
-  e.preventDefault();
-  // Always redirect, no OTP checks
-  router.push("/personalize-journey");
-};
+    try {
+      const res = await verifyOtp({ email, otp: otpValue }).unwrap();
+      if (res?.success || res?.status === "success") {
+        toast.success(res?.message || "Verification successful!");
+        router.push("/login");
+      }
+    } catch (err: any) {
+      toast.error(err?.data?.message || "Invalid OTP. Please try again.");
+    }
+  };
 
   return (
     <div>
       {/* Back Button - Top Left */}
-      <div className="absolute top-6 left-6 md:top-10 md:left-10">
+      <div className="absolute top-6 left-6 md:top-10 md:left-10 z-10">
         <Link
-          href="/forgot-password"
-          className="w-10 h-10 border border-[rgba(58,134,255,0.5)] rounded-lg flex items-center justify-center  hover:bg-blue-50 transition-all bg-white shadow-sm"
+          href="/register"
+          className="w-10 h-10 border border-[rgba(58,134,255,0.5)] rounded-lg flex items-center justify-center hover:bg-blue-50 transition-all bg-white shadow-sm"
         >
           <ChevronLeft size={24} />
         </Link>
       </div>
-      <div className="relative flex flex-col items-center justify-center bg-[#F4FBFA] px-6 overflow-hidden">
+      <div className="relative flex flex-col items-center justify-center bg-[#F4FBFA] px-6 min-h-screen py-12 overflow-hidden">
         <div className="w-full max-w-[550px] flex flex-col items-center">
           {/* Logo Container */}
           <div className="mb-12">
@@ -98,23 +111,23 @@ const handleSubmit = (e: React.FormEvent) => {
 
           {/* Outer White Card */}
           <div className="w-full bg-white rounded-2xl p-8 md:p-12 shadow-[0_4px_24px_rgba(58,134,255,0.04)] text-center">
-            <h1 className="text-xl md:text-2xl font-bold text-[#041228] mb-2 px-4">
+            <h1 className="text-xl md:text-2xl font-bold text-[#041228] mb-2 px-4 leading-tight">
               Enter the code we sent to <br />
-              <span className="text-[#041228]">yourmail@gmail.com</span>
+              <span className="text-[#041228]">{email}</span>
             </h1>
             <p className="text-[#98A2B3] text-sm md:text-base font-medium mb-8">
               We sent 5 digit code to your email address.
             </p>
 
             {/* Inner OTP Card */}
-            <div className="w-full bg-white rounded-xl p-6 md:p-8 border border-[rgba(58,134,255,0.5)] shadow-sm mb-10">
+            <div className="w-full bg-white rounded-xl p-6 md:p-8 border border-[rgba(58,134,255,0.5)] shadow-sm mb-10 text-center">
               <h2 className="text-lg font-bold text-[#041228] mb-4">
                 OTP Required
               </h2>
               <p className="text-[#98A2B3] text-xs md:text-sm font-medium mb-8 px-2 leading-relaxed">
                 Enter the 5 digits OTP code we've sent{" "}
                 <br className="hidden md:block" />
-                in your number yourmail@gmail.com
+                in your email address
               </p>
 
               {/* OTP Inputs */}
@@ -131,7 +144,7 @@ const handleSubmit = (e: React.FormEvent) => {
                     value={digit}
                     onChange={(e) => handleChange(e.target.value, index)}
                     onKeyDown={(e) => handleKeyDown(e, index)}
-                    className="w-10 h-10 md:w-14 md:h-14 bg-[#F5F5F5] border-none rounded-lg md:rounded-xl text-center text-base md:text-lg font-bold text-[#041228] focus:outline-none focus:ring-2 focus:ring-[#3A86FF1A] placeholder:text-[#98A2B3]"
+                    className="w-10 h-10 md:w-14 md:h-14 bg-[#F5F5F5] border-none rounded-lg md:rounded-xl text-center text-lg md:text-xl font-bold text-[#041228] focus:outline-none focus:ring-2 focus:ring-[#3A86FF1A] placeholder:text-[#98A2B3]"
                     placeholder={digit === "" ? "-" : ""}
                   />
                 ))}
@@ -139,16 +152,18 @@ const handleSubmit = (e: React.FormEvent) => {
             </div>
 
             {/* Verify Button */}
-            
             <button
               onClick={handleSubmit}
-              className="w-full bg-[#0FA4A9] text-white py-3 md:py-4 rounded-xl font-bold text-lg hover:bg-opacity-90 transition-all flex items-center justify-center gap-2 group shadow-lg shadow-[#0FA4A9]/10 cursor-pointer"
+              disabled={isLoading}
+              className="w-full bg-[#0FA4A9] text-white py-3 md:py-4 rounded-xl font-bold text-lg hover:bg-opacity-90 transition-all flex items-center justify-center gap-2 group shadow-lg shadow-[#0FA4A9]/10 cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed"
             >
-              Verify
-              <ArrowRight
-                size={22}
-                className="group-hover:translate-x-1 transition-transform"
-              />
+              {isLoading ? "Verifying..." : "Verify"}
+              {!isLoading && (
+                <ArrowRight
+                  size={22}
+                  className="group-hover:translate-x-1 transition-transform"
+                />
+              )}
             </button>
           </div>
         </div>
@@ -157,4 +172,12 @@ const handleSubmit = (e: React.FormEvent) => {
   );
 };
 
-export default VerifyOTPPage;
+const RegisterOTPVerifyPage = () => {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center bg-[#F4FBFA]">Loading...</div>}>
+      <RegisterOTPVerifyContent />
+    </Suspense>
+  );
+};
+
+export default RegisterOTPVerifyPage;

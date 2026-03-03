@@ -3,9 +3,18 @@ import { baseApi } from "../baseApi";
 const authApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
 
-    signup: builder.mutation({
+
+    register: builder.mutation({
       query: (body) => ({
         url: "/register",
+        method: "POST",
+        body,
+      }),
+    }),
+
+    verifyOtp: builder.mutation({
+      query: (body) => ({
+        url: "/verify-otp",
         method: "POST",
         body,
       }),
@@ -30,14 +39,42 @@ const authApi = baseApi.injectEndpoints({
       }),
     }),
 
+    forgotPassword: builder.mutation({
+      query: (body) => ({
+        url: "/forgot-password",
+        method: "POST",
+        body,
+      }),
+    }),
+
+    resetPassword: builder.mutation({
+      query: (body) => ({
+        url: "/reset-password",
+        method: "POST",
+        body,
+      }),
+    }),
+
+    resendOtp: builder.mutation({
+      query: (body) => ({
+        url: "/resend-otp",
+        method: "POST",
+        body,
+      }),
+    }),
+
   }),
 });
 
 export const {
-  useSignupMutation,
+  useRegisterMutation,
+  useVerifyOtpMutation,
   useLoginMutation,
   useGetCurrentUserQuery,
   useLogoutMutation,
+  useForgotPasswordMutation,
+  useResetPasswordMutation,
+  useResendOtpMutation,
 } = authApi;
 
 export default authApi;
