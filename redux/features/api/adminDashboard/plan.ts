@@ -19,8 +19,8 @@ interface ApiResponse<T> {
 
 export const planApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
-    getPlans: builder.query<Plan[], void>({
-      query: () => "/plans",
+    getPlans: builder.query<Plan[], string | void>({
+      query: (billing) => (billing ? `/plans?billing=${billing}` : "/plans"),
       transformResponse: (response: ApiResponse<Plan[]>) => response.data,
       providesTags: ["Plans"],
     }),

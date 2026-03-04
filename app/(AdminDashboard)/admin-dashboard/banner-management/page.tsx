@@ -1,14 +1,13 @@
 "use client";
 
-import AddEditBannerModal from "@/components/AdminDashboard/banner-management/AddEditBanner";
-import BannersTable from "@/components/AdminDashboard/banner-management/BannersTable";
-import {
-  Banner,
-  BannerFormData,
-} from "@/components/AdminDashboard/banner-management/data";
+import dynamic from "next/dynamic";
 import DashboardHeading from "@/components/common/DashboardHeading";
 import { Plus } from "lucide-react";
 import { useState } from "react";
+import { Banner, BannerFormData } from "@/components/AdminDashboard/banner-management/data";
+
+const BannersTable = dynamic(() => import("@/components/AdminDashboard/banner-management/BannersTable"), { ssr: false });
+const AddEditBannerModal = dynamic(() => import("@/components/AdminDashboard/banner-management/AddEditBanner"), { ssr: false });
 
 export default function BannerManagement() {
   const [isModalOpen, setIsModalOpen] = useState(false);

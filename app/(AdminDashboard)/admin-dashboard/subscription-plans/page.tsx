@@ -19,12 +19,12 @@ function SubscriptionPlansContent() {
   const searchParams = useSearchParams();
   const planType = searchParams.get("type"); // individual | professional | null
 
-  const { data: plans = [], isLoading, refetch } = useGetPlansQuery();
-  const [deletePlan] = useDeletePlanMutation();
-
   const [billingCycle, setBillingCycle] = useState<
-    "All" | "monthly" | "yearly" | "annual"
+    "All" | "monthly" | "annual"
   >("All");
+
+  const { data: plans = [], isLoading, refetch } = useGetPlansQuery(billingCycle === "All" ? undefined : billingCycle);
+  const [deletePlan] = useDeletePlanMutation();
 
   const [showAddModal, setShowAddModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
@@ -109,7 +109,6 @@ function SubscriptionPlansContent() {
             >
               <option value="All">All Billing Cycles</option>
               <option value="monthly">Monthly</option>
-              <option value="yearly">Yearly</option>
               <option value="annual">Annual</option>
             </select>
           </div>
