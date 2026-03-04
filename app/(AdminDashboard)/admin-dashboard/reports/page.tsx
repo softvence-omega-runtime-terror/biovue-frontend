@@ -4,13 +4,17 @@ import DashboardHeading from "@/components/common/DashboardHeading";
 import StatCard from "@/components/AdminDashboard/Reports/StatCard";
 import PlanTable from "@/components/AdminDashboard/Reports/PlanTable";
 import Graphs from "@/components/AdminDashboard/Reports/Graphs";
-import { Book, Download } from "lucide-react";
+import { Book, Download, Loader2, X } from "lucide-react";
 import { useState } from "react";
 import { mockData } from "@/components/AdminDashboard/Reports/data";
+import { useGetReportsQuery } from "@/redux/features/api/adminDashboard/reports";
 
 export default function ReportPage() {
   const [fromDate, setFromDate] = useState("2026-01-01"); // launch date
   const [toDate, setToDate] = useState(new Date().toISOString().split("T")[0]);
+  const { data, isLoading, isError } = useGetReportsQuery();
+
+  console.log(data,"reports")
 
   const downloadReport = () => {
     // Filter data based on date range
@@ -32,6 +36,32 @@ export default function ReportPage() {
     link.click();
     URL.revokeObjectURL(url);
   };
+
+  if (isLoading) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[400px] space-y-4">
+        <Loader2 className="w-10 h-10 text-[#0FA4A9] animate-spin" />
+        <p className="text-gray-500 animate-pulse font-medium">Loading platform reports...</p>
+      </div>
+    );
+  }
+
+  if (isError) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[400px] text-center p-6 bg-red-50 rounded-2xl border border-red-100">
+        <div className="bg-red-100 p-3 rounded-full mb-4">
+          <X size={24} className="text-red-500" />
+        </div>
+        <h3 className="text-lg font-bold text-gray-900 mb-2">Failed to load reports</h3>
+        <p className="text-gray-600 max-w-md mx-auto">
+          We encountered an error while fetching the platform statistics. Please try refreshing the page.
+        </p>
+      </div>
+    );
+  }
+
+  const stats = data?.stats;
+
   return (
     <div className="space-y-10">
       <DashboardHeading
@@ -43,47 +73,51 @@ export default function ReportPage() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
         <StatCard
           label="Total Signups"
-          value="18,420"
+          value={stats?.total_signups || "0"}
           description="All registered users"
         />
         <StatCard
           label="Total Subscriptions"
-          value="4,210"
+          value={stats?.total_subscriptions || "0"}
           description="Paid subscriptions"
         />
         <StatCard
           label="Total Revenue"
-          value="$128,450"
+          value={stats?.total_revenue || "$0"}
           description="Lifetime revenue"
         />
-        <StatCard label="Churn Rate" value="3.4%" description="Monthly churn" />
+        <StatCard 
+           label="Churn Rate" 
+           value={stats?.churn_rate || "0%"} 
+           description="Monthly churn" 
+        />
         <StatCard
           label="Website Visits"
-          value="26,400"
+          value={stats?.website_visits || "0"}
           description="Last 30 days"
         />
         <StatCard
           label="App Visits"
-          value="15,780"
+          value={stats?.app_visits || "0"}
           description="Last 30 days"
         />
         <StatCard
           label="Projections Used (Individual)"
-          value="14,200"
-          description="Avg per used: 1.18"
+          value={stats?.projections_individual || "0"}
+          description="Platform usage"
         />
         <StatCard
           label="Projections Used (Professional)"
-          value="4,210"
-          description="Avg per used: 1.8"
+          value={stats?.projections_professional || "0"}
+          description="Platform usage"
         />
       </div>
 
       {/* Plan Table */}
-      <PlanTable />
+      <PlanTable data={data?.plan_table} />
 
       {/* Charts */}
-      <Graphs />
+      <Graphs data={data?.charts} />
 
       {/* Download Report Section */}
       <div className="bg-[#0FA4A90D] rounded-lg border border-[#0D9488] p-6 flex flex-col gap-4 md:gap-0 md:flex-row md:items-center md:justify-between">
