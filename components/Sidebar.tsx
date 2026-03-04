@@ -1,11 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { LogOut, Menu, X } from "lucide-react";
-import { SIDEBAR_MENU } from "./SidebarMenu";
+import { usePathname, useRouter } from "next/navigation";
+import { LogOut, Menu, X, ChevronDown } from "lucide-react";
+import { SIDEBAR_MENU, MenuItem } from "./SidebarMenu";
 
 import { useDispatch } from "react-redux";
 import { logout } from "@/redux/features/slice/authSlice";
@@ -18,19 +18,42 @@ interface SidebarProps {
 
 export default function Sidebar({ role }: SidebarProps) {
   const pathname = usePathname();
-  const searchParams = useSearchParams();
   const router = useRouter();
   const dispatch = useDispatch();
-  const menu = SIDEBAR_MENU[role];
+  const menu = SIDEBAR_MENU[role] as MenuItem[];
+
+  const [isExpanded, setIsExpanded] = useState(false);
+  const [openSubmenus, setOpenSubmenus] = useState<string[]>([]);
 
   const handleLogout = () => {
     dispatch(logout());
     router.push("/login");
   };
 
-  const [isExpanded, setIsExpanded] = useState(false);
+  const toggleSubmenu = (label: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setOpenSubmenus((prev) =>
+      prev.includes(label) ? prev.filter((l) => l !== label) : [...prev, label],
+    );
+  };
+  useEffect(() => {
+    const currentSubmenus = menu
+      .filter((item) =>
+        item.children?.some((child) => pathname.startsWith(child.href)),
+      )
+      .map((item) => item.label);
 
-  const currentType = searchParams.get("type") || "all";
+    if (currentSubmenus.length === 0) return;
+
+    const id = setTimeout(() => {
+      setOpenSubmenus((prev) => {
+        const newState = Array.from(new Set([...prev, ...currentSubmenus]));
+        return newState;
+      });
+    }, 0);
+
+    return () => clearTimeout(id);
+  }, [pathname, menu]);
 
   return (
     <>
@@ -80,35 +103,75 @@ export default function Sidebar({ role }: SidebarProps) {
         </div>
 
         {/* Menu */}
-        <nav className="flex flex-col gap-1 flex-1">
+        <nav className="flex flex-col gap-1 flex-1 overflow-y-auto no-scrollbar">
           {menu.map((item) => {
             const Icon = item.icon;
-            const isRootDashboard = item.href === "/user-dashboard" || item.href === "/trainer-dashboard/overview" || item.href === "/admin-dashboard/overview";
-            const isActive = isRootDashboard 
-                ? pathname === item.href 
-                : pathname.startsWith(item.href);
+            const isRootDashboard =
+              item.href === "/user-dashboard" ||
+              item.href === "/trainer-dashboard/overview" ||
+              item.href === "/admin-dashboard/overview";
+            const isActive = isRootDashboard
+              ? pathname === item.href
+              : pathname.startsWith(item.href);
+
+            const hasChildren = item.children && item.children.length > 0;
+            const isOpen = openSubmenus.includes(item.label);
+
             return (
-              <div key={item.label}>
+              <div key={item.label} className="w-full">
                 {/* Parent Menu Item */}
-                <button
-                  onClick={() => {
-                    router.push(item.href);
-                    setIsExpanded(false);
-                  }}
-                  className={`w-full cursor-pointer flex items-center gap-3 px-2 py-2.5 rounded-lg text-sm font-medium transition-all duration-300 whitespace-nowrap ${
-                    isActive
-                      ? "bg-[#3A86FF25] text-black"
-                      : "text-gray-600 hover:bg-gray-100"
-                  }`}
-                >
-                  <Icon size={20} className="shrink-0" />
-                  {isExpanded && <span>{item.label}</span>}
-                  {!isExpanded && (
-                    <span className="hidden md:inline">{item.label}</span>
+                <div className="flex items-center group relative">
+                  <Link
+                    href={item.href}
+                    onClick={() => setIsExpanded(false)}
+                    className={`flex-1 cursor-pointer flex items-center gap-3 px-2 py-2.5 rounded-lg text-sm font-medium transition-all duration-300 whitespace-nowrap ${
+                      isActive
+                        ? "bg-[#3A86FF25] text-black"
+                        : "text-gray-600 hover:bg-gray-100"
+                    }`}
+                  >
+                    <Icon size={20} className="shrink-0" />
+                    {(isExpanded || window.innerWidth >= 768) && (
+                      <span>{item.label}</span>
+                    )}
+                  </Link>
+
+                  {hasChildren && (isExpanded || window.innerWidth >= 768) && (
+                    <button
+                      onClick={(e) => toggleSubmenu(item.label, e)}
+                      className={`absolute right-2 p-1 rounded-md hover:opacity-80 text-gray-400 transition-transform duration-300 ${
+                        isOpen ? "rotate-180" : ""
+                      }`}
+                    >
+                      <ChevronDown className="cursor-pointer" size={24} />
+                    </button>
                   )}
+                </div>
 
-                </button>
-
+                {/* Submenu Children */}
+                {hasChildren &&
+                  isOpen &&
+                  (isExpanded || window.innerWidth >= 768) && (
+                    <div className="ml-9 mt-1 flex flex-col gap-1 border-l border-gray-100">
+                      {item.children?.map((child) => {
+                        const isChildActive = pathname === child.href;
+                        return (
+                          <Link
+                            key={child.label}
+                            href={child.href}
+                            onClick={() => setIsExpanded(false)}
+                            className={`px-4 py-2 text-xs font-medium rounded-lg transition-colors ${
+                              isChildActive
+                                ? "text-[#3A86FF] bg-[#3A86FF10]"
+                                : "text-gray-500 hover:text-gray-900 hover:bg-gray-50"
+                            }`}
+                          >
+                            - {child.label}
+                          </Link>
+                        );
+                      })}
+                    </div>
+                  )}
               </div>
             );
           })}
