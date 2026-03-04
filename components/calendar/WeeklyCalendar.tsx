@@ -8,9 +8,14 @@ const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 interface Props {
   startDate: Date;
   onEventClick: (event: CalendarEvent) => void;
+  onAddCheckin: () => void;
 }
 
-export default function WeeklyCalendar({ startDate, onEventClick }: Props) {
+export default function WeeklyCalendar({
+  startDate,
+  onEventClick,
+  onAddCheckin,
+}: Props) {
   const dates = Array.from({ length: 7 }).map((_, i) => {
     const d = new Date(startDate);
     d.setDate(startDate.getDate() + i);
@@ -56,8 +61,8 @@ export default function WeeklyCalendar({ startDate, onEventClick }: Props) {
           />
         </div>
 
-        <EmptyCell />
-        <EmptyCell />
+        <EmptyCell onClick={onAddCheckin} />
+        <EmptyCell onClick={onAddCheckin} />
 
         <div className="bg-white p-4 min-h-55">
           <CalendarCard
@@ -78,13 +83,13 @@ export default function WeeklyCalendar({ startDate, onEventClick }: Props) {
           />
         </div>
 
-        <EmptyCell />
-        <EmptyCell />
-        <EmptyCell />
+        <EmptyCell onClick={onAddCheckin} />
+        <EmptyCell onClick={onAddCheckin} />
+        <EmptyCell onClick={onAddCheckin} />
 
         {/* Row 2 */}
-        <EmptyCell />
-        <EmptyCell />
+        <EmptyCell onClick={onAddCheckin} />
+        <EmptyCell onClick={onAddCheckin} />
 
         <div className="bg-white p-4 min-h-55">
           <CalendarCard
@@ -124,22 +129,25 @@ export default function WeeklyCalendar({ startDate, onEventClick }: Props) {
           />
         </div>
 
-        <EmptyCell />
-        <EmptyCell />
-        <EmptyCell />
+        <EmptyCell onClick={onAddCheckin} />
+        <EmptyCell onClick={onAddCheckin} />
+        <EmptyCell onClick={onAddCheckin} />
 
         {/* Row 3 */}
         {Array.from({ length: 7 }).map((_, i) => (
-          <EmptyCell key={`empty-${i}`} />
+          <EmptyCell onClick={onAddCheckin} key={`empty-${i}`} />
         ))}
       </div>
     </div>
   );
 }
 
-function EmptyCell() {
+function EmptyCell({ onClick }: { onClick: () => void }) {
   return (
-    <div className="bg-white p-4 min-h-55 flex items-center justify-center text-[#CBD5E1] text-3xl font-light hover:bg-[#F8FAFC] cursor-pointer transition-colors">
+    <div
+      onClick={onClick}
+      className="bg-white p-4 min-h-55 flex items-center justify-center text-[#CBD5E1] text-3xl font-light hover:bg-[#F8FAFC] cursor-pointer transition-colors"
+    >
       <div className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-white hover:shadow-sm transition-all">
         +
       </div>

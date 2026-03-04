@@ -190,7 +190,11 @@ export default function CalendarPage() {
 
       {/* Calendar */}
       <div className="bg-white rounded-2xl shadow-sm border border-[#F1F5F9] overflow-hidden">
-        <WeeklyCalendar startDate={start} onEventClick={handleEventClick} />
+        <WeeklyCalendar
+          startDate={start}
+          onEventClick={handleEventClick}
+          onAddCheckin={() => setIsCheckinOpen(true)}
+        />
       </div>
 
       {/* Modals */}
