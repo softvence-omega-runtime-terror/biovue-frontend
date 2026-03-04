@@ -67,7 +67,11 @@ export default function MessagesView() {
       {/* Chat Area */}
       <div className="flex flex-col flex-1">
         {selectedClient ? (
-          <ChatArea clientId={selectedClient.id} />
+          <ChatArea
+            clientId={selectedClient.id}
+            clientName={selectedClient.name}
+            clientAvatar={selectedClient.avatar}
+          />
         ) : (
           <div className="flex-1 flex items-center justify-center text-gray-500">
             Select a client to start messaging

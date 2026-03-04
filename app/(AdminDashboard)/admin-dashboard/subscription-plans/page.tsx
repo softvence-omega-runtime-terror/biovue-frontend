@@ -5,9 +5,10 @@ import { useSearchParams } from "next/navigation";
 import { Suspense } from "react";
 import { Plus, Filter } from "lucide-react";
 import {
-  mockPlans,
-  SubscriptionPlan,
-} from "@/components/AdminDashboard/subscription-plans/MockData";
+  useGetPlansQuery,
+  useDeletePlanMutation,
+  Plan,
+} from "@/redux/features/api/adminDashboard/plan";
 import SubscriptionPlansTable from "@/components/AdminDashboard/subscription-plans/SubscriptionTables";
 import AddPlanModal from "@/components/AdminDashboard/subscription-plans/AddPlanModal";
 import EditPlanModal from "@/components/AdminDashboard/subscription-plans/EditPlanModal";
@@ -18,16 +19,16 @@ function SubscriptionPlansContent() {
   const searchParams = useSearchParams();
   const planType = searchParams.get("type"); // individual | professional | null
 
-  const [plans, setPlans] = useState<SubscriptionPlan[]>(mockPlans);
+  const { data: plans = [], isLoading, refetch } = useGetPlansQuery();
+  const [deletePlan] = useDeletePlanMutation();
+
   const [billingCycle, setBillingCycle] = useState<
-    "All" | "Monthly" | "Yearly"
+    "All" | "monthly" | "yearly" | "annual"
   >("All");
 
   const [showAddModal, setShowAddModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
-  const [selectedPlan, setSelectedPlan] = useState<SubscriptionPlan | null>(
-    null,
-  );
+  const [selectedPlan, setSelectedPlan] = useState<Plan | null>(null);
 
   const [toast, setToast] = useState<{
     message: string;
@@ -37,102 +38,114 @@ function SubscriptionPlansContent() {
   /* ---------------- FILTER LOGIC ---------------- */
 
   const filteredPlans = plans.filter((plan) => {
-    const matchType = planType ? plan.type.toLowerCase() === planType : true;
+    const matchType = planType
+      ? plan.plan_type.toLowerCase() === planType.toLowerCase()
+      : true;
 
     const matchBilling =
-      billingCycle === "All" ? true : plan.billingCycle === billingCycle;
+      billingCycle === "All"
+        ? true
+        : plan.billing_cycle.toLowerCase() === billingCycle.toLowerCase();
 
     return matchType && matchBilling;
   });
 
   /* ---------------- CRUD ---------------- */
 
-  const handleAddPlan = (
-    newPlan: Omit<SubscriptionPlan, "id" | "createdDate" | "users">,
-  ) => {
-    const plan: SubscriptionPlan = {
-      ...newPlan,
-      id: Date.now().toString(),
-      createdDate: new Date().toISOString().split("T")[0],
-      users: Math.floor(Math.random() * 1000).toString(),
-    };
-    setPlans((prev) => [...prev, plan]);
+  const handleAddPlanSuccess = () => {
+    refetch();
     setShowAddModal(false);
     setToast({ message: "Plan added successfully!", type: "success" });
   };
 
-  const handleEditPlan = (updatedPlan: SubscriptionPlan) => {
-    setPlans((prev) =>
-      prev.map((plan) => (plan.id === updatedPlan.id ? updatedPlan : plan)),
-    );
+  const handleEditPlanSuccess = () => {
+    refetch();
     setShowEditModal(false);
     setSelectedPlan(null);
     setToast({ message: "Plan updated successfully!", type: "success" });
   };
 
-  const handleDeletePlan = (id: string) => {
-    setPlans((prev) => prev.filter((plan) => plan.id !== id));
-    setToast({ message: "Plan deleted successfully!", type: "success" });
+  const handleDeletePlan = async (id: number) => {
+    try {
+      await deletePlan(id).unwrap();
+      refetch();
+    } catch (error) {
+      console.error("Failed to delete plan:", error);
+    }
   };
 
   /* ---------------- UI ---------------- */
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen font-inter pb-10">
       <div className="mx-auto">
         {/* Header */}
         <div className="mb-6 flex justify-end items-center">
           <button
             onClick={() => setShowAddModal(true)}
-            className="flex cursor-pointer items-center gap-2 px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700"
+            className="flex cursor-pointer items-center gap-2 px-6 py-2.5 bg-[#0D9488] text-white rounded-xl hover:bg-[#0F766E] transition-all shadow-lg active:scale-95"
           >
             <Plus size={18} />
-            Add New Plan
+            <span className="font-semibold">Add New Plan</span>
           </button>
         </div>
 
-        <div className="mb-7 flex justify-between items-center">
+        <div className="mb-8 flex justify-between items-end">
           <div>
             <DashboardHeading
               heading="Subscription Plans"
-              subheading="View and manage subscription plans"
+              subheading="Manage and configure your application's subscription tiers"
             />
           </div>
           {/* Billing Cycle Filter */}
-          <div className="flex text-center  items-center gap-3">
-            <Filter size={18} className="text-gray-600" />
+          <div className="flex items-center gap-4 bg-white p-1.5 rounded-2xl border border-gray-100 shadow-sm">
+            <div className="pl-3 text-gray-400">
+               <Filter size={18} />
+            </div>
             <select
               value={billingCycle}
               onChange={(e) => setBillingCycle(e.target.value as any)}
-              className="px-6 py-2 border cursor-pointer rounded-lg text-sm"
+              className="px-4 py-2 bg-transparent cursor-pointer rounded-xl text-sm font-medium focus:outline-none"
             >
-              <option value="All">All</option>
-              <option value="Monthly">Monthly</option>
-              <option value="Yearly">Yearly</option>
+              <option value="All">All Billing Cycles</option>
+              <option value="monthly">Monthly</option>
+              <option value="yearly">Yearly</option>
+              <option value="annual">Annual</option>
             </select>
           </div>
         </div>
 
         {/* Table */}
-        <SubscriptionPlansTable
-          plans={filteredPlans}
-          onEdit={setSelectedPlan}
-          onDelete={handleDeletePlan}
-        />
+        <div className="bg-white rounded-[2rem] border border-gray-100 shadow-xl shadow-gray-200/50 overflow-visible">
+          {isLoading ? (
+            <div className="p-20 text-center flex flex-col items-center gap-4">
+               <div className="w-12 h-12 border-4 border-teal-100 border-t-teal-600 rounded-full animate-spin"></div>
+               <p className="text-gray-500 font-medium tracking-wide">Fetching your plans...</p>
+            </div>
+          ) : (
+            <SubscriptionPlansTable
+              plans={filteredPlans}
+              onEdit={setSelectedPlan}
+              onDelete={(id) => handleDeletePlan(Number(id))}
+            />
+          )}
+        </div>
       </div>
 
       {/* Modals */}
       <AddPlanModal
         isOpen={showAddModal}
         onClose={() => setShowAddModal(false)}
-        onAdd={handleAddPlan}
+        onSuccess={handleAddPlanSuccess}
+        onError={(msg) => setToast({ message: msg, type: "error" })}
       />
 
       <EditPlanModal
         isOpen={!!selectedPlan}
         plan={selectedPlan}
         onClose={() => setSelectedPlan(null)}
-        onSave={handleEditPlan}
+        onSuccess={handleEditPlanSuccess}
+        onError={(msg) => setToast({ message: msg, type: "error" })}
       />
 
       {toast && (

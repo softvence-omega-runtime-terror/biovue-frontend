@@ -1,20 +1,32 @@
 import { baseApi } from "../baseApi";
 
-interface Plan {
+export interface Plan {
   id: number;
   name: string;
-  // extend with other plan fields as needed
-  [key: string]: any;
+  plan_type: "individual" | "professional";
+  billing_cycle: string;
+  duration: number;
+  member_limit: number | null;
+  features: string[];
+  status: boolean;
+  price: string | number;
+}
+
+interface ApiResponse<T> {
+  success: boolean;
+  data: T;
 }
 
 export const planApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     getPlans: builder.query<Plan[], void>({
       query: () => "/plans",
+      transformResponse: (response: ApiResponse<Plan[]>) => response.data,
       providesTags: ["Plans"],
     }),
     getPlan: builder.query<Plan, number>({
       query: (id) => `/plans/${id}`,
+      transformResponse: (response: ApiResponse<Plan>) => response.data,
       providesTags: (result, error, id) => [{ type: "Plans", id }],
     }),
     createPlan: builder.mutation<Plan, Partial<Plan>>({

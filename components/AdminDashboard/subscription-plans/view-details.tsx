@@ -1,11 +1,11 @@
 "use client";
 
 import { X } from "lucide-react";
-import { SubscriptionPlan } from "./MockData";
+import { Plan } from "@/redux/features/api/adminDashboard/plan";
 
 interface ViewPlanDetailsModalProps {
   isOpen: boolean;
-  plan: SubscriptionPlan | null;
+  plan: Plan | null;
   onClose: () => void;
 }
 
@@ -16,22 +16,7 @@ export default function ViewPlanDetailsModal({
 }: ViewPlanDetailsModalProps) {
   if (!isOpen || !plan) return null;
 
-  const activeFeatures = Object.entries(plan.features)
-    .filter(([_, value]) => value)
-    .map(([key]) => {
-      switch (key) {
-        case "aiProjections":
-          return "AI Projections";
-        case "aiHealthSuggestions":
-          return "AI Health Suggestions";
-        case "deviceSync":
-          return "Device Sync";
-        case "prioritySupport":
-          return "Priority Support";
-        default:
-          return key;
-      }
-    });
+  const activeFeatures = plan.features || [];
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
@@ -53,21 +38,24 @@ export default function ViewPlanDetailsModal({
             <span className="font-medium">Plan Name:</span> {plan.name}
           </div>
           <div>
-            <span className="font-medium">Type:</span> {plan.type}
+            <span className="font-medium">Type:</span> <span className="capitalize">{plan.plan_type}</span>
+          </div>
+          <div>
+            <span className="font-medium">Member Limit:</span> {plan.member_limit || "N/A"}
           </div>
           <div>
             <span className="font-medium">Billing Cycle:</span>{" "}
-            {plan.billingCycle}
+            <span className="capitalize">{plan.billing_cycle}</span>
           </div>
           <div>
             <span className="font-medium">Price:</span> ${plan.price}
           </div>
           <div>
-            <span className="font-medium">Projections / Month:</span>{" "}
-            {plan.projectionsPerMonth}
+            <span className="font-medium">Duration:</span>{" "}
+            {plan.duration ? `${plan.duration} days` : "Permanent"}
           </div>
           <div>
-            <span className="font-medium">Status:</span> {plan.status}
+            <span className="font-medium">Status:</span> {plan.status ? "Active" : "Inactive"}
           </div>
 
           <div>
