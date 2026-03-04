@@ -1,13 +1,18 @@
 "use client";
 
-import { AlertCircleIcon, Edit2, MoreVertical, Trash2 } from "lucide-react";
-import { SubscriptionPlan } from "./MockData";
+import { AlertCircleIcon, Edit2, MoreVertical, Trash2, Plus, Filter } from "lucide-react";
+import Swal from "sweetalert2";
+import {
+  useGetPlansQuery,
+  useDeletePlanMutation,
+  Plan,
+} from "@/redux/features/api/adminDashboard/plan";
 import { useState } from "react";
 import ViewPlanDetailsModal from "./view-details";
 
 interface SubscriptionPlansTableProps {
-  plans: SubscriptionPlan[];
-  onEdit: (plan: SubscriptionPlan) => void;
+  plans: Plan[];
+  onEdit: (plan: Plan) => void;
   onDelete: (id: string) => void;
 }
 
@@ -16,25 +21,23 @@ export default function SubscriptionPlansTable({
   onEdit,
   onDelete,
 }: SubscriptionPlansTableProps) {
-  const [openMenuId, setOpenMenuId] = useState<string | null>(null);
-  const [selectedPlan, setSelectedPlan] = useState<SubscriptionPlan | null>(
-    null,
-  );
+  const [openMenuId, setOpenMenuId] = useState<number | null>(null);
+  const [selectedPlan, setSelectedPlan] = useState<Plan | null>(null);
   const [isViewOpen, setIsViewOpen] = useState(false);
   const getTypeColor = (type: string) => {
-    if (type === "Individual") {
+    if (type.toLowerCase() === "individual") {
       return "bg-[#8746E726] text-[#8746E7] border-[#8746E7]";
     }
     return "bg-[#0FA4A926] text-[#0FA4A9] border-[#0FA4A9]";
   };
 
   return (
-    <div className=" rounded-lg shadow overflow-visible">
+    <div className="rounded-lg overflow-visible">
       <table className="w-full">
         <thead className="bg-[#0FA4A91A] border-b border-gray-200">
           <tr>
             <th className="px-6 py-4 text-left text-base font-medium text-gray-700 uppercase tracking-wider">
-              Users
+              Plan Name
             </th>
             <th className="px-6 py-4 text-left text-base font-medium text-gray-700 uppercase tracking-wider">
               Plan Type
@@ -60,31 +63,31 @@ export default function SubscriptionPlansTable({
           {plans.map((plan) => (
             <tr key={plan.id} className="hover:bg-gray-50">
               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                {plan.users}
+                {plan.name}
               </td>
-              <td className="px-6 py-4 whitespace-nowrap">
+              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                 <span
-                  className={`inline-flex px-3 py-1 rounded-full text-xs font-semibold ${getTypeColor(
-                    plan.type,
+                  className={`inline-flex px-3 py-1 rounded-full text-xs font-semibold capitalize ${getTypeColor(
+                    plan.plan_type,
                   )}`}
                 >
-                  {plan.type}
+                  {plan.plan_type}
                 </span>
               </td>
-              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                {plan.billingCycle}
+              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 capitalize">
+                {plan.billing_cycle}
               </td>
               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                ${plan.price.toFixed(2)}/mo
+                ${Number(plan.price).toFixed(2)}
               </td>
               <td className="px-6 py-4 whitespace-nowrap">
-                <span className="flex items-center gap-2 text-sm text-[#22C55E]">
-                  <span className="w-2 h-2 bg-[#22C55E] rounded-full"></span>
-                  {plan.status}
+                <span className={`flex items-center gap-2 text-sm ${plan.status ? "text-[#22C55E]" : "text-red-500"}`}>
+                  <span className={`w-2 h-2 rounded-full ${plan.status ? "bg-[#22C55E]" : "bg-red-500"}`}></span>
+                  {plan.status ? "Active" : "Inactive"}
                 </span>
               </td>
               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                {plan.createdDate}
+                {plan.duration ? `${plan.duration} days` : "Permanent"}
               </td>
               <td className="px-6 py-4 whitespace-nowrap">
                 <div className="relative">
@@ -121,8 +124,25 @@ export default function SubscriptionPlansTable({
                       </button>
                       <button
                         onClick={() => {
-                          onDelete(plan.id);
                           setOpenMenuId(null);
+                          Swal.fire({
+                            title: "Are you sure?",
+                            text: "You won't be able to revert this!",
+                            icon: "warning",
+                            showCancelButton: true,
+                            confirmButtonColor: "#3085d6",
+                            cancelButtonColor: "#d33",
+                            confirmButtonText: "Yes, delete it!",
+                          }).then((result) => {
+                            if (result.isConfirmed) {
+                              onDelete(plan.id.toString());
+                              Swal.fire({
+                                title: "Deleted!",
+                                text: "The plan has been deleted.",
+                                icon: "success",
+                              });
+                            }
+                          });
                         }}
                         className="w-full cursor-pointer text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 flex items-center gap-2"
                       >
