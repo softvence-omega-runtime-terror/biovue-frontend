@@ -2,67 +2,98 @@
 
 import CalendarCard from "./CalendarCard";
 
-const days = ["Sun", "Mon", "Tues", "Wed", "Thu", "Fri", "Sat"];
-const dates = [18, 19, 20, 21, 22, 23, 24];
+const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
-export default function WeeklyCalendar() {
+interface Props {
+  startDate: Date;
+}
+
+export default function WeeklyCalendar({ startDate }: Props) {
+  const dates = Array.from({ length: 7 }).map((_, i) => {
+    const d = new Date(startDate);
+    d.setDate(startDate.getDate() + i);
+    return d;
+  });
+
   return (
-    <div className="bg-white rounded-xl border border-[#E5E7EB] overflow-hidden">
+    <div className="border border-gray-200 rounded-lg overflow-hidden">
       {/* Header */}
-      <div className="grid grid-cols-7 border-b border-[#E5E7EB]">
+      <div className="grid grid-cols-7 border-b border-gray-200 bg-gray-50">
         {days.map((day, i) => (
-          <div key={day} className="p-4 text-center">
-            <p className="text-xs text-[#6B7280]">{day}</p>
-            <p className="text-sm font-medium text-[#111827]">{dates[i]}</p>
+          <div
+            key={day}
+            className="p-4 text-center border-r border-gray-200 last:border-r-0"
+          >
+            <p className="text-xs font-medium text-gray-600 uppercase">{day}</p>
+            <p className="text-lg font-semibold text-gray-900 mt-1">
+              {dates[i].getDate()}
+            </p>
           </div>
         ))}
       </div>
 
-      {/* Body */}
-      <div className="grid grid-cols-7 auto-rows-[160px]">
-        {/* Example Filled Cells */}
-        <CalendarCard
-          name="Elena Rodrigues"
-          title="Progress Review"
-          time="10:00"
-          status="missed"
-        />
+      {/* Body - Calendar Grid */}
+      <div className="grid grid-cols-7 gap-px bg-gray-200 p-px">
+        {/* Row 1 */}
+        <div className="bg-white p-3 min-h-45 border-r border-gray-200">
+          <CalendarCard
+            name="Elena Rodrigues"
+            title="Progress Review"
+            time="10:00"
+            status="missed"
+            avatar="/images/avatar2.png"
+          />
+        </div>
 
         <EmptyCell />
         <EmptyCell />
 
-        <CalendarCard
-          name="Jenny Wilson"
-          title="Weekly Review"
-          time="10:00"
-          status="scheduled"
-        />
+        <div className="bg-white p-3 min-h-45 border-r border-gray-200">
+          <CalendarCard
+            name="Jenny Wilson"
+            title="Weekly Review"
+            time="10:00"
+            status="scheduled"
+            avatar="/images/avatar3.png"
+          />
+        </div>
 
         <EmptyCell />
         <EmptyCell />
         <EmptyCell />
 
-        {/* Second Row Example */}
+        {/* Row 2 */}
         <EmptyCell />
         <EmptyCell />
 
-        <CalendarCard
-          name="Robert Fox"
-          title="Water Intake"
-          time="10:00"
-          status="missed"
-        />
+        <div className="bg-white p-3 min-h-45 border-r border-gray-200">
+          <CalendarCard
+            name="Robert Fox"
+            title="Water Intake"
+            time="10:00"
+            status="missed"
+            avatar="/images/avatar4.png"
+          />
+        </div>
 
-        <CalendarCard
-          name="Jacob Jones"
-          title="Upper Body"
-          time="10:00"
-          status="completed"
-        />
+        <div className="bg-white p-3 min-h-45 border-r border-gray-200">
+          <CalendarCard
+            name="Jacob Jones"
+            title="Upper Body"
+            time="10:00"
+            status="completed"
+            avatar="/images/avatar5.png"
+          />
+        </div>
 
         <EmptyCell />
         <EmptyCell />
         <EmptyCell />
+
+        {/* Row 3 */}
+        {Array.from({ length: 7 }).map((_, i) => (
+          <EmptyCell key={`empty-${i}`} />
+        ))}
       </div>
     </div>
   );
@@ -70,7 +101,7 @@ export default function WeeklyCalendar() {
 
 function EmptyCell() {
   return (
-    <div className="border border-[#F3F4F6] flex items-center justify-center text-[#9CA3AF] text-xl">
+    <div className="bg-white p-3 min-h-45 flex items-center justify-center text-gray-400 text-2xl border-r border-gray-200 last:border-r-0 hover:bg-gray-50 cursor-pointer transition">
       +
     </div>
   );

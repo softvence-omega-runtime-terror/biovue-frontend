@@ -15,7 +15,7 @@ export default function TrainerNavbar() {
         </button>
 
         <Image
-          src="/images/avatar.jpg"
+          src="/images/avatar.png"
           alt="Admin"
           width={36}
           height={36}
