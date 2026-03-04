@@ -146,17 +146,43 @@ body {
   }
 }
 
+/* global scrollbar styles */
+html {
+  scrollbar-width: thin !important;
+  scrollbar-color: #0d9488 #f1f1f1 !important;
+}
+
+*::-webkit-scrollbar {
+  width: 8px !important;
+  height: 8px !important;
+}
+
+*::-webkit-scrollbar-track {
+  background: #f1f1f1 !important;
+}
+
+*::-webkit-scrollbar-thumb {
+  background-color: #0d9488 !important;
+  border-radius: 20px !important;
+  border: 2px solid #f1f1f1 !important;
+}
+
 /* custom scrollbar for the modal list */
+.custom-scrollbar {
+  scrollbar-width: thin !important;
+  scrollbar-color: #0d9488 #f1f1f1 !important;
+}
+
 .custom-scrollbar::-webkit-scrollbar {
-  width: 8px; /* width of scrollbar */
+  width: 8px !important;
 }
 
 .custom-scrollbar::-webkit-scrollbar-track {
-  background: #f1f1f1; /* track color */
-  border-radius: 8px;
+  background: #f1f1f1 !important;
+  border-radius: 8px !important;
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb {
-  background-color: #0d9488; /* scrollbar color */
-  border-radius: 8px;
+  background-color: #0d9488 !important;
+  border-radius: 8px !important;
 }
