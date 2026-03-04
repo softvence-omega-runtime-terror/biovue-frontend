@@ -8,43 +8,26 @@ import { cn } from "@/lib/utils";
 import { useGetPlansQuery, Plan } from "@/redux/features/api/adminDashboard/plan";
 
 const PricingPage = () => {
-  const [individualBilling, setIndividualBilling] = useState<"monthly" | "annual">("monthly");
-  const [professionalBilling, setProfessionalBilling] = useState<"monthly" | "annual">("monthly");
+  const [billingCycle, setBillingCycle] = useState<"monthly" | "annual">("monthly");
 
-  const { data: plans = [], isLoading } = useGetPlansQuery();
+  const { data: plans = [], isLoading } = useGetPlansQuery(billingCycle);
 
   // Filter Individual Plans
-  const individualPlans = plans.filter(plan => plan.plan_type === 'individual' && plan.status);
-  const filteredIndividualPlans = individualPlans.filter(plan => {
-    const isFreeTrial = plan.name.toLowerCase().includes("free trial");
-    if (isFreeTrial) return true; // Always show Free Trial
-
-    const cycle = plan.billing_cycle.toLowerCase();
-    const targetCycle = individualBilling === "monthly" ? "monthly" : "annual";
-    
-    // Strict matching for billing cycle
-    return cycle === targetCycle || (targetCycle === "annual" && cycle === "yearly");
-  }).sort((a, b) => Number(a.price) - Number(b.price));
+  const filteredIndividualPlans = plans
+    .filter(plan => plan.plan_type === 'individual' && plan.status)
+    .sort((a, b) => Number(a.price) - Number(b.price));
 
   // Filter Professional Plans
-  const professionalPlans = plans.filter(plan => plan.plan_type === 'professional' && plan.status);
-  const filteredProfessionalPlans = professionalPlans.filter(plan => {
-    const isEnterprise = plan.name.toLowerCase().includes("enterprise");
-    if (isEnterprise) return true; // Always show Enterprise
-
-    const cycle = plan.billing_cycle.toLowerCase();
-    const targetCycle = professionalBilling === "monthly" ? "monthly" : "annual";
-    
-    // Strict matching for billing cycle
-    return cycle === targetCycle || (targetCycle === "annual" && cycle === "yearly");
-  }).sort((a, b) => {
-    // Enterprise always last
-    const aEnt = a.name.toLowerCase().includes("enterprise");
-    const bEnt = b.name.toLowerCase().includes("enterprise");
-    if (aEnt && !bEnt) return 1;
-    if (!aEnt && bEnt) return -1;
-    return Number(a.price) - Number(b.price);
-  });
+  const filteredProfessionalPlans = plans
+    .filter(plan => plan.plan_type === 'professional' && plan.status)
+    .sort((a, b) => {
+      // Enterprise always last
+      const aEnt = a.name.toLowerCase().includes("enterprise");
+      const bEnt = b.name.toLowerCase().includes("enterprise");
+      if (aEnt && !bEnt) return 1;
+      if (!aEnt && bEnt) return -1;
+      return Number(a.price) - Number(b.price);
+    });
 
   return (
     <div className="min-h-screen bg-[#F9FAFB] font-sans pb-20">
@@ -74,6 +57,24 @@ const PricingPage = () => {
         <p className="text-[#5F6F73] max-w-2xl mx-auto text-lg leading-relaxed">
           Start with a free AI trial, then unlock deeper insights, progress tracking, and personalized projections.
         </p>
+
+        {/* Global Toggle */}
+        <div className="flex items-center justify-center gap-4 mt-12">
+          <span className={cn("text-base font-semibold transition-colors", billingCycle === "monthly" ? "text-[#1F2D2E]" : "text-[#94A3B8]")}>Monthly</span>
+          <button 
+            onClick={() => setBillingCycle(prev => prev === "monthly" ? "annual" : "monthly")}
+            className={cn(
+              "relative w-14 h-7 rounded-full transition-colors focus:outline-none p-1",
+              billingCycle === "annual" ? "bg-[#3A86FF]" : "bg-[#E2E8F0]"
+            )}
+          >
+            <div className={cn("w-5 h-5 bg-white rounded-full transition-transform shadow-md", billingCycle === "annual" ? "translate-x-7" : "translate-x-0")} />
+          </button>
+          <div className="flex items-center gap-2">
+            <span className={cn("text-base font-semibold transition-colors", billingCycle === "annual" ? "text-[#1F2D2E]" : "text-[#94A3B8]")}>Annual</span>
+            <span className="bg-[#E4EFFF] text-[#3A86FF] text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">SAVE 10%</span>
+          </div>
+        </div>
       </div>
 
       {isLoading ? (
@@ -86,24 +87,6 @@ const PricingPage = () => {
           <section className="container mx-auto px-6 mb-24">
             <div className="text-center mb-10">
               <h2 style={{ color: 'var(--Primary-color, #3A86FF)', textAlign: 'center', fontFamily: 'Roboto', fontSize: '34px', fontStyle: 'normal', fontWeight: 400, lineHeight: '24px' }} className="mb-6">For Individual</h2>
-              
-              {/* Toggle */}
-              <div className="flex items-center justify-center gap-4">
-                <span className={cn("text-sm font-semibold transition-colors", individualBilling === "monthly" ? "text-[#1F2D2E]" : "text-[#94A3B8]")}>Monthly</span>
-                <button 
-                  onClick={() => setIndividualBilling(prev => prev === "monthly" ? "annual" : "monthly")}
-                  className={cn(
-                    "relative w-11 h-6 rounded-full transition-colors focus:outline-none p-1",
-                    individualBilling === "annual" ? "bg-[#3A86FF]" : "bg-[#E2E8F0]"
-                  )}
-                >
-                  <div className={cn("w-4 h-4 bg-white rounded-full transition-transform shadow-sm", individualBilling === "annual" ? "translate-x-5" : "translate-x-0")} />
-                </button>
-                <div className="flex items-center gap-2">
-                  <span className={cn("text-sm font-semibold transition-colors", individualBilling === "annual" ? "text-[#1F2D2E]" : "text-[#94A3B8]")}>Annual</span>
-                  <span className="bg-[#E4EFFF] text-[#3A86FF] text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">SAVE 10%</span>
-                </div>
-              </div>
             </div>
 
             {/* Individual Cards Grid */}
@@ -139,24 +122,6 @@ const PricingPage = () => {
               <p className="text-[#041228] text-center font-['Roboto'] text-[24px] font-normal leading-[24px] my-6">
                 6 month minimum commitment required.
               </p>
-              
-              {/* Toggle */}
-              <div className="flex items-center justify-center gap-4">
-                <span className={cn("text-sm font-semibold transition-colors", professionalBilling === "monthly" ? "text-[#1F2D2E]" : "text-[#94A3B8]")}>Monthly</span>
-                <button 
-                  onClick={() => setProfessionalBilling(prev => prev === "monthly" ? "annual" : "monthly")}
-                  className={cn(
-                    "relative w-11 h-6 rounded-full transition-colors focus:outline-none p-1",
-                    professionalBilling === "annual" ? "bg-[#3A86FF]" : "bg-[#E2E8F0]"
-                  )}
-                >
-                  <div className={cn("w-4 h-4 bg-white rounded-full transition-transform shadow-sm", professionalBilling === "annual" ? "translate-x-5" : "translate-x-0")} />
-                </button>
-                <div className="flex items-center gap-2">
-                  <span className={cn("text-sm font-semibold transition-colors", professionalBilling === "annual" ? "text-[#1F2D2E]" : "text-[#94A3B8]")}>Annual</span>
-                  <span className="bg-[#E4EFFF] text-[#3A86FF] text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">SAVE 10%</span>
-                </div>
-              </div>
             </div>
 
             {/* Professional Grid */}
