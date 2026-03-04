@@ -14,7 +14,7 @@ import AddPlanModal from "@/components/AdminDashboard/subscription-plans/AddPlan
 import EditPlanModal from "@/components/AdminDashboard/subscription-plans/EditPlanModal";
 import Toast from "@/components/AdminDashboard/subscription-plans/Toast";
 import DashboardHeading from "@/components/common/DashboardHeading";
-type BillingCycle = "All" | "monthly" | "yearly" | "annual";
+
 function SubscriptionPlansContent() {
   const searchParams = useSearchParams();
   const planType = searchParams.get("type"); // individual | professional | null
@@ -22,7 +22,10 @@ function SubscriptionPlansContent() {
   const { data: plans = [], isLoading, refetch } = useGetPlansQuery();
   const [deletePlan] = useDeletePlanMutation();
 
-  const [billingCycle, setBillingCycle] = useState<BillingCycle>("All");
+  const [billingCycle, setBillingCycle] = useState<
+    "All" | "monthly" | "yearly" | "annual"
+  >("All");
+
   const [showAddModal, setShowAddModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState<Plan | null>(null);
@@ -77,13 +80,7 @@ function SubscriptionPlansContent() {
     <div className="min-h-screen font-inter pb-10">
       <div className="mx-auto">
         {/* Header */}
-        <div className="mb-6 flex justify-between items-center">
-          <div>
-            <DashboardHeading
-              heading="Subscription Plans"
-              subheading="Manage and configure your application's subscription tiers"
-            />
-          </div>
+        {/* <div className="mb-6 flex justify-end items-center">
           <button
             onClick={() => setShowAddModal(true)}
             className="flex cursor-pointer items-center gap-2 px-6 py-2.5 bg-[#0D9488] text-white rounded-xl hover:bg-[#0F766E] transition-all shadow-lg active:scale-95"
@@ -91,17 +88,23 @@ function SubscriptionPlansContent() {
             <Plus size={18} />
             <span className="font-semibold">Add New Plan</span>
           </button>
-        </div>
+        </div> */}
 
-        <div className="mb-8 flex justify-end items-end">
+        <div className="mb-8 flex justify-between items-end">
+          <div>
+            <DashboardHeading
+              heading="Subscription Plans"
+              subheading="Manage and configure your application's subscription tiers"
+            />
+          </div>
           {/* Billing Cycle Filter */}
           <div className="flex items-center gap-4 bg-white p-1.5 rounded-2xl border border-gray-100 shadow-sm">
             <div className="pl-3 text-gray-400">
-              <Filter size={18} />
+               <Filter size={18} />
             </div>
             <select
               value={billingCycle}
-              onChange={(e) => setBillingCycle(e.target.value as BillingCycle)}
+              onChange={(e) => setBillingCycle(e.target.value as any)}
               className="px-4 py-2 bg-transparent cursor-pointer rounded-xl text-sm font-medium focus:outline-none"
             >
               <option value="All">All Billing Cycles</option>
@@ -116,10 +119,8 @@ function SubscriptionPlansContent() {
         <div className="bg-white rounded-[2rem] border border-gray-100 shadow-xl shadow-gray-200/50 overflow-visible">
           {isLoading ? (
             <div className="p-20 text-center flex flex-col items-center gap-4">
-              <div className="w-12 h-12 border-4 border-teal-100 border-t-teal-600 rounded-full animate-spin"></div>
-              <p className="text-gray-500 font-medium tracking-wide">
-                Fetching your plans...
-              </p>
+               <div className="w-12 h-12 border-4 border-teal-100 border-t-teal-600 rounded-full animate-spin"></div>
+               <p className="text-gray-500 font-medium tracking-wide">Fetching your plans...</p>
             </div>
           ) : (
             <SubscriptionPlansTable

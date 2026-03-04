@@ -31,17 +31,17 @@ export const planApi = baseApi.injectEndpoints({
     }),
     createPlan: builder.mutation<Plan, Partial<Plan>>({
       query: (body) => ({
-        url: "/plans",
+        url: "/plans/store-or-update",
         method: "POST",
         body,
       }),
       invalidatesTags: ["Plans"],
     }),
-    updatePlan: builder.mutation<Plan, { id: number; data: Partial<Plan> }>({
-      query: ({ id, data }) => ({
-        url: `/plans/${id}`,
-        method: "PUT",
-        body: data,
+    updatePlan: builder.mutation<Plan, Partial<Plan>>({
+      query: (body) => ({
+        url: "/plans/store-or-update",
+        method: "POST",
+        body,
       }),
       invalidatesTags: ["Plans"],
     }),

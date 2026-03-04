@@ -1,5 +1,4 @@
-"use client";
-
+import { ChartData } from "@/redux/features/api/adminDashboard/reports";
 import {
   LineChart,
   Line,
@@ -9,23 +8,11 @@ import {
   Tooltip,
 } from "recharts";
 
-const subscriptionsData = [
-  { month: "Jan", value: 100 },
-  { month: "Feb", value: 250 },
-  { month: "Mar", value: 900 },
-  { month: "Apr", value: 450 },
-  { month: "May", value: 550 },
-  { month: "Jun", value: 380 },
-];
-
-const revenueData = [
-  { month: "Jan", value: 5000 },
-  { month: "Feb", value: 12000 },
-  { month: "Mar", value: 45000 },
-  { month: "Apr", value: 20000 },
-  { month: "May", value: 25000 },
-  { month: "Jun", value: 18000 },
-];
+interface GraphsProps {
+  data?: {
+    [month: string]: ChartData;
+  };
+}
 
 function Chart({
   title,
@@ -78,7 +65,17 @@ function Chart({
   );
 }
 
-export default function Graphs() {
+export default function Graphs({ data = {} }: GraphsProps) {
+  // Transform reports data for charts
+  const chartData = Object.entries(data).map(([month, values]) => ({
+    month,
+    subscriptions: values.subscriptions,
+    revenue: values.revenue,
+  }));
+
+  const subscriptionsData = chartData.map(d => ({ month: d.month, value: d.subscriptions }));
+  const revenueData = chartData.map(d => ({ month: d.month, value: d.revenue }));
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
       <Chart
@@ -86,7 +83,11 @@ export default function Graphs() {
         data={subscriptionsData}
         color="#8B5CF6"
       />
-      <Chart title="Revenue Over Time" data={revenueData} color="#0FA4A9" />
+      <Chart 
+        title="Revenue Over Time" 
+        data={revenueData} 
+        color="#0FA4A9" 
+      />
     </div>
   );
 }
