@@ -3,12 +3,25 @@
 import FiltersDropdown from "@/components/calendar/FilterDropdown";
 import WeeklyCalendar from "@/components/calendar/WeeklyCalendar";
 import DashboardHeading from "@/components/common/DashboardHeading";
+import SendReminderModal from "@/components/calendar/SendReminderModal";
+import ScheduleCheckinModal from "@/components/calendar/ScheduleCheckinModal";
+import EventDetailsModal from "@/components/calendar/EventDetailsModal";
+import RescheduleEventModal from "@/components/calendar/RescheduleEventModal";
 import { ChevronLeft, ChevronRight, Filter, Plus } from "lucide-react";
 import { useState } from "react";
 
+export type CalendarEventStatus = "missed" | "scheduled" | "completed";
+
+export interface CalendarEvent {
+  name: string;
+  title: string;
+  time: string;
+  status: CalendarEventStatus;
+  avatar?: string;
+}
+
 export default function CalendarPage() {
   const [view, setView] = useState<"day" | "week" | "month">("week");
-
   const [currentDate, setCurrentDate] = useState(new Date());
 
   const [openClientFilter, setOpenClientFilter] = useState(false);
@@ -17,9 +30,17 @@ export default function CalendarPage() {
   const [selectedClient, setSelectedClient] = useState("All Clients");
   const [selectedType, setSelectedType] = useState("All Types");
 
+  const [isReminderOpen, setIsReminderOpen] = useState(false);
+  const [isCheckinOpen, setIsCheckinOpen] = useState(false);
+  const [isEventDetailsOpen, setIsEventDetailsOpen] = useState(false);
+  const [isRescheduleOpen, setIsRescheduleOpen] = useState(false);
+  const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(
+    null,
+  );
+
   const views: Array<"day" | "week" | "month"> = ["day", "week", "month"];
 
-  // 🔹 Helpers
+  // Helpers
   const getWeekRange = (date: Date) => {
     const start = new Date(date);
     start.setDate(date.getDate() - date.getDay());
@@ -36,11 +57,11 @@ export default function CalendarPage() {
     `${s.toLocaleDateString("en-US", {
       month: "short",
       day: "numeric",
-    })} - ${e.toLocaleDateString("en-US", {
+    })} ${e.toLocaleDateString("en-US", {
       month: "short",
       day: "numeric",
       year: "numeric",
-    })}`;
+    })} -`;
 
   const changeWeek = (direction: "prev" | "next") => {
     const newDate = new Date(currentDate);
@@ -48,38 +69,58 @@ export default function CalendarPage() {
     setCurrentDate(newDate);
   };
 
-  return (
-    <div className="min-h-screen ">
-      {/* Header */}
+  const handleEventClick = (event: CalendarEvent) => {
+    setSelectedEvent(event);
+    setIsEventDetailsOpen(true);
+  };
 
-      <div className="mb-5 flex flex-col md:flex-row md:justify-between md:items-start">
+  const handleSendReminderFromDetails = () => {
+    setIsEventDetailsOpen(false);
+    setIsReminderOpen(true);
+  };
+
+  const handleRescheduleFromDetails = () => {
+    setIsEventDetailsOpen(false);
+    setIsRescheduleOpen(true);
+  };
+
+  return (
+    <div className="min-h-screen">
+      {/* Header */}
+      <div className="mb-8 flex flex-col lg:flex-row lg:justify-between lg:items-center gap-4">
         <DashboardHeading
           heading="Calendar"
           subheading="Manage check-ins, workouts, and reminders"
         />
-        <div className="flex ietms-center gap-4">
-          <button className="flex p-4 text-sm cursor-pointer border rounded-lg hover:opacity-80 items-center gap-2">
-            <Plus size={14} /> <span>Add Reminder</span>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => setIsReminderOpen(true)}
+            className="flex px-5 py-2.5 text-sm font-medium cursor-pointer border border-[#E2E8F0] bg-white text-[#475569] rounded-xl hover:bg-gray-50 items-center gap-2 transition-all shadow-sm"
+          >
+            <Plus size={16} /> <span>Add Reminder</span>
           </button>
-          <button className="flex p-4 text-sm cursor-pointer bg-[#0D9488] text-white border rounded-lg hover:opacity-80 items-center gap-2">
-            <Plus size={14} /> <span>Schedule Check-in</span>
+          <button
+            onClick={() => setIsCheckinOpen(true)}
+            className="flex px-5 py-2.5 text-sm font-medium cursor-pointer bg-[#0D9488] text-white rounded-xl hover:bg-[#0B7A70] items-center gap-2 transition-all shadow-sm"
+          >
+            <Plus size={16} /> <span>Schedule Check-in</span>
           </button>
         </div>
       </div>
 
       {/* Top Controls */}
-      <div className="bg-white rounded-lg px-3 md:px-6  py-2 mb-6">
-        <div className="flex items-center justify-between">
+      <div className="bg-white rounded-2xl p-4 mb-6 shadow-sm border border-[#F1F5F9]">
+        <div className="flex flex-col md:flex-row items-center justify-between gap-4 p-2">
           {/* View Toggle */}
-          <div className="bg-[#0FA4A926] rounded-lg p-3 flex gap-4">
+          <div className="bg-[#E0F2F1] rounded-xl p-1 flex items-center w-full md:w-auto">
             {views.map((item) => (
               <button
                 key={item}
                 onClick={() => setView(item)}
-                className={`px-6 py-2 text-sm rounded-md capitalize transition font-medium ${
+                className={`flex-1 md:flex-none px-8 py-2.5 text-sm rounded-lg capitalize transition-all font-semibold ${
                   view === item
-                    ? "bg-white text-gray-900 shadow-sm"
-                    : "text-[gray-600] hover:text-gray-900"
+                    ? "bg-white text-[#0D9488] shadow-sm"
+                    : "text-[#64748B] hover:text-[#0D9488]"
                 }`}
               >
                 {item}
@@ -88,39 +129,39 @@ export default function CalendarPage() {
           </div>
 
           {/* Date Navigation + Filters */}
-          <div className="flex items-center gap-6">
+          <div className="flex flex-col md:flex-row items-center gap-6 w-full md:w-auto">
             {/* Date Navigation */}
             <div className="flex items-center gap-4">
               <button
                 onClick={() => changeWeek("prev")}
-                className="p-1 hover:bg-gray-100 rounded"
+                className="p-2 hover:bg-[#F1F5F9] rounded-lg transition-colors text-[#64748B]"
               >
-                <ChevronLeft className="w-5 h-5 text-gray-600" />
+                <ChevronLeft className="w-5 h-5 cursor-pointer" />
               </button>
 
-              <span className="text-sm font-medium text-gray-900 whitespace-nowrap">
+              <span className="text-[15px] font-semibold text-[#1E293B] whitespace-nowrap min-w-50 text-center">
                 {formatRange(start, end)}
               </span>
 
               <button
                 onClick={() => changeWeek("next")}
-                className="p-1 hover:bg-gray-100 rounded"
+                className="p-2 hover:bg-[#F1F5F9] rounded-lg transition-colors text-[#64748B]"
               >
-                <ChevronRight className="w-5 h-5 text-gray-600" />
+                <ChevronRight className="w-5 h-5 cursor-pointer" />
               </button>
             </div>
 
             {/* Filter Buttons */}
-            <div className="flex items-center gap-3 relative">
+            <div className="flex items-center gap-3 relative w-full md:w-auto">
               {/* Client Filter */}
               <button
                 onClick={() => {
                   setOpenClientFilter((v) => !v);
                   setOpenTypeFilter(false);
                 }}
-                className="flex items-center gap-2 border px-4 py-2 rounded-lg bg-white text-sm"
+                className="flex flex-1 md:flex-none items-center justify-center gap-2 border border-[#E2E8F0] px-5 py-2.5 rounded-xl bg-white text-sm font-medium text-[#475569] hover:bg-gray-50 transition-all shadow-sm"
               >
-                <Filter className="w-4 h-4" />
+                <Filter className="w-4 h-4 text-[#94A3B8]" />
                 {selectedClient}
               </button>
 
@@ -130,9 +171,13 @@ export default function CalendarPage() {
                   setOpenTypeFilter((v) => !v);
                   setOpenClientFilter(false);
                 }}
-                className="flex items-center gap-2 border px-4 py-2 rounded-lg bg-white text-sm"
+                className="flex flex-1 md:flex-none items-center justify-center gap-2 border border-[#E2E8F0] px-5 py-2.5 rounded-xl bg-white text-sm font-medium text-[#475569] hover:bg-gray-50 transition-all shadow-sm"
               >
-                <Filter className="w-4 h-4" />
+                <div className="flex flex-col items-center justify-center gap-0.5">
+                  <div className="h-0.5 w-4 bg-[#94A3B8]"></div>
+                  <div className="h-0.5 w-4 bg-[#94A3B8]"></div>
+                  <div className="h-0.5 w-4 bg-[#94A3B8]"></div>
+                </div>
                 {selectedType}
               </button>
 
@@ -144,9 +189,32 @@ export default function CalendarPage() {
       </div>
 
       {/* Calendar */}
-      <div className="bg-white rounded-lg">
-        <WeeklyCalendar startDate={start} />
+      <div className="bg-white rounded-2xl shadow-sm border border-[#F1F5F9] overflow-hidden">
+        <WeeklyCalendar startDate={start} onEventClick={handleEventClick} />
       </div>
+
+      {/* Modals */}
+      <SendReminderModal
+        isOpen={isReminderOpen}
+        onClose={() => setIsReminderOpen(false)}
+      />
+      <ScheduleCheckinModal
+        isOpen={isCheckinOpen}
+        onClose={() => setIsCheckinOpen(false)}
+      />
+      <EventDetailsModal
+        isOpen={isEventDetailsOpen}
+        onClose={() => setIsEventDetailsOpen(false)}
+        event={selectedEvent}
+        onSendReminder={handleSendReminderFromDetails}
+        onReschedule={handleRescheduleFromDetails}
+      />
+      <RescheduleEventModal
+        isOpen={isRescheduleOpen}
+        onClose={() => setIsRescheduleOpen(false)}
+        event={selectedEvent}
+        onConfirm={() => setIsRescheduleOpen(false)}
+      />
     </div>
   );
 }
