@@ -1,3 +1,4 @@
+import { LucideIcon } from "lucide-react";
 import {
   LayoutGrid,
   TrendingUp,
@@ -13,7 +14,23 @@ import {
   CreditCard,
 } from "lucide-react";
 
-export const SIDEBAR_MENU = {
+export interface MenuItem {
+  label: string;
+  icon: LucideIcon;
+  href: string;
+  children?: {
+    label: string;
+    href: string;
+  }[];
+}
+
+interface SidebarMenu {
+  user: MenuItem[];
+  trainer: MenuItem[];
+  admin: MenuItem[];
+}
+
+export const SIDEBAR_MENU: SidebarMenu = {
   user: [
     { label: "Dashboard", icon: LayoutGrid, href: "/user-dashboard" },
     {
@@ -48,7 +65,6 @@ export const SIDEBAR_MENU = {
       label: "Subscription Plans",
       icon: CreditCard,
       href: "/admin-dashboard/subscription-plans",
-      /*
       children: [
         {
           label: "Individual Plans",
@@ -59,7 +75,6 @@ export const SIDEBAR_MENU = {
           href: "/admin-dashboard/subscription-plans?type=professional",
         },
       ],
-      */
     },
     { label: "Reports", icon: FileText, href: "/admin-dashboard/reports" },
     {

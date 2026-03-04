@@ -1,12 +1,12 @@
 "use client";
 
-import FiltersDropdown from "@/components/calendar/FilterDropdown";
-import WeeklyCalendar from "@/components/calendar/WeeklyCalendar";
+import FiltersDropdown from "@/components/TrainerDashboard/calendar/FilterDropdown";
+import WeeklyCalendar from "@/components/TrainerDashboard/calendar/WeeklyCalendar";
 import DashboardHeading from "@/components/common/DashboardHeading";
-import SendReminderModal from "@/components/calendar/SendReminderModal";
-import ScheduleCheckinModal from "@/components/calendar/ScheduleCheckinModal";
-import EventDetailsModal from "@/components/calendar/EventDetailsModal";
-import RescheduleEventModal from "@/components/calendar/RescheduleEventModal";
+import SendReminderModal from "@/components/TrainerDashboard/calendar/SendReminderModal";
+import ScheduleCheckinModal from "@/components/TrainerDashboard/calendar/ScheduleCheckinModal";
+import EventDetailsModal from "@/components/TrainerDashboard/calendar/EventDetailsModal";
+import RescheduleEventModal from "@/components/TrainerDashboard/calendar/RescheduleEventModal";
 import { ChevronLeft, ChevronRight, Filter, Plus } from "lucide-react";
 import { useState } from "react";
 
