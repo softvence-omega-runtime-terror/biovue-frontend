@@ -3,8 +3,15 @@
 import React, { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { Mail, Lock, Eye, EyeOff, ArrowLeft, ArrowRight, ChevronDown } from "lucide-react";
-import { cn } from "@/lib/utils";
+import {
+  Mail,
+  Lock,
+  Eye,
+  EyeOff,
+  ArrowLeft,
+  ArrowRight,
+  ChevronDown,
+} from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useRegisterMutation } from "@/redux/features/api/auth/authApi";
 import { toast } from "sonner";
@@ -21,21 +28,23 @@ const BusinessRegister = () => {
     password: "",
     confirmPassword: "",
     professionType: "trainer_coach",
-    acceptTerms: false
+    acceptTerms: false,
   });
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
+  ) => {
     const { name, value, type } = e.target;
     const checked = (e.target as HTMLInputElement).checked;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [name]: type === "checkbox" ? checked : value
+      [name]: type === "checkbox" ? checked : value,
     }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     const payload = {
       name: formData.name,
       email: formData.email,
@@ -50,16 +59,27 @@ const BusinessRegister = () => {
     try {
       const res = await register(payload).unwrap();
       if (res?.success || res?.status === "success") {
-        toast.success(res?.message || "Registration successful! Please verify your OTP.");
-        router.push(`/register-otp-verify?email=${formData.email}`);
+        toast.success(
+          res?.message || "Registration successful! Please verify your OTP.",
+        );
+        // CONDITIONAL REDIRECT
+        if (formData.professionType === "trainer_coach") {
+          router.push("/trainer-profile");
+        } else {
+          router.push(`/register-otp-verify?email=${formData.email}`);
+        }
       }
-    } catch (err: any) {
-      toast.error(err?.data?.message || "Registration failed. Please try again.");
+    } catch (err: unknown) {
+      const errorMessage =
+        (err as { data?: { message?: string } })?.data?.message ??
+        "Registration failed. Please try again.";
+
+      toast.error(errorMessage);
     }
   };
 
   return (
-    <div className="flex flex-col items-center w-full max-w-[600px] mx-auto py-3">
+    <div className="flex flex-col items-center w-full max-w-150 mx-auto py-3">
       {/* Logo at the top */}
       <div className="mb-3">
         <Image
@@ -76,8 +96,8 @@ const BusinessRegister = () => {
       <div className="w-full bg-white rounded-3xl p-4 md:p-6 border border-[#D9E6FF] shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
         {/* Back Button */}
         <div className="flex justify-center mb-3">
-          <Link 
-            href="/register" 
+          <Link
+            href="/register"
             className="inline-flex items-center gap-2 text-[#3A86FF] hover:opacity-80 transition-opacity font-bold text-sm tracking-wider uppercase"
           >
             <ArrowLeft size={20} strokeWidth={2.5} />
@@ -110,7 +130,7 @@ const BusinessRegister = () => {
                 type="text"
                 name="name"
                 value={formData.name}
-                onChange={handleChange as any}
+                onChange={handleChange}
                 placeholder="John Doe"
                 className="w-full bg-[#F5F5F5] border-none rounded-xl py-3.5 pl-12 pr-4 focus:outline-none focus:ring-2 focus:ring-[#3A86FF]/10 text-[#041228] placeholder:text-[#98A2B3] font-medium"
                 required
@@ -161,7 +181,11 @@ const BusinessRegister = () => {
                 onClick={() => setShowPassword(!showPassword)}
                 className="absolute right-4 top-1/2 -translate-y-1/2 text-[#98A2B3] hover:text-[#5F6F73] transition-colors cursor-pointer"
               >
-                {showPassword ? <EyeOff size={22} strokeWidth={1.5} /> : <Eye size={22} strokeWidth={1.5} />}
+                {showPassword ? (
+                  <EyeOff size={22} strokeWidth={1.5} />
+                ) : (
+                  <Eye size={22} strokeWidth={1.5} />
+                )}
               </button>
             </div>
           </div>
@@ -189,7 +213,11 @@ const BusinessRegister = () => {
                 onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                 className="absolute right-4 top-1/2 -translate-y-1/2 text-[#98A2B3] hover:text-[#5F6F73] transition-colors cursor-pointer"
               >
-                {showConfirmPassword ? <EyeOff size={22} strokeWidth={1.5} /> : <Eye size={22} strokeWidth={1.5} />}
+                {showConfirmPassword ? (
+                  <EyeOff size={22} strokeWidth={1.5} />
+                ) : (
+                  <Eye size={22} strokeWidth={1.5} />
+                )}
               </button>
             </div>
           </div>
@@ -206,10 +234,11 @@ const BusinessRegister = () => {
                 onChange={handleChange}
                 className="w-full bg-[#F5F5F5] border-none rounded-xl py-3 px-4 pr-12 focus:outline-none focus:ring-2 focus:ring-[#3A86FF]/10 text-[#98A2B3] font-medium appearance-none cursor-pointer"
               >
-               
                 <option value="trainer_coach">trainer_coach</option>
                 <option value="nutritionist">nutritionist</option>
-                <option value="wellness_professional">supplement_supplier</option>
+                <option value="wellness_professional">
+                  supplement_supplier
+                </option>
               </select>
               <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[#98A2B3] pointer-events-none">
                 <ChevronDown size={22} />
@@ -228,8 +257,14 @@ const BusinessRegister = () => {
               className="w-5 h-5 accent-[#0FA4A9] border-[#E5E9EA] rounded-md cursor-pointer"
               required
             />
-            <label htmlFor="terms" className="text-[15px] text-[#041228] font-bold">
-              I agree to the <span className="text-[#3A86FF] cursor-pointer hover:underline">Terms & Privacy Policy</span>
+            <label
+              htmlFor="terms"
+              className="text-[15px] text-[#041228] font-bold"
+            >
+              I agree to the{" "}
+              <span className="text-[#3A86FF] cursor-pointer hover:underline">
+                Terms & Privacy Policy
+              </span>
             </label>
           </div>
 
@@ -241,7 +276,12 @@ const BusinessRegister = () => {
               className="w-full bg-primary text-white py-3 rounded-xl font-bold text-xl hover:bg-opacity-90 transition-all flex items-center justify-center gap-2 group shadow-lg shadow-[#0FA4A9]/10 cursor-pointer disabled:opacity-70"
             >
               {isLoading ? "Creating Account..." : "Continue"}
-              {!isLoading && <ArrowRight size={22} className="group-hover:translate-x-1 transition-transform" />}
+              {!isLoading && (
+                <ArrowRight
+                  size={22}
+                  className="group-hover:translate-x-1 transition-transform"
+                />
+              )}
             </button>
           </div>
         </form>
