@@ -1,8 +1,14 @@
-export default function FiltersDropdown() {
+"use client";
+
+export default function FiltersDropdown({
+  type,
+}: {
+  type: "client" | "type";
+}) {
   return (
-    <div className="absolute top-14 right-0 bg-[#3F3A3A] text-white p-6 rounded-md w-[260px] shadow-xl">
-      <div className="flex gap-10 text-sm">
-        <div>
+    <div className="absolute top-14 right-0 bg-[#3F3A3A] text-white p-6 rounded-md w-64 shadow-xl z-50">
+      {type === "client" ? (
+        <>
           <p className="mb-2 font-medium">All clients</p>
           <ul className="space-y-1 text-xs text-gray-200">
             <li>All Clients</li>
@@ -11,9 +17,9 @@ export default function FiltersDropdown() {
             <li>Marcus Chen</li>
             <li>Elena Rodriguez</li>
           </ul>
-        </div>
-
-        <div>
+        </>
+      ) : (
+        <>
           <p className="mb-2 font-medium">All Types</p>
           <ul className="space-y-1 text-xs text-gray-200">
             <li>All Status</li>
@@ -21,8 +27,8 @@ export default function FiltersDropdown() {
             <li>Completed</li>
             <li>Missed</li>
           </ul>
-        </div>
-      </div>
+        </>
+      )}
     </div>
   );
 }
