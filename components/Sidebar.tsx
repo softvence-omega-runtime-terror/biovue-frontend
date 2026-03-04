@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { LogOut, Menu, X, ChevronDown } from "lucide-react";
 import { SIDEBAR_MENU, MenuItem } from "./SidebarMenu";
 
@@ -18,6 +18,7 @@ interface SidebarProps {
 
 export default function Sidebar({ role }: SidebarProps) {
   const pathname = usePathname();
+  const searchParams = useSearchParams();
   const router = useRouter();
   const dispatch = useDispatch();
   const menu = SIDEBAR_MENU[role] as MenuItem[];
@@ -36,10 +37,12 @@ export default function Sidebar({ role }: SidebarProps) {
       prev.includes(label) ? prev.filter((l) => l !== label) : [...prev, label],
     );
   };
+
   useEffect(() => {
+    const fullPath = pathname + (searchParams.toString() ? `?${searchParams.toString()}` : "");
     const currentSubmenus = menu
       .filter((item) =>
-        item.children?.some((child) => pathname.startsWith(child.href)),
+        item.children?.some((child) => fullPath.startsWith(child.href)),
       )
       .map((item) => item.label);
 
@@ -53,7 +56,7 @@ export default function Sidebar({ role }: SidebarProps) {
     }, 0);
 
     return () => clearTimeout(id);
-  }, [pathname, menu]);
+  }, [pathname, searchParams, menu]);
 
   return (
     <>
@@ -141,7 +144,7 @@ export default function Sidebar({ role }: SidebarProps) {
                       onClick={(e) => toggleSubmenu(item.label, e)}
                       className={`absolute right-2 p-1 rounded-md hover:opacity-80 text-gray-400 transition-transform duration-300 ${
                         isOpen ? "rotate-180" : ""
-                      }`}
+                       }`}
                     >
                       <ChevronDown className="cursor-pointer" size={24} />
                     </button>
@@ -154,7 +157,8 @@ export default function Sidebar({ role }: SidebarProps) {
                   (isExpanded || window.innerWidth >= 768) && (
                     <div className="ml-9 mt-1 flex flex-col gap-1 border-l border-gray-100">
                       {item.children?.map((child) => {
-                        const isChildActive = pathname === child.href;
+                        const fullPath = pathname + (searchParams.toString() ? `?${searchParams.toString()}` : "");
+                        const isChildActive = fullPath === child.href;
                         return (
                           <Link
                             key={child.label}

@@ -1,10 +1,10 @@
 "use client";
 
-import React, { useEffect } from "react";
+import  { useEffect } from "react";
 import OverviewCharts from "@/components/AdminDashboard/Overview/OverViewCharts";
 import PlanSummaryTable from "@/components/AdminDashboard/Overview/PlanSummeryTable";
 import StatCard from "@/components/AdminDashboard/Overview/StatCard";
-import SystemStatus from "@/components/AdminDashboard/Overview/SystemStatus";
+
 import DashboardHeading from "@/components/common/DashboardHeading";
 
 import { useGetAdminOverviewQuery } from "@/redux/features/api/adminDashboard/overview";
@@ -20,7 +20,7 @@ export default function AdminOverviewPage() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
+      <div className="flex items-center justify-center min-h-100">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#0FA4A9]"></div>
       </div>
     );
@@ -28,10 +28,12 @@ export default function AdminOverviewPage() {
 
   if (error) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[400px] text-red-500 gap-4">
+      <div className="flex flex-col items-center justify-center min-h-100 text-red-500 gap-4">
         <p className="font-bold text-xl">Failed to load dashboard data</p>
-        <p className="text-sm">Please ensure you are logged in and the API is accessible.</p>
-        <button 
+        <p className="text-sm">
+          Please ensure you are logged in and the API is accessible.
+        </p>
+        <button
           onClick={() => window.location.reload()}
           className="px-4 py-2 bg-[#0FA4A9] text-white rounded-lg cursor-pointer"
         >
@@ -78,23 +80,23 @@ export default function AdminOverviewPage() {
           value={overview.total_revenue || "$0.00"}
           sub="Lifetime revenue"
         />
-        <StatCard 
-          title="Monthly Revenue" 
-          value={overview.monthly_revenue || "$0.00"} 
-          sub="Current month" 
+        <StatCard
+          title="Monthly Revenue"
+          value={overview.monthly_revenue || "$0.00"}
+          sub="Current month"
         />
-        <StatCard 
-          title="Churn Rate" 
-          value={overview.churn_rate || "0%"} 
-          sub="Monthly churn" 
+        <StatCard
+          title="Churn Rate"
+          value={overview.churn_rate || "0%"}
+          sub="Monthly churn"
         />
       </div>
 
       {/* Charts */}
       <div className="">
-        <OverviewCharts 
-          userGrowth={charts.user_growth} 
-          revenueTrend={charts.revenue_trend} 
+        <OverviewCharts
+          userGrowth={charts.user_growth}
+          revenueTrend={charts.revenue_trend}
         />
       </div>
 
@@ -110,4 +112,3 @@ export default function AdminOverviewPage() {
     </div>
   );
 }
-
