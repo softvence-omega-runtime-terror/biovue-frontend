@@ -14,7 +14,7 @@ export default function ReportPage() {
   const [toDate, setToDate] = useState(new Date().toISOString().split("T")[0]);
   const { data, isLoading, isError } = useGetReportsQuery();
 
-  console.log(data,"reports")
+  console.log(data, "reports");
 
   const downloadReport = () => {
     // Filter data based on date range
@@ -39,9 +39,11 @@ export default function ReportPage() {
 
   if (isLoading) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[400px] space-y-4">
+      <div className="flex flex-col items-center justify-center min-h-[400px]  space-y-4">
         <Loader2 className="w-10 h-10 text-[#0FA4A9] animate-spin" />
-        <p className="text-gray-500 animate-pulse font-medium">Loading platform reports...</p>
+        <p className="text-gray-500 animate-pulse font-medium">
+          Loading platform reports...
+        </p>
       </div>
     );
   }
@@ -52,9 +54,12 @@ export default function ReportPage() {
         <div className="bg-red-100 p-3 rounded-full mb-4">
           <X size={24} className="text-red-500" />
         </div>
-        <h3 className="text-lg font-bold text-gray-900 mb-2">Failed to load reports</h3>
+        <h3 className="text-lg font-bold text-gray-900 mb-2">
+          Failed to load reports
+        </h3>
         <p className="text-gray-600 max-w-md mx-auto">
-          We encountered an error while fetching the platform statistics. Please try refreshing the page.
+          We encountered an error while fetching the platform statistics. Please
+          try refreshing the page.
         </p>
       </div>
     );
@@ -86,10 +91,10 @@ export default function ReportPage() {
           value={stats?.total_revenue || "$0"}
           description="Lifetime revenue"
         />
-        <StatCard 
-           label="Churn Rate" 
-           value={stats?.churn_rate || "0%"} 
-           description="Monthly churn" 
+        <StatCard
+          label="Churn Rate"
+          value={stats?.churn_rate || "0%"}
+          description="Monthly churn"
         />
         <StatCard
           label="Website Visits"
