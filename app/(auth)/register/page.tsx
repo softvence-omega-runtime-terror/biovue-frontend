@@ -76,7 +76,7 @@ const SelectAccountType = () => {
           </div>
           <h3 className="text-xl font-bold text-[#041228] mb-2">Business</h3>
           <p className="text-[#98A2B3] text-center leading-relaxed">
-            I'm a coach, trainer, or wellness professional
+            I&apos;m a coach, trainer, or wellness professional
           </p>
         </div>
       </div>
