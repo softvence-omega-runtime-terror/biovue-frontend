@@ -5,10 +5,46 @@ import Image from "next/image";
 import Link from "next/link";
 import { Check, Lock, ArrowUpRight, Zap } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useGetPlansQuery, Plan } from "@/redux/features/api/adminDashboard/plan";
 
 const PricingPage = () => {
   const [individualBilling, setIndividualBilling] = useState<"monthly" | "annual">("monthly");
   const [professionalBilling, setProfessionalBilling] = useState<"monthly" | "annual">("monthly");
+
+  const { data: plans = [], isLoading } = useGetPlansQuery();
+
+  // Filter Individual Plans
+  const individualPlans = plans.filter(plan => plan.plan_type === 'individual' && plan.status);
+  const filteredIndividualPlans = individualPlans.filter(plan => {
+    const isFreeTrial = plan.name.toLowerCase().includes("free trial");
+    if (isFreeTrial) return true; // Always show Free Trial
+
+    const cycle = plan.billing_cycle.toLowerCase();
+    const targetCycle = individualBilling === "monthly" ? "monthly" : "annual";
+    
+    // Strict matching for billing cycle
+    return cycle === targetCycle || (targetCycle === "annual" && cycle === "yearly");
+  }).sort((a, b) => Number(a.price) - Number(b.price));
+
+  // Filter Professional Plans
+  const professionalPlans = plans.filter(plan => plan.plan_type === 'professional' && plan.status);
+  const filteredProfessionalPlans = professionalPlans.filter(plan => {
+    const isEnterprise = plan.name.toLowerCase().includes("enterprise");
+    if (isEnterprise) return true; // Always show Enterprise
+
+    const cycle = plan.billing_cycle.toLowerCase();
+    const targetCycle = professionalBilling === "monthly" ? "monthly" : "annual";
+    
+    // Strict matching for billing cycle
+    return cycle === targetCycle || (targetCycle === "annual" && cycle === "yearly");
+  }).sort((a, b) => {
+    // Enterprise always last
+    const aEnt = a.name.toLowerCase().includes("enterprise");
+    const bEnt = b.name.toLowerCase().includes("enterprise");
+    if (aEnt && !bEnt) return 1;
+    if (!aEnt && bEnt) return -1;
+    return Number(a.price) - Number(b.price);
+  });
 
   return (
     <div className="min-h-screen bg-[#F9FAFB] font-sans pb-20">
@@ -40,215 +76,110 @@ const PricingPage = () => {
         </p>
       </div>
 
-      {/* Individual Plans Section */}
-      <section className="container mx-auto px-6 mb-24">
-        <div className="text-center mb-10">
-          <h2 style={{ color: 'var(--Primary-color, #3A86FF)', textAlign: 'center', fontFamily: 'Roboto', fontSize: '34px', fontStyle: 'normal', fontWeight: 400, lineHeight: '24px' }} className="mb-6">For Individual</h2>
-          
-          {/* Toggle */}
-          <div className="flex items-center justify-center gap-4">
-            <span className={cn("text-sm font-semibold transition-colors", individualBilling === "monthly" ? "text-[#1F2D2E]" : "text-[#94A3B8]")}>Monthly</span>
-            <button 
-              onClick={() => setIndividualBilling(prev => prev === "monthly" ? "annual" : "monthly")}
-              className={cn(
-                "relative w-11 h-6 rounded-full transition-colors focus:outline-none p-1",
-                individualBilling === "annual" ? "bg-[#3A86FF]" : "bg-[#E2E8F0]"
-              )}
-            >
-              <div className={cn("w-4 h-4 bg-white rounded-full transition-transform shadow-sm", individualBilling === "annual" ? "translate-x-5" : "translate-x-0")} />
-            </button>
-            <div className="flex items-center gap-2">
-              <span className={cn("text-sm font-semibold transition-colors", individualBilling === "annual" ? "text-[#1F2D2E]" : "text-[#94A3B8]")}>Annual</span>
-              <span className="bg-[#E4EFFF] text-[#3A86FF] text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">SAVE 10%</span>
+      {isLoading ? (
+        <div className="flex justify-center items-center py-20">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#3A86FF]"></div>
+        </div>
+      ) : (
+        <>
+          {/* Individual Plans Section */}
+          <section className="container mx-auto px-6 mb-24">
+            <div className="text-center mb-10">
+              <h2 style={{ color: 'var(--Primary-color, #3A86FF)', textAlign: 'center', fontFamily: 'Roboto', fontSize: '34px', fontStyle: 'normal', fontWeight: 400, lineHeight: '24px' }} className="mb-6">For Individual</h2>
+              
+              {/* Toggle */}
+              <div className="flex items-center justify-center gap-4">
+                <span className={cn("text-sm font-semibold transition-colors", individualBilling === "monthly" ? "text-[#1F2D2E]" : "text-[#94A3B8]")}>Monthly</span>
+                <button 
+                  onClick={() => setIndividualBilling(prev => prev === "monthly" ? "annual" : "monthly")}
+                  className={cn(
+                    "relative w-11 h-6 rounded-full transition-colors focus:outline-none p-1",
+                    individualBilling === "annual" ? "bg-[#3A86FF]" : "bg-[#E2E8F0]"
+                  )}
+                >
+                  <div className={cn("w-4 h-4 bg-white rounded-full transition-transform shadow-sm", individualBilling === "annual" ? "translate-x-5" : "translate-x-0")} />
+                </button>
+                <div className="flex items-center gap-2">
+                  <span className={cn("text-sm font-semibold transition-colors", individualBilling === "annual" ? "text-[#1F2D2E]" : "text-[#94A3B8]")}>Annual</span>
+                  <span className="bg-[#E4EFFF] text-[#3A86FF] text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">SAVE 10%</span>
+                </div>
+              </div>
             </div>
-          </div>
-        </div>
 
-        {/* Individual Cards Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 container mx-auto">
-          {/* Free Trial */}
-          <PricingCard
-            title="Free Trial"
-            price="0"
-            period="for 7 days"
-            subtext="Then auto-bills based on selected plan"
-            description="Experience BioVue's core AI projections before committing."
-            features={[
-              { text: "Upload 1 body photo", included: true },
-              { text: "1 AI future projection (1-year horizon)", included: true },
-              { text: "Personal wellness dashboard", included: true },
-              { text: "Basic body stats & trends", included: true },
-              { text: "AI improvement suggestions", included: false },
-              { text: "Health indicators", included: false },
-              { text: "Recommended coaches & clinics", included: false },
-              { text: "Achievement badges & Progress reports", included: false },
-            ]}
-            cta="Start 7-Day Trial"
-            active={false}
-          />
-
-          {/* Plus */}
-          <PricingCard
-            title="Plus"
-            price="29"
-            period="/Month"
-            description="See your future and track how your lifestyle is improving."
-            features={[
-              { text: "Up to 2 AI body projections", included: true },
-              { text: "AI-generated health suggestions (Limited)", included: true },
-              { text: "Recommended Business", included: true },
-              { text: "Achievement badges", included: true },
-              { text: "Progress tracking", included: true },
-              { text: "\"%\" improved vs baseline", included: true },
-              { text: "Recalculated after every photo", included: true },
-              { text: "No device sync", included: true, icon: <Lock size={14} className="text-[#94A3B8]" /> },
-              { text: "No downloadable reports", included: false, isNegative: true },
-            ]}
-            cta="Upgrade To Plus"
-            active={true}
-            ctaColor="bg-[#0FA4A9]"
-          />
-
-          {/* Premium */}
-          <PricingCard
-            title="Premium"
-            price="35"
-            period="/Month"
-            description="Build a complete picture of your future health with our advanced AI, real-world data sync, and long-term forecasting."
-            specialFeature={{ label: "EVERYTHING IN PLUS", icon: <Zap size={14} fill="#3A86FF" /> }}
-            features={[
-              { text: "Up to 4 AI projections", included: true },
-              { text: "External fitness tracker sync", included: true },
-              { text: "Downloadable progress reports", included: true },
-              { text: "Historical trend vs AI projections", included: true },
-              { text: "Priority Email support", included: true },
-              { text: "Full access AI-generated health suggestions", included: true },
-              { text: "Future Health insights (5 year projection)", included: true },
-            ]}
-            cta="Go Premium"
-            active={false}
-          />
-        </div>
-      </section>
-
-      {/* Professional Plans Section */}
-      <section className="container mx-auto px-6 mb-24">
-        <div className="text-center mb-12">
-          <h2 style={{ color: 'var(--Primary-color, #3A86FF)', textAlign: 'center', fontFamily: 'Roboto', fontSize: '34px', fontStyle: 'normal', fontWeight: 400, lineHeight: '24px' }} className="mb-2">Professional Plan</h2>
-         <p className="text-[#041228] text-center font-['Roboto'] text-[24px] font-normal leading-[24px] my-6">
-  6 month minimum commitment required.
-</p>
-          
-          {/* Toggle */}
-          <div className="flex items-center justify-center gap-4">
-            <span className={cn("text-sm font-semibold transition-colors", professionalBilling === "monthly" ? "text-[#1F2D2E]" : "text-[#94A3B8]")}>Monthly</span>
-            <button 
-              onClick={() => setProfessionalBilling(prev => prev === "monthly" ? "annual" : "monthly")}
-              className={cn(
-                "relative w-11 h-6 rounded-full transition-colors focus:outline-none p-1",
-                professionalBilling === "annual" ? "bg-[#3A86FF]" : "bg-[#E2E8F0]"
-              )}
-            >
-              <div className={cn("w-4 h-4 bg-white rounded-full transition-transform shadow-sm", professionalBilling === "annual" ? "translate-x-5" : "translate-x-0")} />
-            </button>
-            <div className="flex items-center gap-2">
-              <span className={cn("text-sm font-semibold transition-colors", professionalBilling === "annual" ? "text-[#1F2D2E]" : "text-[#94A3B8]")}>Annual</span>
-              <span className="bg-[#E4EFFF] text-[#3A86FF] text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">SAVE 10%</span>
+            {/* Individual Cards Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 container mx-auto">
+              {filteredIndividualPlans.map((plan, idx) => (
+                <PricingCard
+                  key={plan.id}
+                  title={plan.name}
+                  price={plan.price === "0.00" || plan.price === 0 ? "0" : plan.price}
+                  period={plan.name.toLowerCase().includes("free trial") ? `for ${plan.duration} days` : "/Month"}
+                  subtext={plan.name.toLowerCase().includes("free trial") ? "Then auto-bills based on selected plan" : ""}
+                  description={
+                    plan.name.toLowerCase().includes("free trial") 
+                      ? "Experience BioVue's core AI projections before committing." 
+                      : plan.name.toLowerCase().includes("plus")
+                      ? "See your future and track how your lifestyle is improving."
+                      : "Build a complete picture of your future health with our advanced AI, real-world data sync, and long-term forecasting."
+                  }
+                  features={plan.features.map(f => ({ text: f, included: true }))}
+                  cta={plan.name.toLowerCase().includes("free trial") ? `Start ${plan.duration}-Day Trial` : `Upgrade To ${plan.name}`}
+                  active={false}
+                  ctaColor="bg-[#0FA4A9]"
+                  specialFeature={plan.name.toLowerCase().includes("premium") ? { label: "EVERYTHING IN PLUS", icon: <Zap size={14} fill="#3A86FF" /> } : undefined}
+                />
+              ))}
             </div>
-          </div>
-        </div>
+          </section>
 
-        {/* Professional Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 container mx-auto">
-          {/* Tier 1 */}
-          <PricingCard
-            compact
-            title="Tier 1 Professional"
-            capacity="Up to 8 clients"
-            price="250"
-            period="/Month"
-            subtext="7 days free trail"
-            features={[
-              { text: "Up to 8 client accounts", included: true },
-              { text: "16 Projections/month*", included: true },
-              { text: "Client progress tracking", included: true },
-              { text: "White-label reports", included: true },
-              { text: "Email support", included: true },
-              { text: "Basic analytics dashboard", included: true },
-              { text: "Core body visualization & health insights", included: true },
-              { text: "Limited customization", included: true },
-            ]}
-            cta="Start 7-Day Free Trial"
-          />
+          {/* Professional Plans Section */}
+          <section className="container mx-auto px-6 mb-24">
+            <div className="text-center mb-12">
+              <h2 style={{ color: 'var(--Primary-color, #3A86FF)', textAlign: 'center', fontFamily: 'Roboto', fontSize: '34px', fontStyle: 'normal', fontWeight: 400, lineHeight: '24px' }} className="mb-2">Professional Plan</h2>
+              <p className="text-[#041228] text-center font-['Roboto'] text-[24px] font-normal leading-[24px] my-6">
+                6 month minimum commitment required.
+              </p>
+              
+              {/* Toggle */}
+              <div className="flex items-center justify-center gap-4">
+                <span className={cn("text-sm font-semibold transition-colors", professionalBilling === "monthly" ? "text-[#1F2D2E]" : "text-[#94A3B8]")}>Monthly</span>
+                <button 
+                  onClick={() => setProfessionalBilling(prev => prev === "monthly" ? "annual" : "monthly")}
+                  className={cn(
+                    "relative w-11 h-6 rounded-full transition-colors focus:outline-none p-1",
+                    professionalBilling === "annual" ? "bg-[#3A86FF]" : "bg-[#E2E8F0]"
+                  )}
+                >
+                  <div className={cn("w-4 h-4 bg-white rounded-full transition-transform shadow-sm", professionalBilling === "annual" ? "translate-x-5" : "translate-x-0")} />
+                </button>
+                <div className="flex items-center gap-2">
+                  <span className={cn("text-sm font-semibold transition-colors", professionalBilling === "annual" ? "text-[#1F2D2E]" : "text-[#94A3B8]")}>Annual</span>
+                  <span className="bg-[#E4EFFF] text-[#3A86FF] text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">SAVE 10%</span>
+                </div>
+              </div>
+            </div>
 
-          {/* Tier 2 */}
-          <PricingCard
-            compact
-            title="Tier 2 Professional"
-            capacity="25 clients"
-            price="750"
-            period="/Month"
-            subtext="7 days free trail"
-            features={[
-              { text: "Up to 25 client accounts", included: true },
-              { text: "Up to 50 Projections/month*", included: true },
-              { text: "Everything in Tier 1", included: true },
-              { text: "Advanced analytics dashboard", included: true },
-              { text: "API access", included: true },
-              { text: "Priority email support", included: true },
-              { text: "Custom branding", included: true },
-              { text: "Team collaboration (3 seats)", included: true },
-              { text: "Custom branding", included: true },
-              { text: "Dedicated account manager", included: false, isNegative: true },
-            ]}
-            cta="Start 7-Day Free Trial"
-            active={true}
-            ctaColor="bg-[#0FA4A9]"
-          />
-
-          {/* Tier 3 */}
-          <PricingCard
-            compact
-            title="Tier 3 Professional"
-            capacity="150 clients"
-            price="3500"
-            period="/Month"
-            subtext="7 days free trail"
-            features={[
-              { text: "Up to 150 client accounts", included: true },
-              { text: "Everything in Tier 2", included: true },
-              { text: "Up to 600 Projections/month*", included: true },
-              { text: "Priority phone & email support", included: true },
-              { text: "Team collaboration (10 seats)", included: true },
-              { text: "Quarterly business reviews", included: false, isNegative: true },
-              { text: "Dedicated account manager", included: false, isNegative: true },
-            ]}
-            cta="Start 7-Day Free Trial"
-          />
-
-          {/* Enterprise */}
-          <PricingCard
-            compact
-            title="Enterprise"
-            capacity="Unlimited clients"
-            price="Custom"
-            priceSize="text-3xl"
-            period=""
-            features={[
-              { text: "Unlimited client accounts", included: true },
-              { text: "Everything in Tier 3", included: true },
-              { text: "Dedicated account manager", included: true },
-              { text: "Custom SLA agreements", included: true },
-              { text: "On-premise deployment option", included: true },
-              { text: "Unlimited team seats", included: true },
-              { text: "White-glove onboarding", included: true },
-              { text: "Custom feature development", included: true },
-              { text: "Quarterly business reviews", included: true },
-            ]}
-            cta="Contact a specialist"
-          />
-        </div>
-      </section>
+            {/* Professional Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 container mx-auto">
+              {filteredProfessionalPlans.map((plan, idx) => (
+                <PricingCard
+                  key={plan.id}
+                  compact
+                  title={plan.name}
+                  capacity={plan.member_limit ? `Up to ${plan.member_limit} clients` : "Unlimited clients"}
+                  price={plan.price === "0.00" || plan.price === 0 ? "Custom" : plan.price}
+                  period={plan.price === "0.00" || plan.price === 0 ? "" : "/Month"}
+                  subtext={plan.price !== "0.00" && plan.price !== 0 ? "7 days free trial" : ""}
+                  features={plan.features.map(f => ({ text: f, included: true }))}
+                  cta={plan.price === "0.00" || plan.price === 0 ? "Contact a specialist" : "Start 7-Day Free Trial"}
+                  active={false}
+                  ctaColor="bg-[#0FA4A9]"
+                />
+              ))}
+            </div>
+          </section>
+        </>
+      )}
 
       {/* Integration Banner */}
       <section className="container mx-auto px-4">
@@ -283,10 +214,15 @@ const PricingCard = ({
   cta, 
   compact, 
   specialFeature,
+  active,
+  ctaColor,
   priceSize = "text-5xl"
 }: any) => {
   return (
-    <div className="bg-white rounded-xl p-8 border border-[#E5E9EA] shadow-sm transition-all flex flex-col h-full hover:border-blue-100 hover:shadow-md">
+    <div className={cn(
+      "bg-white rounded-xl p-8 border border-[#E5E9EA] shadow-sm transition-all flex flex-col h-full hover:border-blue-100 hover:shadow-md",
+      active && "border-[#3A86FF] ring-1 ring-[#3A86FF]/10 shadow-lg"
+    )}>
       <div className="mb-6">
         <h3 className="text-lg font-bold text-[#3A86FF] mb-2">{title}</h3>
         {capacity && <p className="text-sm font-bold text-[#1F2D2E] mb-4">{capacity}</p>}
@@ -339,7 +275,10 @@ const PricingCard = ({
 
       <Link
         href="/register"
-        className="w-full text-center py-3.5 rounded-xl font-bold text-sm bg-[#0FA4A9] text-white hover:bg-opacity-90 transition-all shadow-[0_4px_14px_0_rgba(15,164,169,0.3)] shadow-md group"
+        className={cn(
+          "w-full text-center py-3.5 rounded-xl font-bold text-sm text-white hover:bg-opacity-90 transition-all shadow-md group",
+          ctaColor || "bg-[#3A86FF] shadow-[0_4px_14px_0_rgba(58,134,255,0.3)]"
+        )}
       >
         {cta}
       </Link>
