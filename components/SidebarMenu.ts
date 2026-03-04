@@ -65,16 +65,16 @@ export const SIDEBAR_MENU: SidebarMenu = {
       label: "Subscription Plans",
       icon: CreditCard,
       href: "/admin-dashboard/subscription-plans",
-      children: [
-        {
-          label: "Individual Plans",
-          href: "/admin-dashboard/subscription-plans?type=individual",
-        },
-        {
-          label: "Professional Plans",
-          href: "/admin-dashboard/subscription-plans?type=professional",
-        },
-      ],
+      // children: [
+      //   {
+      //     label: "Individual Plans",
+      //     href: "/admin-dashboard/subscription-plans?type=individual",
+      //   },
+      //   {
+      //     label: "Professional Plans",
+      //     href: "/admin-dashboard/subscription-plans?type=professional",
+      //   },
+      // ],
     },
     { label: "Reports", icon: FileText, href: "/admin-dashboard/reports" },
     {
