@@ -81,11 +81,9 @@ export default function EditPlanModal({
     try {
       await updatePlan({
         id: plan.id,
-        data: {
-          ...formData,
-          price: formData.price.toString(),
-          features: formData.features.split("\n").filter(f => f.trim() !== ""),
-        },
+        ...formData,
+        price: formData.price.toString(),
+        features: formData.features.split("\n").filter(f => f.trim() !== ""),
       }).unwrap();
       onSuccess();
       onClose();

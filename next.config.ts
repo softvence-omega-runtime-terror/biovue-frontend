@@ -15,6 +15,14 @@ const nextConfig: NextConfig = {
         protocol: 'https',
         hostname: 'api.dicebear.com',
       },
+      {
+        protocol: 'http',
+        hostname: 'overapprehensive-optatively-meri.ngrok-free.dev',
+      },
+      {
+        protocol: 'https',
+        hostname: 'overapprehensive-optatively-meri.ngrok-free.dev',
+      },
     ],
   },
 };
