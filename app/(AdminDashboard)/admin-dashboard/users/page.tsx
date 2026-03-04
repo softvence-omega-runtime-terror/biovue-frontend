@@ -22,9 +22,13 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { USERS_DATA, UserType } from "@/components/AdminDashboard/Data";
 import DashboardHeading from "@/components/common/DashboardHeading";
-import { useGetAdminUsersQuery, useDeleteAdminUserMutation } from "@/redux/features/api/adminDashboard/users";
+import {
+  useGetAdminUsersQuery,
+  useDeleteAdminUserMutation,
+} from "@/redux/features/api/adminDashboard/users";
 import { toast } from "sonner";
 import Swal from "sweetalert2";
+import Image from "next/image";
 
 const getSubscriptionColor = (
   subscription: string,
@@ -54,17 +58,19 @@ export default function UsersPage() {
   const [deleteUser, { isLoading: isDeleting }] = useDeleteAdminUserMutation();
 
   const [selectedUser, setSelectedUser] = useState<any | null>(null);
-  const [filterType, setFilterType] = useState<"all" | "individual" | "professional">("all");
+  const [filterType, setFilterType] = useState<
+    "all" | "individual" | "professional"
+  >("all");
   const [searchQuery, setSearchQuery] = useState("");
 
   const users = data?.users_table || [];
 
   const filteredUsers = users.filter((user: any) => {
     const matchesType =
-      filterType === "all" ||
-      user.user_type?.toLowerCase() === filterType;
-    const matchesSearch = user.name?.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                         user.email?.toLowerCase().includes(searchQuery.toLowerCase());
+      filterType === "all" || user.user_type?.toLowerCase() === filterType;
+    const matchesSearch =
+      user.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      user.email?.toLowerCase().includes(searchQuery.toLowerCase());
     return matchesType && matchesSearch;
   });
 
@@ -76,7 +82,7 @@ export default function UsersPage() {
       showCancelButton: true,
       confirmButtonColor: "#3085d6",
       cancelButtonColor: "#d33",
-      confirmButtonText: "Yes, delete it!"
+      confirmButtonText: "Yes, delete it!",
     }).then(async (result) => {
       if (result.isConfirmed) {
         try {
@@ -84,13 +90,13 @@ export default function UsersPage() {
           Swal.fire({
             title: "Deleted!",
             text: "User has been deleted.",
-            icon: "success"
+            icon: "success",
           });
         } catch (err: any) {
           Swal.fire({
             title: "Error!",
             text: err?.data?.message || "Failed to delete user",
-            icon: "error"
+            icon: "error",
           });
         }
       }
@@ -104,8 +110,6 @@ export default function UsersPage() {
       </div>
     );
   }
-
-
 
   return (
     <div className="flex flex-col lg:flex-row gap-6 min-h-screen ">
@@ -220,7 +224,7 @@ export default function UsersPage() {
                       </span>
                     </TableCell>
                     <TableCell className="text-gray-600 text-sm px-4 py-4">
-                      {user.joined_date?.split(' ')[0]}
+                      {user.joined_date?.split(" ")[0]}
                     </TableCell>
                     <TableCell className="px-4 py-4">
                       <DropdownMenu>
@@ -332,7 +336,9 @@ export default function UsersPage() {
                     <span className="text-green-600 font-medium">
                       ● {user.account_status}
                     </span>
-                    <span className="text-gray-600">{user.joined_date?.split(' ')[0]}</span>
+                    <span className="text-gray-600">
+                      {user.joined_date?.split(" ")[0]}
+                    </span>
                   </div>
                 </div>
               ))}
@@ -366,9 +372,11 @@ export default function UsersPage() {
               <div className="flex items-center gap-4 pb-3 border-b">
                 <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-[#0FA4A926]">
                   {selectedUser.profile_image ? (
-                    <img 
-                      src={selectedUser.profile_image} 
-                      alt={selectedUser.name} 
+                    <Image
+                      height={64}
+                      width={64}
+                      src={selectedUser.profile_image}
+                      alt={selectedUser.name}
                       className="w-full h-full object-cover"
                     />
                   ) : (
@@ -387,25 +395,37 @@ export default function UsersPage() {
 
               <div className="grid grid-cols-2 gap-6">
                 <div className="space-y-1">
-                  <p className="text-[10px] font-bold text-[#5F6F73] uppercase tracking-wider">User Type</p>
-                  <p className="text-sm font-semibold text-[#1F2D2E] capitalize">{selectedUser.user_type}</p>
+                  <p className="text-[10px] font-bold text-[#5F6F73] uppercase tracking-wider">
+                    User Type
+                  </p>
+                  <p className="text-sm font-semibold text-[#1F2D2E] capitalize">
+                    {selectedUser.user_type}
+                  </p>
                 </div>
                 <div className="space-y-1">
-                  <p className="text-[10px] font-bold text-[#5F6F73] uppercase tracking-wider">Status</p>
+                  <p className="text-[10px] font-bold text-[#5F6F73] uppercase tracking-wider">
+                    Status
+                  </p>
                   <div className="flex items-center gap-1.5 text-sm font-semibold text-[#10B981]">
                     <span className="w-2 h-2 rounded-full bg-[#10B981]"></span>
                     {selectedUser.account_status}
                   </div>
                 </div>
                 <div className="space-y-1">
-                  <p className="text-[10px] font-bold text-[#5F6F73] uppercase tracking-wider">Subscription</p>
-                  <p className="text-sm font-semibold text-[#3A86FF]">{selectedUser.subscription}</p>
+                  <p className="text-[10px] font-bold text-[#5F6F73] uppercase tracking-wider">
+                    Subscription
+                  </p>
+                  <p className="text-sm font-semibold text-[#3A86FF]">
+                    {selectedUser.subscription}
+                  </p>
                 </div>
 
                 <div className="space-y-1">
-                  <p className="text-[10px] font-bold text-[#5F6F73] uppercase tracking-wider">Member Since</p>
+                  <p className="text-[10px] font-bold text-[#5F6F73] uppercase tracking-wider">
+                    Member Since
+                  </p>
                   <p className="text-sm font-semibold text-[#1F2D2E]">
-                    {selectedUser.joined_date?.split(' ')[0]}
+                    {selectedUser.joined_date?.split(" ")[0]}
                   </p>
                 </div>
               </div>
