@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import {
@@ -14,77 +14,14 @@ import {
   Moon,
   Repeat,
 } from "lucide-react";
-import {
-  AreaChart,
-  Area,
-  XAxis,
-  Tooltip,
-  ResponsiveContainer,
-  BarChart,
-  Bar,
-  LineChart,
-  Line,
-  YAxis,
-} from "recharts";
 import { cn } from "@/lib/utils";
 import LogTodayModal from "@/components/dashboard/LogTodayModal";
 import ChangeSourceModal from "@/components/dashboard/ChangeSourceModal";
 import NotificationDropdown, {
   MOCK_NOTIFICATIONS,
 } from "@/components/dashboard/NotificationDropdown";
-
-// --- Mock Data ---
-const weightData = [
-  { name: "M", val: 217 },
-  { name: "T", val: 214 },
-  { name: "W", val: 216 },
-  { name: "T", val: 212 },
-  { name: "F", val: 214 },
-  { name: "S", val: 210 },
-  { name: "S", val: 209 },
-];
-const activityData = [
-  { name: "M", val: 2000 },
-  { name: "T", val: 2400 },
-  { name: "W", val: 2700 },
-  { name: "T", val: 1800 },
-  { name: "F", val: 2200 },
-  { name: "S", val: 1500 },
-  { name: "S", val: 1000 },
-];
-const nutritionData = [
-  { name: "M", p: 30, c: 40, f: 30 },
-  { name: "T", p: 35, c: 35, f: 30 },
-  { name: "W", p: 40, c: 30, f: 30 },
-  { name: "T", p: 30, c: 45, f: 25 },
-  { name: "F", p: 35, c: 40, f: 25 },
-  { name: "S", p: 25, c: 35, f: 40 },
-  { name: "S", p: 30, c: 30, f: 40 },
-];
-
-// --- Sub-components ---
-const ChartCard = ({ title, subtitle, total, totalLabel, children }: any) => (
-  <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-[0_2px_12px_rgba(0,0,0,0.02)] flex flex-col gap-4">
-    <div className="flex items-start justify-between">
-      <div className="flex flex-col gap-1">
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-[#E4EFFF] flex items-center justify-center">
-            <Archive size={16} className="text-[#3A86FF]" />
-          </div>
-          <h3 className="text-sm font-bold text-[#1F2D2E]">{title}</h3>
-        </div>
-        <p className="text-[10px] text-[#5F6F73] mt-1">{subtitle}</p>
-      </div>
-      {total && (
-        <div className="text-right">
-          <p className="text-[#5F6F73] text-[10px] font-medium">{totalLabel}</p>
-          <p className="text-[#10B981] font-bold text-sm">{total}</p>
-        </div>
-      )}
-    </div>
-    <div className="mt-2 h-50 w-full">{children}</div>
-  </div>
-);
+import { healthMetrics } from "./data";
+import ChartsNutrition from "@/components/UserDashboard/Dashboard/ChartsNutrition";
 
 // --- Main Page ---
 const UserDashboard = () => {
@@ -274,56 +211,7 @@ const UserDashboard = () => {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {[
-            {
-              label: "Current Weight",
-              value: "204.0",
-              unit: "lbs",
-              status: "+12 lbs above ideal",
-              desc: "Based on standard wellness ranges",
-              color: "text-[#3A86FF]",
-            },
-            {
-              label: "BMI",
-              value: "29.3",
-              unit: "",
-              status: "Healthy range : 18.5 - 24.9",
-              desc: "Your Body fat is higher than the recommended range",
-              color: "text-[#F59E0B]",
-            },
-            {
-              label: "Nutrition Quality",
-              value: "80/100",
-              unit: "",
-              status: "Balanced",
-              desc: "your meals are fueling you well today",
-              color: "text-[#10B981]",
-            },
-            {
-              label: "Weekly Workouts",
-              value: "2",
-              unit: "session",
-              status: "Recommended : 4-5 sessions",
-              desc: "Regular workouts help reach your wellness goal faster",
-              color: "text-[#EF4444]",
-            },
-            {
-              label: "Daily Steps",
-              value: "29.3",
-              unit: "",
-              status: "Goal : 8000 steps",
-              desc: "Increasing daily movement improves overall health",
-              color: "text-[#EF4444]",
-            },
-            {
-              label: "Sleep Hours",
-              value: "6.5",
-              unit: "hrs",
-              status: "Recommended : 7-9 hours",
-              desc: "Quality sleep supports recovery & focus.",
-              color: "text-[#EF4444]",
-            },
-          ].map((metric, i) => (
+          {healthMetrics.map((metric, i) => (
             <div
               key={i}
               className="bg-white rounded-2xl p-6 border border-gray-100 shadow-[0_2px_12px_rgba(0,0,0,0.02)] flex flex-col gap-3"
@@ -383,171 +271,7 @@ const UserDashboard = () => {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <ChartCard
-              title="Weight Progress"
-              subtitle="Based on logged body weight"
-              total="-8.0 lbs"
-              totalLabel="Total Progress"
-            >
-              <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={weightData}>
-                  <defs>
-                    <linearGradient
-                      id="colorWeight"
-                      x1="0"
-                      y1="0"
-                      x2="0"
-                      y2="1"
-                    >
-                      <stop offset="5%" stopColor="#10B981" stopOpacity={0.1} />
-                      <stop offset="95%" stopColor="#10B981" stopOpacity={0} />
-                    </linearGradient>
-                  </defs>
-                  <XAxis
-                    dataKey="name"
-                    axisLine={false}
-                    tickLine={false}
-                    tick={{ fontSize: 10, fill: "#94A3B8" }}
-                  />
-                  <Tooltip />
-                  <Area
-                    type="monotone"
-                    dataKey="val"
-                    stroke="#10B981"
-                    strokeWidth={2}
-                    fillOpacity={1}
-                    fill="url(#colorWeight)"
-                  />
-                </AreaChart>
-              </ResponsiveContainer>
-            </ChartCard>
-
-            <ChartCard
-              title="Activity Trends"
-              subtitle="Daily movement from logged activity"
-            >
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={activityData}>
-                  <XAxis
-                    dataKey="name"
-                    axisLine={false}
-                    tickLine={false}
-                    tick={{ fontSize: 10, fill: "#94A3B8" }}
-                  />
-                  <Tooltip cursor={{ fill: "transparent" }} />
-                  <Bar dataKey="val" fill="#C7F5CB" radius={[4, 4, 0, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
-            </ChartCard>
-
-            {/* <ChartCard
-              title="Nutrition Overview"
-              subtitle="Based on logged meals and nutrition quality"
-            >
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={nutritionData}>
-                  <XAxis
-                    dataKey="name"
-                    axisLine={false}
-                    tickLine={false}
-                    tick={{ fontSize: 10, fill: "#94A3B8" }}
-                  />
-                  <Tooltip />
-                  <Bar
-                    dataKey="p"
-                    stackId="a"
-                    fill="#10B981"
-                    radius={[0, 0, 4, 4]}
-                  />
-                  <Bar dataKey="c" stackId="a" fill="#3A86FF" />
-                  <Bar
-                    dataKey="f"
-                    stackId="a"
-                    fill="#F59E0B"
-                    radius={[4, 4, 0, 0]}
-                  />
-                </BarChart>
-              </ResponsiveContainer>
-            </ChartCard> */}
-            <ChartCard
-              title="Nutrition Overview"
-              subtitle="Based on logged meals and nutrition quality"
-            >
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={nutritionData}>
-                  <XAxis
-                    dataKey="name"
-                    axisLine={false}
-                    tickLine={false}
-                    tick={{ fontSize: 10, fill: "#94A3B8" }}
-                  />
-                  <YAxis
-                    axisLine={false}
-                    tickLine={false}
-                    tick={{ fontSize: 10, fill: "#94A3B8" }}
-                    label={{
-                      value: "Calories",
-                      angle: -90,
-                      position: "insideLeft",
-                      offset: 0,
-                      fill: "#94A3B8",
-                      fontSize: 12,
-                    }}
-                  />
-                  <Tooltip
-                    formatter={(
-                      value: number | undefined,
-                      name: string | undefined,
-                    ) => {
-                      const displayValue =
-                        value !== undefined ? `${value} kcal` : "-";
-                      const displayName = name ? name.toUpperCase() : "";
-                      return [displayValue, displayName] as [string, string];
-                    }}
-                  />
-                  <Bar
-                    dataKey="p"
-                    stackId="a"
-                    fill="#10B981"
-                    radius={[0, 0, 4, 4]}
-                  />
-                  <Bar dataKey="c" stackId="a" fill="#3A86FF" />
-                  <Bar
-                    dataKey="f"
-                    stackId="a"
-                    fill="#F59E0B"
-                    radius={[4, 4, 0, 0]}
-                  />
-                </BarChart>
-              </ResponsiveContainer>
-            </ChartCard>
-
-            <ChartCard
-              title="Sleep patterns"
-              subtitle="Based on logged sleep duration and consistency"
-            >
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={weightData}>
-                  <XAxis
-                    dataKey="name"
-                    axisLine={false}
-                    tickLine={false}
-                    tick={{ fontSize: 10, fill: "#94A3B8" }}
-                  />
-                  <Tooltip />
-                  <Line
-                    type="monotone"
-                    dataKey="val"
-                    stroke="#10B981"
-                    strokeWidth={2}
-                    dot={false}
-                    strokeDasharray="5 5"
-                  />
-                </LineChart>
-              </ResponsiveContainer>
-            </ChartCard>
-          </div>
+          <ChartsNutrition />
         </div>
 
         {/* Today's Focus */}
