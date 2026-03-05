@@ -167,7 +167,7 @@ export default function LogHabitModal({ isOpen, onClose, habitType }: LogHabitMo
                 onClick={onClose}
                 className="w-full bg-[#0FA4A9] text-white py-4 rounded-xl font-bold text-[17px] hover:bg-opacity-90 transition-all cursor-pointer shadow-lg shadow-[#0FA4A9]/20 mt-4"
               >
-                Save Today's {habitType}
+                Save Today&apos;s {habitType}
               </button>
 
             </motion.div>
