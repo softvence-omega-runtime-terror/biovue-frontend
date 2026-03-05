@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation"; // <- import router
 import { Users, AlertCircle, MessageSquare, Calendar } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { StatCard } from "./data";
@@ -32,10 +33,26 @@ const statCards: StatCard[] = [
 ];
 
 export default function StatCards() {
+  const router = useRouter(); // <- use router
+
+  const handleCardClick = (label: string) => {
+    if (label === "Clients Needing Attention") {
+      router.push("/trainer-dashboard/clients-need-attention");
+    }
+  };
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
       {statCards.map((stat, index) => (
-        <Card key={index} className="p-5 bg-white">
+        <Card
+          key={index}
+          className={`p-5 bg-white ${
+            stat.label === "Clients Needing Attention"
+              ? "cursor-pointer hover:shadow-lg transition-shadow"
+              : ""
+          }`}
+          onClick={() => handleCardClick(stat.label)}
+        >
           <div className="flex flex-col items-start gap-4">
             <div className="p-3 w-13 h-13 bg-[#9AAEB233] rounded-lg text-[#0D9488]">
               {stat.icon}
@@ -47,9 +64,7 @@ export default function StatCards() {
               <div className="text-lg font-medium text-foreground">
                 {stat.label}
               </div>
-              <div className="text-base text-[#5F6F73] ">
-                {stat.description}
-              </div>
+              <div className="text-base text-[#5F6F73] ">{stat.description}</div>
             </div>
           </div>
         </Card>
