@@ -46,7 +46,7 @@ const LoginPage = () => {
         if (userRole === "admin") {
           router.push("/admin-dashboard/overview");
         } else {
-          router.push("/user-dashboard");
+          router.push("/personalize-journey/onboarding");
         }
       }
     } catch (err: any) {
