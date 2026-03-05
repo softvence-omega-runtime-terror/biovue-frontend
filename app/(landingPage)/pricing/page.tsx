@@ -3,11 +3,20 @@
 import React, { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { Check, Lock, ArrowUpRight, Zap } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { Check, Lock, ArrowUpRight, Zap, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useGetPlansQuery, Plan } from "@/redux/features/api/adminDashboard/plan";
+import { useProcessPaymentMutation } from "@/redux/features/api/paymentApi";
+import { useSelector } from "react-redux";
+import { selectCurrentToken } from "@/redux/features/slice/authSlice";
+import { toast } from "sonner";
 
 const PricingPage = () => {
+  const router = useRouter();
+  const token = useSelector(selectCurrentToken);
+  const [processPayment] = useProcessPaymentMutation();
+  const [loadingPlanId, setLoadingPlanId] = useState<number | null>(null);
   const [billingCycle, setBillingCycle] = useState<"monthly" | "annual">("monthly");
 
   const { data: plans = [], isLoading } = useGetPlansQuery(billingCycle);
@@ -28,6 +37,33 @@ const PricingPage = () => {
       if (!aEnt && bEnt) return -1;
       return Number(a.price) - Number(b.price);
     });
+
+  const handlePlanSelection = async (plan: Plan) => {
+    if (!token) {
+      // If not logged in, redirect to register with plan_id
+      router.push(`/register?plan_id=${plan.id}`);
+      return;
+    }
+
+    try {
+      setLoadingPlanId(plan.id);
+      const response = await processPayment({ 
+        plan_id: plan.id, 
+        billing: billingCycle 
+      }).unwrap();
+      
+      if (response.success && response.checkout_url) {
+        window.location.href = response.checkout_url;
+      } else {
+        toast.error("Failed to initiate payment. Please try again.");
+      }
+    } catch (error: any) {
+      console.error("Payment error:", error);
+      toast.error(error?.data?.message || "An error occurred while processing payment.");
+    } finally {
+      setLoadingPlanId(null);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-[#F9FAFB] font-sans pb-20">
@@ -64,7 +100,7 @@ const PricingPage = () => {
           <button 
             onClick={() => setBillingCycle(prev => prev === "monthly" ? "annual" : "monthly")}
             className={cn(
-              "relative w-14 h-7 rounded-full transition-colors focus:outline-none p-1",
+              "relative w-14 h-7 rounded-full transition-colors focus:outline-none p-1 cursor-pointer",
               billingCycle === "annual" ? "bg-[#3A86FF]" : "bg-[#E2E8F0]"
             )}
           >
@@ -110,6 +146,8 @@ const PricingPage = () => {
                   active={false}
                   ctaColor="bg-[#0FA4A9]"
                   specialFeature={plan.name.toLowerCase().includes("premium") ? { label: "EVERYTHING IN PLUS", icon: <Zap size={14} fill="#3A86FF" /> } : undefined}
+                  onSelect={() => handlePlanSelection(plan)}
+                  isLoading={loadingPlanId === plan.id}
                 />
               ))}
             </div>
@@ -139,6 +177,8 @@ const PricingPage = () => {
                   cta={plan.price === "0.00" || plan.price === 0 ? "Contact a specialist" : "Start 7-Day Free Trial"}
                   active={false}
                   ctaColor="bg-[#0FA4A9]"
+                  onSelect={() => handlePlanSelection(plan)}
+                  isLoading={loadingPlanId === plan.id}
                 />
               ))}
             </div>
@@ -181,7 +221,9 @@ const PricingCard = ({
   specialFeature,
   active,
   ctaColor,
-  priceSize = "text-5xl"
+  priceSize = "text-5xl",
+  onSelect,
+  isLoading
 }: any) => {
   return (
     <div className={cn(
@@ -238,15 +280,24 @@ const PricingCard = ({
         </ul>
       </div>
 
-      <Link
-        href="/register"
+      <button
+        onClick={onSelect}
+        disabled={isLoading}
         className={cn(
-          "w-full text-center py-3.5 rounded-xl font-bold text-sm text-white hover:bg-opacity-90 transition-all shadow-md group",
-          ctaColor || "bg-[#3A86FF] shadow-[0_4px_14px_0_rgba(58,134,255,0.3)]"
+          "w-full text-center py-3.5 rounded-xl font-bold text-sm text-white hover:bg-opacity-90 transition-all shadow-md group flex items-center justify-center gap-2 cursor-pointer",
+          ctaColor || "bg-[#3A86FF] shadow-[0_4px_14px_0_rgba(58,134,255,0.3)]",
+          isLoading && "opacity-70 cursor-not-allowed"
         )}
       >
-        {cta}
-      </Link>
+        {isLoading ? (
+          <>
+            <Loader2 className="animate-spin" size={18} />
+            Processing...
+          </>
+        ) : (
+          cta
+        )}
+      </button>
     </div>
   );
 }

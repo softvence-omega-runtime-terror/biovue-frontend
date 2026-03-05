@@ -1,20 +1,23 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, Suspense } from "react";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { User, Building2, ArrowRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-const SelectAccountType = () => {
+const SelectAccountTypeContent = () => {
   const [selectedType, setSelectedType] = useState<"individual" | "business" | null>(null);
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const planId = searchParams.get("plan_id");
 
   const handleNext = () => {
+    const query = planId ? `?plan_id=${planId}` : "";
     if (selectedType === "individual") {
-      router.push("/register/individual");
+      router.push(`/register/individual${query}`);
     } else if (selectedType === "business") {
-      router.push("/register/business");
+      router.push(`/register/business${query}`);
     }
   };
 
@@ -97,4 +100,10 @@ const SelectAccountType = () => {
   );
 };
 
-export default SelectAccountType;
+export default function SelectAccountType() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <SelectAccountTypeContent />
+    </Suspense>
+  );
+}
