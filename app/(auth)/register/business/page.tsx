@@ -63,11 +63,12 @@ const BusinessRegister = () => {
           res?.message || "Registration successful! Please verify your OTP.",
         );
         // CONDITIONAL REDIRECT
-        if (formData.professionType === "trainer_coach") {
-          router.push("/trainer-profile");
-        } else {
+        // if (formData.professionType === "trainer_coach") {
+        //   router.push("/trainer-profile");
+        // } 
+   
           router.push(`/register-otp-verify?email=${formData.email}`);
-        }
+       
       }
     } catch (err: unknown) {
       const errorMessage =
