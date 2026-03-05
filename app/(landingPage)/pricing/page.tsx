@@ -97,7 +97,7 @@ const PricingPage = () => {
       }).unwrap();
 
       if (response.success) {
-        toast.success("Message sent successfully! We will contact you soon.");
+        toast.success(response.message || "Message sent successfully!");
         setIsContactModalOpen(false);
         setContactMessage("");
       } else {
