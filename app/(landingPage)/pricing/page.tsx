@@ -8,16 +8,23 @@ import { Check, Lock, ArrowUpRight, Zap, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useGetPlansQuery, Plan } from "@/redux/features/api/adminDashboard/plan";
 import { useProcessPaymentMutation } from "@/redux/features/api/paymentApi";
+import { useSendMessageMutation } from "@/redux/features/api/contactApi";
 import { useSelector } from "react-redux";
-import { selectCurrentToken } from "@/redux/features/slice/authSlice";
+import { selectCurrentToken, selectCurrentUser } from "@/redux/features/slice/authSlice";
 import { toast } from "sonner";
+import { X } from "lucide-react";
 
 const PricingPage = () => {
   const router = useRouter();
   const token = useSelector(selectCurrentToken);
+  const user = useSelector(selectCurrentUser);
   const [processPayment] = useProcessPaymentMutation();
+  const [sendMessage, { isLoading: isSending }] = useSendMessageMutation();
   const [loadingPlanId, setLoadingPlanId] = useState<number | null>(null);
   const [billingCycle, setBillingCycle] = useState<"monthly" | "annual">("monthly");
+  const [isContactModalOpen, setIsContactModalOpen] = useState(false);
+  const [contactEmail, setContactEmail] = useState("");
+  const [contactMessage, setContactMessage] = useState("");
 
   const { data: plans = [], isLoading } = useGetPlansQuery(billingCycle);
 
@@ -39,6 +46,13 @@ const PricingPage = () => {
     });
 
   const handlePlanSelection = async (plan: Plan) => {
+    // Enterprise plan special handling
+    if (plan.name.toLowerCase().includes("enterprise") || plan.price === "0.00" || plan.price === 0) {
+      setContactEmail(user?.email || "");
+      setIsContactModalOpen(true);
+      return;
+    }
+
     if (!token) {
       // If not logged in, redirect to register with plan_id
       router.push(`/register?plan_id=${plan.id}`);
@@ -62,6 +76,35 @@ const PricingPage = () => {
       toast.error(error?.data?.message || "An error occurred while processing payment.");
     } finally {
       setLoadingPlanId(null);
+    }
+  };
+
+  const handleContactSubmit = async () => {
+    if (!contactMessage.trim()) {
+      toast.error("Please enter a message.");
+      return;
+    }
+
+    if (!contactEmail.trim() || !contactEmail.includes("@")) {
+      toast.error("Please enter a valid email address.");
+      return;
+    }
+
+    try {
+      const response = await sendMessage({
+        email: contactEmail,
+        message: contactMessage
+      }).unwrap();
+
+      if (response.success) {
+        toast.success("Message sent successfully! We will contact you soon.");
+        setIsContactModalOpen(false);
+        setContactMessage("");
+      } else {
+        toast.error(response.message || "Failed to send message.");
+      }
+    } catch (error: any) {
+      toast.error(error?.data?.message || "An error occurred while sending your message.");
     }
   };
 
@@ -174,7 +217,7 @@ const PricingPage = () => {
                   period={plan.price === "0.00" || plan.price === 0 ? "" : "/Month"}
                   subtext={plan.price !== "0.00" && plan.price !== 0 ? "7 days free trial" : ""}
                   features={plan.features.map(f => ({ text: f, included: true }))}
-                  cta={plan.price === "0.00" || plan.price === 0 ? "Contact a specialist" : "Start 7-Day Free Trial"}
+                  cta={plan.name.toLowerCase().includes("enterprise") || plan.price === "0.00" || plan.price === 0 ? "Contact Via Mail" : "Start 7-Day Free Trial"}
                   active={false}
                   ctaColor="bg-[#0FA4A9]"
                   onSelect={() => handlePlanSelection(plan)}
@@ -184,6 +227,67 @@ const PricingPage = () => {
             </div>
           </section>
         </>
+      )}
+
+      {/* Contact Modal */}
+      {isContactModalOpen && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="bg-white rounded-xl w-full max-w-lg overflow-hidden shadow-2xl animate-in zoom-in-95 duration-200">
+            <div className="p-8 md:p-10">
+              <div className="flex justify-between items-center mb-8">
+                <h2 className="text-2xl font-bold text-[#041228] font-['Roboto']">Contact a specialist</h2>
+                <button 
+                  onClick={() => setIsContactModalOpen(false)}
+                  className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                >
+                  <X size={24} className="text-gray-400" />
+                </button>
+              </div>
+
+              <div className="space-y-6">
+                <div className="space-y-2">
+                  <label className="block text-[#041228] font-bold text-sm font-['Roboto']">
+                    Email
+                  </label>
+                  <input
+                    type="email"
+                    placeholder="example@mail.com"
+                    value={contactEmail}
+                    onChange={(e) => setContactEmail(e.target.value)}
+                    className="w-full bg-white border border-[#94A3B8] rounded-xl py-4 px-5 text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#0FA4A9]/10 transition-all font-medium"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <label className="block text-[#041228] font-bold text-sm font-['Roboto']">
+                    Message
+                  </label>
+                  <textarea
+                    placeholder="text ............."
+                    value={contactMessage}
+                    onChange={(e) => setContactMessage(e.target.value)}
+                    className="w-full h-32 bg-white border border-[#94A3B8] rounded-xl py-4 px-5 text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#0FA4A9]/10 transition-all font-medium resize-none"
+                  />
+                </div>
+
+                <button
+                  onClick={handleContactSubmit}
+                  disabled={isSending}
+                  className="w-full bg-primary cursor-pointer text-white py-4 rounded-xl font-bold text-lg flex items-center justify-center gap-2 hover:bg-opacity-90 transition-all shadow-lg shadow-[#0FA4A9]/20 disabled:opacity-70 disabled:cursor-not-allowed"
+                >
+                  {isSending ? (
+                    <>
+                      <Loader2 className="animate-spin" size={22} />
+                      Sending...
+                    </>
+                  ) : (
+                    "Send Message"
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
       )}
 
       {/* Integration Banner */}
@@ -223,7 +327,8 @@ const PricingCard = ({
   ctaColor,
   priceSize = "text-5xl",
   onSelect,
-  isLoading
+  isLoading,
+  ...props
 }: any) => {
   return (
     <div className={cn(
@@ -295,7 +400,7 @@ const PricingCard = ({
             Processing...
           </>
         ) : (
-          cta
+          cta || props.cta
         )}
       </button>
     </div>
