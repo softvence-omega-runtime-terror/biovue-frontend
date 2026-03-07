@@ -1,14 +1,16 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { X, Upload } from "lucide-react";
-import { Banner, BannerFormData } from "./data";
+import { X, Upload, Loader2 } from "lucide-react";
+import { Ad, AdFormData } from "./data";
+import { useCreateAdMutation, useUpdateAdMutation } from "@/redux/features/api/adminDashboard/ads";
+import { toast } from "sonner";
 
 interface AddEditBannerModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSave: (data: BannerFormData) => void;
-  existingBanner?: Banner | null;
+  onSaveDone: () => void;
+  existingBanner?: Ad | null;
 }
 
 function Toggle({
@@ -35,45 +37,43 @@ function Toggle({
   );
 }
 
-const defaultForm = {
-  title: "",
-  type: "External Advertise" as "External Advertise" | "Internal Fallback",
-  placement: [] as string[],
-  scheduleFrom: "",
-  scheduleTo: "",
-  isActive: true,
-  rotationPriority: 1,
-  preview: "",
+const defaultForm: AdFormData = {
+  ads_title: "",
+  ads_type: "Banner",
+  image: null,
+  placement: [],
+  start_date: "",
+  end_date: "",
+  status: true,
 };
 
 export default function AddEditBannerModal({
   isOpen,
   onClose,
-  onSave,
+  onSaveDone,
   existingBanner,
 }: AddEditBannerModalProps) {
   const isEdit = !!existingBanner;
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const [formData, setFormData] = useState(defaultForm);
+  const [createAd, { isLoading: isCreating }] = useCreateAdMutation();
+  const [updateAd, { isLoading: isUpdating }] = useUpdateAdMutation();
+
+  const [formData, setFormData] = useState<AdFormData>(defaultForm);
   const [previewImage, setPreviewImage] = useState<string>("");
 
   useEffect(() => {
     if (existingBanner) {
       setFormData({
-        title: existingBanner.title,
-        type:
-          existingBanner.type === "EXTERNAL ADVERTISER"
-            ? "External Advertise"
-            : "Internal Fallback",
-        placement: existingBanner.placement,
-        scheduleFrom: existingBanner.scheduleFrom,
-        scheduleTo: existingBanner.scheduleTo,
-        isActive: existingBanner.isEnabled,
-        rotationPriority: 1,
-        preview: existingBanner.preview,
+        ads_title: existingBanner.ads_title,
+        ads_type: existingBanner.ads_type || "Banner",
+        placement: existingBanner.placement ? existingBanner.placement.split(",").map(s => s.trim()) : [],
+        start_date: existingBanner.start_date,
+        end_date: existingBanner.end_date,
+        status: existingBanner.status === 1 || existingBanner.status === true,
+        image: null,
       });
-      setPreviewImage(existingBanner.preview);
+      setPreviewImage(existingBanner.image || "");
     } else {
       setFormData(defaultForm);
       setPreviewImage("");
@@ -85,7 +85,7 @@ export default function AddEditBannerModal({
     if (file) {
       const url = URL.createObjectURL(file);
       setPreviewImage(url);
-      setFormData((prev) => ({ ...prev, preview: url }));
+      setFormData((prev) => ({ ...prev, image: file }));
     }
   };
 
@@ -95,7 +95,7 @@ export default function AddEditBannerModal({
     if (file) {
       const url = URL.createObjectURL(file);
       setPreviewImage(url);
-      setFormData((prev) => ({ ...prev, preview: url }));
+      setFormData((prev) => ({ ...prev, image: file }));
     }
   };
 
@@ -108,10 +108,44 @@ export default function AddEditBannerModal({
     }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    onSave(formData);
-    onClose();
+
+    if (!isEdit && !formData.image) {
+      toast.error("Please upload an image for the banner.");
+      return;
+    }
+
+    const fd = new FormData();
+    fd.append("ads_title", formData.ads_title);
+    fd.append("ads_type", formData.ads_type);
+    if (formData.image) {
+      if (formData.image.size > 2 * 1024 * 1024) {
+        toast.error("Image size exceeds 2MB limit. Please choose a smaller file.");
+        return;
+      }
+      fd.append("image", formData.image, formData.image.name);
+    }
+    fd.append("placement", formData.placement.length > 0 ? formData.placement.join(", ") : "Home Screen Top");
+    fd.append("start_date", formData.start_date);
+    fd.append("end_date", formData.end_date);
+    // Explicitly leaving out "status" as it's not in the Postman payload and could be failing validation
+
+    try {
+      if (isEdit && existingBanner) {
+        // Just standard POST with ID
+        fd.append("id", existingBanner.id.toString());
+        await updateAd({ id: existingBanner.id, formData: fd }).unwrap();
+        toast.success("Ad updated successfully");
+      } else {
+        await createAd(fd).unwrap();
+        toast.success("Ad created successfully");
+      }
+      onSaveDone();
+    } catch (err: any) {
+      toast.error(err?.data?.message || err?.data?.errors?.image?.[0] || "Failed to save ad");
+      console.error(err);
+    }
   };
 
   if (!isOpen) return null;
@@ -146,9 +180,9 @@ export default function AddEditBannerModal({
               </div>
               <input
                 type="text"
-                value={formData.title}
+                value={formData.ads_title}
                 onChange={(e) =>
-                  setFormData({ ...formData, title: e.target.value })
+                  setFormData({ ...formData, ads_title: e.target.value })
                 }
                 placeholder="e.g. Summer Wellness Campaign 2024"
                 className="w-full px-3 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#0FA4A9] bg-[#F9F5FE]"
@@ -162,14 +196,14 @@ export default function AddEditBannerModal({
                 Banner Type
               </label>
               <div className="grid grid-cols-2 gap-0 border border-gray-200 rounded-lg overflow-hidden">
-                {(["External Advertise", "Internal Fallback"] as const).map(
+                {(["Banner", "Internal Fallback"] as const).map(
                   (type) => (
                     <button
                       key={type}
                       type="button"
-                      onClick={() => setFormData({ ...formData, type })}
+                      onClick={() => setFormData({ ...formData, ads_type: type })}
                       className={`py-2.5 text-sm cursor-pointer font-medium transition-colors ${
-                        formData.type === type
+                        formData.ads_type === type
                           ? "bg-[#0FA4A926] text-black border border-[#0FA4A9]"
                           : "bg-white text-gray-600 hover:bg-gray-50 border border-[#0FA4A9]"
                       }`}
@@ -232,7 +266,7 @@ export default function AddEditBannerModal({
               Placement
             </p>
             <div className="space-y-2.5">
-              {["Homepage", "Free Dashboard"].map((place) => (
+              {["Home Screen Top", "Free Dashboard"].map((place) => (
                 <label
                   key={place}
                   className="flex items-center gap-3 cursor-pointer"
@@ -284,11 +318,12 @@ export default function AddEditBannerModal({
                 </label>
                 <input
                   type="date"
-                  value={formData.scheduleFrom}
+                  value={formData.start_date}
                   onChange={(e) =>
-                    setFormData({ ...formData, scheduleFrom: e.target.value })
+                    setFormData({ ...formData, start_date: e.target.value })
                   }
                   className="w-full px-3 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#0FA4A9] bg-[#F9F5FE]"
+                  required
                 />
               </div>
               <div>
@@ -297,11 +332,12 @@ export default function AddEditBannerModal({
                 </label>
                 <input
                   type="date"
-                  value={formData.scheduleTo}
+                  value={formData.end_date}
                   onChange={(e) =>
-                    setFormData({ ...formData, scheduleTo: e.target.value })
+                    setFormData({ ...formData, end_date: e.target.value })
                   }
                   className="w-full px-3 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#0FA4A9] bg-[#F9F5FE]"
+                  required
                 />
               </div>
             </div>
@@ -324,28 +360,8 @@ export default function AddEditBannerModal({
                 </p>
               </div>
               <Toggle
-                checked={formData.isActive}
-                onChange={(val) => setFormData({ ...formData, isActive: val })}
-              />
-            </div>
-
-            {/* Rotation Priority */}
-            <div className="">
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Rotation Priority (1-10)
-              </label>
-              <input
-                type="number"
-                min={1}
-                max={10}
-                value={formData.rotationPriority}
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    rotationPriority: parseInt(e.target.value),
-                  })
-                }
-                className="w-40 px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#0FA4A9] bg-[#0D948826]"
+                checked={formData.status}
+                onChange={(val) => setFormData({ ...formData, status: val })}
               />
             </div>
           </div>
@@ -361,8 +377,10 @@ export default function AddEditBannerModal({
             </button>
             <button
               type="submit"
-              className="px-5 py-2 bg-[#0FA4A9] text-white rounded-lg text-sm hover:bg-[#0d9297] transition-colors font-medium"
+              disabled={isCreating || isUpdating}
+              className="px-5 py-2 flex items-center gap-2 bg-[#0FA4A9] text-white rounded-lg text-sm hover:bg-[#0d9297] transition-colors font-medium disabled:opacity-70"
             >
+              {(isCreating || isUpdating) && <Loader2 size={16} className="animate-spin" />}
               {isEdit ? "Update Banner" : "Save Banner"}
             </button>
           </div>

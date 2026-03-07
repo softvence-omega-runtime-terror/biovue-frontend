@@ -11,7 +11,11 @@ import {
   Frown,
   Scale,
   ChevronsUpDown,
+  Loader2,
 } from "lucide-react";
+import { usePostSleepLogMutation } from "@/redux/features/api/userDashboard/sleeplog";
+import { usePostHydrationLogMutation } from "@/redux/features/api/userDashboard/hydration";
+import { toast } from "sonner";
 
 interface LogHabitModalProps {
   isOpen: boolean;
@@ -25,6 +29,51 @@ export default function LogHabitModal({
   habitType,
 }: LogHabitModalProps) {
   const [, setSource] = useState<"device" | "manual">("device");
+  const [sleepHours, setSleepHours] = useState("");
+  const [weight, setWeight] = useState("");
+  const [steps, setSteps] = useState("");
+  const [water, setWater] = useState("");
+  const [postSleepLog, { isLoading: isSleepLoading }] = usePostSleepLogMutation();
+  const [postHydrationLog, { isLoading: isHydrationLoading }] = usePostHydrationLogMutation();
+
+  const isLoading = isSleepLoading || isHydrationLoading;
+
+  const handleSave = async () => {
+    if (habitType.toLowerCase() === "sleep") {
+      if (!sleepHours) {
+        toast.error("Please select sleep hours");
+        return;
+      }
+
+      try {
+        await postSleepLog({ sleep_hours: Number(sleepHours) }).unwrap();
+        toast.success("Sleep log saved successfully!");
+        onClose();
+      } catch (error: any) {
+        console.error("Sleep log error:", error);
+        toast.error(error?.data?.message || "Failed to save sleep log");
+      }
+      return;
+    }
+
+    // Handle Hydration/Weight/Steps (all go to hydration logs endpoint)
+    try {
+      const payload = {
+        weight: Number(weight) || 0,
+        daily_steps: Number(steps) || 0,
+        sleep_hours: Number(sleepHours) || 0,
+        water_glasses: Number(water) || 0,
+        log_date: new Date().toISOString().split('T')[0],
+      };
+
+      await postHydrationLog(payload).unwrap();
+      toast.success(`${habitType} log saved successfully!`);
+      onClose();
+    } catch (error: any) {
+      console.error("Hydration log error:", error);
+      toast.error(error?.data?.message || `Failed to save ${habitType} log`);
+    }
+  };
 
   const getIcon = () => {
     switch (habitType.toLowerCase()) {
@@ -110,14 +159,12 @@ export default function LogHabitModal({
                     Weight (lbs)
                   </div>
                   <div className="relative">
-                    <select className="w-full appearance-none bg-white border border-gray-200 rounded-xl px-4 py-3.5 text-[#5F6F73] text-[15px] focus:outline-none focus:ring-2 focus:ring-blue-100 cursor-pointer">
-                      <option value="">Select.....</option>
-                      <option value="150">150</option>
-                      <option value="151">151</option>
-                    </select>
-                    <ChevronsUpDown
-                      size={16}
-                      className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"
+                    <input
+                      type="number"
+                      value={weight}
+                      onChange={(e) => setWeight(e.target.value)}
+                      placeholder="Enter weight..."
+                      className="w-full bg-white border border-gray-200 rounded-xl px-4 py-3.5 text-[#5F6F73] text-[15px] focus:outline-none focus:ring-2 focus:ring-blue-100 placeholder:text-gray-300"
                     />
                   </div>
                 </div>
@@ -131,14 +178,12 @@ export default function LogHabitModal({
                     Daily Steps
                   </div>
                   <div className="relative">
-                    <select className="w-full appearance-none bg-white border border-gray-200 rounded-xl px-4 py-3.5 text-[#5F6F73] text-[15px] focus:outline-none focus:ring-2 focus:ring-blue-100 cursor-pointer">
-                      <option value="">Select.....</option>
-                      <option value="5000">5000</option>
-                      <option value="8000">8000</option>
-                    </select>
-                    <ChevronsUpDown
-                      size={16}
-                      className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"
+                    <input
+                      type="number"
+                      value={steps}
+                      onChange={(e) => setSteps(e.target.value)}
+                      placeholder="Enter steps..."
+                      className="w-full bg-white border border-gray-200 rounded-xl px-4 py-3.5 text-[#5F6F73] text-[15px] focus:outline-none focus:ring-2 focus:ring-blue-100 placeholder:text-gray-300"
                     />
                   </div>
                 </div>
@@ -152,11 +197,15 @@ export default function LogHabitModal({
                     Sleep Hours
                   </div>
                   <div className="relative">
-                    <select className="w-full appearance-none bg-white border border-gray-200 rounded-xl px-4 py-3.5 text-[#5F6F73] text-[15px] focus:outline-none focus:ring-2 focus:ring-blue-100 cursor-pointer">
+                    <select 
+                      value={sleepHours}
+                      onChange={(e) => setSleepHours(e.target.value)}
+                      className="w-full appearance-none bg-white border border-gray-200 rounded-xl px-4 py-3.5 text-[#5F6F73] text-[15px] focus:outline-none focus:ring-2 focus:ring-blue-100 cursor-pointer"
+                    >
                       <option value="">Select.....</option>
-                      <option value="6">6</option>
-                      <option value="7">7</option>
-                      <option value="8">8</option>
+                      {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map((h) => (
+                        <option key={h} value={h}>{h}</option>
+                      ))}
                     </select>
                     <ChevronsUpDown
                       size={16}
@@ -174,15 +223,12 @@ export default function LogHabitModal({
                     Water Glasses
                   </div>
                   <div className="relative">
-                    <select className="w-full appearance-none bg-white border border-gray-200 rounded-xl px-4 py-3.5 text-[#5F6F73] text-[15px] focus:outline-none focus:ring-2 focus:ring-blue-100 cursor-pointer">
-                      <option value="">Select.....</option>
-                      <option value="4">4</option>
-                      <option value="6">6</option>
-                      <option value="8">8</option>
-                    </select>
-                    <ChevronsUpDown
-                      size={16}
-                      className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"
+                    <input
+                      type="number"
+                      value={water}
+                      onChange={(e) => setWater(e.target.value)}
+                      placeholder="Enter glasses..."
+                      className="w-full bg-white border border-gray-200 rounded-xl px-4 py-3.5 text-[#5F6F73] text-[15px] focus:outline-none focus:ring-2 focus:ring-blue-100 placeholder:text-gray-300"
                     />
                   </div>
                 </div>
@@ -190,10 +236,18 @@ export default function LogHabitModal({
 
               {/* Save Button */}
               <button
-                onClick={onClose}
-                className="w-full bg-[#0FA4A9] text-white py-4 rounded-xl font-bold text-[17px] hover:bg-opacity-90 transition-all cursor-pointer shadow-lg shadow-[#0FA4A9]/20 mt-4"
+                onClick={handleSave}
+                disabled={isLoading}
+                className="w-full bg-[#0FA4A9] text-white py-4 rounded-xl font-bold text-[17px] hover:bg-opacity-90 transition-all cursor-pointer shadow-lg shadow-[#0FA4A9]/20 mt-4 flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
               >
-                Save Today&apos;s {habitType}
+                {isLoading ? (
+                  <>
+                    <Loader2 className="animate-spin" size={20} />
+                    Saving...
+                  </>
+                ) : (
+                  `Save Today's ${habitType}`
+                )}
               </button>
             </motion.div>
           </div>

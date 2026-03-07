@@ -3,8 +3,7 @@
 import AddEditBannerModal from "@/components/AdminDashboard/banner-management/AddEditBanner";
 import BannersTable from "@/components/AdminDashboard/banner-management/BannersTable";
 import {
-  Banner,
-  BannerFormData,
+  Ad,
 } from "@/components/AdminDashboard/banner-management/data";
 import DashboardHeading from "@/components/common/DashboardHeading";
 import { Plus } from "lucide-react";
@@ -12,42 +11,19 @@ import { useState } from "react";
 
 export default function BannerManagement() {
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingBanner, setEditingBanner] = useState<Banner | null>(null);
+  const [editingBanner, setEditingBanner] = useState<Ad | null>(null);
 
   const handleAddNew = () => {
-    setEditingBanner(null); // clear any edit state
+    setEditingBanner(null);
     setIsModalOpen(true);
   };
 
-  const handleEdit = (banner: Banner) => {
+  const handleEdit = (banner: Ad) => {
     setEditingBanner(banner);
     setIsModalOpen(true);
   };
 
-  const handleSave = (data: BannerFormData) => {
-    const payload: Partial<Banner> = {
-      title: data.title,
-      preview: data.preview,
-      placement: data.placement,
-      scheduleFrom: data.scheduleFrom,
-      scheduleTo: data.scheduleTo,
-      isEnabled: data.isActive,
-      status: data.isActive ? "ACTIVE" : "INACTIVE",
-      type:
-        data.type === "External Advertise"
-          ? "EXTERNAL ADVERTISER"
-          : "INTERNAL FALLBACK",
-    };
-
-    if (editingBanner) {
-      console.log("Update banner:", {
-        ...editingBanner,
-        ...payload,
-      });
-    } else {
-      console.log("Add new banner:", payload);
-    }
-
+  const handleSaveDone = () => {
     setIsModalOpen(false);
   };
   return (
@@ -79,7 +55,7 @@ export default function BannerManagement() {
       <AddEditBannerModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        onSave={handleSave}
+        onSaveDone={handleSaveDone}
         existingBanner={editingBanner}
       />
     </div>
