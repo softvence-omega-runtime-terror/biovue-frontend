@@ -7,6 +7,7 @@ import Step1ProgramBasics from "./steps/Step1ProgramBasics";
 import Step2GoalsAndFocus from "./steps/Step2GoalsAndFocus";
 import Step3NutritionAndSupplements from "./steps/Step3NutritionAndSupplements";
 import Step4ReviewProgram from "./steps/Step4ReviewProgram";
+import { useCreateProgramMutation } from "@/redux/features/api/TrainerDashboard/Program/CreateProgram";
 
 export interface ProgramFormData {
   programName: string;
@@ -78,7 +79,55 @@ export default function CreateProgramModal({
       creatineOptional: false,
     },
   });
+  const [createProgram, { isLoading }] = useCreateProgramMutation();
+  const buildRequestBody = () => {
+    const supplementLabelMap: Record<string, string> = {
+      protein: "Protein",
+      creatine: "Creatine",
+      multivitamin: "Multivitamin",
+      omega3: "Omega-3",
+      electrolytes: "Electrolytes",
+      vitaminD: "Vitamin D",
+      magnesium: "Magnesium",
+      aminoAcids: "Amino Acids",
+      preWorkout: "Pre-Workout",
+      other: "Other",
+    };
 
+    const selectedSupplements = Object.entries(
+      formData.supplementRecommendations,
+    )
+      .filter(([, value]) => value)
+      .map(([key]) => supplementLabelMap[key]);
+
+    return {
+      name: formData.programName,
+
+      duration: parseInt(formData.duration),
+
+      primary_goal: formData.primaryGoal,
+
+      target_intensity:
+        formData.targetIntensity.charAt(0).toUpperCase() +
+        formData.targetIntensity.slice(1),
+
+      habit_focus_areas: formData.habitFocus,
+
+      program_focus: formData.focusAreas,
+
+      focus_areas: formData.focusAreas,
+
+      habit_focus: formData.habitFocus,
+
+      calories: Number(formData.wellnessMetrics.calories || 0),
+      protein: Number(formData.wellnessMetrics.protein || 0),
+      carbs: Number(formData.wellnessMetrics.carbs || 0),
+      fat: Number(formData.wellnessMetrics.fat || 0),
+
+      supplement_recommendation: selectedSupplements,
+      supplement: selectedSupplements,
+    };
+  };
   // inside CreateProgramModal
   useEffect(() => {
     if (isOpen) {
@@ -164,12 +213,19 @@ export default function CreateProgramModal({
   //     },
   //   });
   // };
-  const handleCreate = () => {
-    console.log("Program Created:", formData);
+  const handleCreate = async () => {
+    try {
+      const body = buildRequestBody();
 
-    // SUCCESS MODAL OPEN
-    setShowSuccess(true);
+      await createProgram(body).unwrap();
+
+      setShowSuccess(true);
+    } catch (error) {
+      console.error("Create program failed:", error);
+      toast.error("Failed to create program");
+    }
   };
+
   if (!isOpen) return null;
   const handleClose = () => {
     onClose();
@@ -243,9 +299,10 @@ export default function CreateProgramModal({
           ) : (
             <button
               onClick={handleCreate}
+              disabled={isLoading}
               className="px-6 py-3 cursor-pointer rounded-lg bg-[#0D9488] text-white text-sm font-medium hover:opacity-80 transition"
             >
-              Save Program
+              {isLoading ? "Saving..." : "Save Program"}
             </button>
           )}
         </div>
