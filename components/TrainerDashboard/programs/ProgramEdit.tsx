@@ -6,11 +6,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import SuccessModal from "./SuccessModal";
 import { AlertCircle } from "lucide-react";
 import { useUpdateProgramMutation } from "@/redux/features/api/TrainerDashboard/Program/UpdateProgram";
 import { toast } from "sonner";
-import { useGetProgramsQuery, Program as APIProgram } from "@/redux/features/api/TrainerDashboard/Program/GetPrograms";
+import {
+  useGetProgramsQuery,
+  Program as APIProgram,
+} from "@/redux/features/api/TrainerDashboard/Program/GetPrograms";
 
 interface Program {
   id: string;
@@ -85,14 +87,17 @@ const SUPPLEMENT_OPTIONS = [
 export default function ProgramEdit({ program }: ProgramEditProps) {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
-  const [showSuccessModal, setShowSuccessModal] = useState(false);
+
   const [formData, setFormData] = useState<Program>(program);
   const [updateProgram, { isLoading: updating }] = useUpdateProgramMutation();
-  const { data: programsData, isLoading: fetchingNames } = useGetProgramsQuery();
-  
+  const { data: programsData, isLoading: fetchingNames } =
+    useGetProgramsQuery();
+
   const programNames = useMemo(() => {
     if (!programsData?.data) return [];
-    return Array.from(new Set(programsData.data.map((p: APIProgram) => p.name)));
+    return Array.from(
+      new Set(programsData.data.map((p: APIProgram) => p.name)),
+    );
   }, [programsData]);
 
   useEffect(() => {
@@ -231,7 +236,9 @@ export default function ProgramEdit({ program }: ProgramEditProps) {
                   onChange={(e) => handleSelectChange("name", e.target.value)}
                   className="mt-2 w-full h-11 rounded-xl border border-gray-200 text-gray-500 text-sm px-3"
                 >
-                  <option value="">{fetchingNames ? "Loading..." : "Select program name"}</option>
+                  <option value="">
+                    {fetchingNames ? "Loading..." : "Select program name"}
+                  </option>
                   {programNames.map((name) => (
                     <option key={name} value={name}>
                       {name}
@@ -535,9 +542,6 @@ export default function ProgramEdit({ program }: ProgramEditProps) {
           </div>
         </form>
       </div>
-
-     
-  
     </div>
   );
 }
