@@ -1,11 +1,11 @@
 "use client";
 
 import { useParams } from "next/navigation";
-import ProgramEdit from "@/components/TrainerDashboard/programs/ProgramEdit";
+import ProgramEdit from "../../../../../../components/TrainerDashboard/programs/ProgramEdit";
 import {
   programs,
   Program,
-} from "@/components/TrainerDashboard/programs/ProgramsData";
+} from "../../../../../../components/TrainerDashboard/programs/ProgramsData";
 
 function mapProgramToEdit(program: Program) {
   return {

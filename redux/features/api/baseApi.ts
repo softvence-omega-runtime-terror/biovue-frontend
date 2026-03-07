@@ -15,11 +15,21 @@ export const baseApi = createApi({
       }
       // Add ngrok skip warning header for development
       // headers.set("ngrok-skip-browser-warning", "any");
-      // headers.set("Accept", "application/json"); 
+      // headers.set("Accept", "application/json");
       return headers;
     },
   }),
-  tagTypes: ["Users", "Plans", "Reports", "SleepLog", "Nutrition", "Hydration", "Ads", "Programs"],
+  tagTypes: [
+    "Users",
+    "Plans",
+    "Reports",
+    "SleepLog",
+    "Nutrition",
+    "Hydration",
+    "Ads",
+    "Programs",
+    "Clients",
+  ],
 
   endpoints: () => ({}),
 });
