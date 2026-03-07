@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,6 +8,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import SuccessModal from "./SuccessModal";
 import { AlertCircle } from "lucide-react";
+import { useUpdateProgramMutation } from "@/redux/features/api/TrainerDashboard/Program/UpdateProgram";
+import { toast } from "sonner";
+import { useGetProgramsQuery, Program as APIProgram } from "@/redux/features/api/TrainerDashboard/Program/GetPrograms";
 
 interface Program {
   id: string;
@@ -33,12 +36,7 @@ interface ProgramEditProps {
   program: Program;
 }
 
-const PROGRAM_NAMES = [
-  "12-Week Fat Loss Accelerator",
-  "Muscle Building Masterclass",
-  "Athletic Performance Program",
-  "Endurance Training Plan",
-];
+// Removed static PROGRAM_NAMES
 
 const DURATIONS = [
   "4 weeks",
@@ -89,6 +87,14 @@ export default function ProgramEdit({ program }: ProgramEditProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [formData, setFormData] = useState<Program>(program);
+  const [updateProgram, { isLoading: updating }] = useUpdateProgramMutation();
+  const { data: programsData, isLoading: fetchingNames } = useGetProgramsQuery();
+  
+  const programNames = useMemo(() => {
+    if (!programsData?.data) return [];
+    return Array.from(new Set(programsData.data.map((p: APIProgram) => p.name)));
+  }, [programsData]);
+
   useEffect(() => {
     setFormData(program);
   }, [program]);
@@ -150,23 +156,43 @@ export default function ProgramEdit({ program }: ProgramEditProps) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
 
     try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      console.log("Program updated:", formData);
+      await updateProgram({
+        id: Number(formData.id),
 
-      // Show success modal
-      setShowSuccessModal(true);
+        name: formData.name,
+        duration: parseInt(formData.duration.split(" ")[0]) || 0,
 
-      // Redirect after a short delay
-      setTimeout(() => {
-        router.push(`/trainer-dashboard/programs/${program.id}`);
-      }, 2000);
+        primary_goal: formData.primaryGoal,
+        target_intensity: formData.intensity,
+
+        habit_focus_areas: formData.habitFocus,
+        program_focus: formData.programFocus,
+
+        focus_areas: formData.programFocus,
+
+        habit_focus: formData.habitFocus,
+
+        calories: formData.wellnessMacros.calories,
+        protein: formData.wellnessMacros.protein,
+        carbs: formData.wellnessMacros.carbs,
+        fat: formData.wellnessMacros.fat,
+
+        supplement_recommendation: formData.supplements,
+        supplement: formData.supplements,
+
+        notes: formData.internalNotes,
+
+        weekly_targets: [formData.weeklyActivityTarget],
+      }).unwrap();
+
+      toast.success("Program updated successfully");
+
+      router.push(`/trainer-dashboard/programs/${formData.id}`);
     } catch (error) {
-      console.error("Error updating program:", error);
-      setIsLoading(false);
+      console.error(error);
+      toast.error("Failed to update program");
     }
   };
 
@@ -205,8 +231,8 @@ export default function ProgramEdit({ program }: ProgramEditProps) {
                   onChange={(e) => handleSelectChange("name", e.target.value)}
                   className="mt-2 w-full h-11 rounded-xl border border-gray-200 text-gray-500 text-sm px-3"
                 >
-                  <option value="">Select program name</option>
-                  {PROGRAM_NAMES.map((name) => (
+                  <option value="">{fetchingNames ? "Loading..." : "Select program name"}</option>
+                  {programNames.map((name) => (
                     <option key={name} value={name}>
                       {name}
                     </option>
@@ -501,17 +527,17 @@ export default function ProgramEdit({ program }: ProgramEditProps) {
             </Button>
             <Button
               type="submit"
-              disabled={isLoading}
+              disabled={updating}
               className="bg-[#0FA4A9] px-6 py-4 hover:opacity-80 cursor-pointer"
             >
-              {isLoading ? "Saving..." : "Save Changes"}
+              {updating ? "Saving..." : "Save Changes"}
             </Button>
           </div>
         </form>
       </div>
 
-      {/* Success Modal */}
-      <SuccessModal isOpen={showSuccessModal} />
+     
+  
     </div>
   );
 }

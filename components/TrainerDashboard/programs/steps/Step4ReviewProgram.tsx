@@ -3,8 +3,11 @@
 import { useRouter } from "next/navigation";
 import { ProgramFormData } from "../CreateProgramsModal";
 import { useMemo, useState } from "react";
-import { USERS_DATA } from "../../../AdminDashboard/Data";
+
 import { Check, Search, UserPlus, X } from "lucide-react";
+import { useGetUsersQuery } from "@/redux/features/api/TrainerDashboard/Program/GetUsersList";
+import { useAssignProgramUsersMutation } from "@/redux/features/api/TrainerDashboard/Program/AssignProgram";
+import { toast } from "sonner";
 
 interface Step4Props {
   formData: ProgramFormData;
@@ -20,10 +23,13 @@ export default function Step4ReviewProgram({
   onClose,
 }: Step4Props) {
   const router = useRouter();
-
+  const { data, isLoading } = useGetUsersQuery();
+  const users = data?.data || [];
+  const [assignProgramUsers, { isLoading: assigning }] =
+    useAssignProgramUsersMutation();
   const [showAssign, setShowAssign] = useState(false);
   const [search, setSearch] = useState("");
-  const [selected, setSelected] = useState<string[]>([]);
+  const [selected, setSelected] = useState<number[]>([]);
   const habits = formData.habitFocus;
   const [showAssignSuccess, setShowAssignSuccess] = useState(false);
   const [showNoClientSelected, setShowNoClientSelected] = useState(false);
@@ -77,16 +83,15 @@ export default function Step4ReviewProgram({
   const supplements = Object.entries(formData.supplementRecommendations)
     .filter(([, value]) => value)
     .map(([key]) => key);
-
   const filteredUsers = useMemo(() => {
-    return USERS_DATA.filter(
+    return users.filter(
       (u) =>
         u.name.toLowerCase().includes(search.toLowerCase()) ||
         u.email.toLowerCase().includes(search.toLowerCase()),
     );
-  }, [search]);
+  }, [users, search]);
 
-  const toggleUser = (id: string) => {
+  const toggleUser = (id: number) => {
     setSelected((prev) =>
       prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
     );
@@ -310,7 +315,7 @@ export default function Step4ReviewProgram({
           {/* ASSIGN CLIENT MODAL */}
           {showAssign && (
             <div
-              onClick={() => setShowSuccess(false)}
+              onClick={() => setShowAssign(false)}
               className="fixed inset-0 bg-black/40 flex justify-center items-center z-100"
             >
               <div
@@ -354,28 +359,37 @@ export default function Step4ReviewProgram({
                 </div>
                 {/* list */}
                 <div className="mt-4 max-h-44 md:max-h-80 overflow-y-auto custom-scrollbar">
-                  {filteredUsers.map((u) => (
-                    <div
-                      key={u.id}
-                      className="flex  justify-between items-center py-3 border-b border-[#E3ECEB]"
-                    >
-                      {/* user info */}
-                      <div className="px-3 md:px-6 py-2 md:py-4">
-                        <p className="font-medium text-base mb-2">{u.name}</p>
-                        <p className="text-sm text-[#5F6F73]">{u.email}</p>
-                      </div>
-
-                      {/* checkbox */}
-                      <div className="pr-3  md:pr-6">
-                        <input
-                          type="checkbox"
-                          checked={selected.includes(u.id)}
-                          onChange={() => toggleUser(u.id)}
-                          className="w-6 cursor-pointer h-6"
-                        />
-                      </div>
+                  {isLoading && (
+                    <div className="flex justify-center py-6">
+                      <span className="text-gray-500 text-sm">
+                        Loading clients...
+                      </span>
                     </div>
-                  ))}
+                  )}
+
+                  {!isLoading &&
+                    filteredUsers.map((u) => (
+                      <div
+                        key={u.id}
+                        className="flex justify-between items-center py-3 border-b border-[#E3ECEB]"
+                      >
+                        {/* user info */}
+                        <div className="px-3 md:px-6 py-2 md:py-4">
+                          <p className="font-medium text-base mb-2">{u.name}</p>
+                          <p className="text-sm text-[#5F6F73]">{u.email}</p>
+                        </div>
+
+                        {/* checkbox */}
+                        <div className="pr-3 md:pr-6">
+                          <input
+                            type="checkbox"
+                            checked={selected.includes(u.id)}
+                            onChange={() => toggleUser(u.id)}
+                            className="w-6 cursor-pointer h-6"
+                          />
+                        </div>
+                      </div>
+                    ))}
                 </div>
                 {/* footer */}
                 <div className="flex justify-between mt-4">
@@ -390,12 +404,25 @@ export default function Step4ReviewProgram({
                   </button>
 
                   <button
-                    onClick={() => {
+                    onClick={async () => {
                       if (selected.length === 0) {
                         setShowNoClientSelected(true);
                         return;
                       }
-                      setShowAssignSuccess(true);
+
+                      try {
+                        await assignProgramUsers({
+                          program_set_id: 2, // program id
+                          user_ids: selected,
+                        }).unwrap();
+
+                        toast.success("Program assigned successfully");
+
+                        setShowAssignSuccess(true);
+                      } catch (error) {
+                        console.error(error);
+                        toast.error("Failed to assign program");
+                      }
                     }}
                     className="bg-[#0D9488] cursor-pointer hover:opacity-80 text-white px-5 py-2 rounded-lg"
                   >
