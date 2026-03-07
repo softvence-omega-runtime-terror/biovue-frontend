@@ -7,7 +7,7 @@ import Step1ProgramBasics from "./steps/Step1ProgramBasics";
 import Step2GoalsAndFocus from "./steps/Step2GoalsAndFocus";
 import Step3NutritionAndSupplements from "./steps/Step3NutritionAndSupplements";
 import Step4ReviewProgram from "./steps/Step4ReviewProgram";
-import { useCreateProgramMutation } from "@/redux/features/api/TrainerDashboard/Program/CreateProgram";
+import { useCreateProgramMutation } from "../../../redux/features/api/TrainerDashboard/Program/CreateProgram";
 
 export interface ProgramFormData {
   programName: string;
@@ -31,6 +31,7 @@ export interface ProgramFormData {
     vitaminD: boolean;
     aminoAcids: boolean;
     preWorkout: boolean;
+    magnesium: boolean;
     other: boolean;
   };
   wellnessMetricsOptional: {
@@ -72,6 +73,7 @@ export default function CreateProgramModal({
       vitaminD: false,
       aminoAcids: false,
       preWorkout: false,
+      magnesium: false,
       other: false,
     },
     wellnessMetricsOptional: {
@@ -124,8 +126,8 @@ export default function CreateProgramModal({
       carbs: Number(formData.wellnessMetrics.carbs || 0),
       fat: Number(formData.wellnessMetrics.fat || 0),
 
-      supplement_recommendation: selectedSupplements,
-      supplement: selectedSupplements,
+      supplement_recommendation: selectedSupplements || [],
+      supplement: selectedSupplements || [],
     };
   };
   // inside CreateProgramModal
@@ -155,6 +157,7 @@ export default function CreateProgramModal({
           vitaminD: false,
           aminoAcids: false,
           preWorkout: false,
+          magnesium: false,
           other: false,
         },
         wellnessMetricsOptional: {
@@ -176,53 +179,22 @@ export default function CreateProgramModal({
       setCurrentStep(currentStep - 1);
     }
   };
-
-  // const handleCreate = () => {
-  //   // Here you would typically send the data to an API
-  //   console.log("Program Created:", formData);
-  //   toast.success(`Program "${formData.programName}" created successfully!`);
-  //   onClose();
-  //   setCurrentStep(1);
-  //   setFormData({
-  //     programName: "",
-  //     duration: "12 weeks",
-  //     primaryGoal: "Fat Loss",
-  //     targetIntensity: "light",
-  //     focusAreas: [],
-  //     wellnessMetrics: {
-  //       protein: "",
-  //       calories: "",
-  //       carbs: "",
-  //       fat: "",
-  //     },
-  //     habitFocus: [],
-  //     supplementRecommendations: {
-  //       protein: false,
-  //       creatine: false,
-  //       multivitamin: false,
-  //       omega3: false,
-  //       electrolytes: false,
-  //       vitaminD: false,
-  //       aminoAcids: false,
-  //       preWorkout: false,
-  //       other: false,
-  //     },
-  //     wellnessMetricsOptional: {
-  //       proteinOptional: false,
-  //       creatineOptional: false,
-  //     },
-  //   });
-  // };
   const handleCreate = async () => {
+    console.log("Handle Create triggered");
     try {
       const body = buildRequestBody();
+      console.log("Request body:", JSON.stringify(body, null, 2));
 
-      await createProgram(body).unwrap();
+      const result = await createProgram(body).unwrap();
+      console.log("Create program success:", result);
 
       setShowSuccess(true);
-    } catch (error) {
-      console.error("Create program failed:", error);
-      toast.error("Failed to create program");
+    } catch (error: any) {
+      console.error("Create program failed. Full error object:", error);
+      if (error.data) {
+        console.error("Error data from server:", error.data);
+      }
+      toast.error(error.data?.message || "Failed to create program");
     }
   };
 
