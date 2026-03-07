@@ -8,13 +8,22 @@ import {
   ChevronRight,
   Layers,
   Edit,
+  Loader2,
 } from "lucide-react";
-import { Banner, MOCK_BANNERS } from "./data";
+import { Ad } from "./data";
+import { useGetAdminAdsQuery, useToggleAdStatusMutation, useDeleteAdMutation } from "@/redux/features/api/adminDashboard/ads";
+import { toast } from "sonner";
+
 interface BannersTableProps {
-  onEdit: (banner: Banner) => void;
+  onEdit: (banner: Ad) => void;
 }
 export default function BannersTable({ onEdit }: BannersTableProps) {
-  const [banners, setBanners] = useState<Banner[]>(MOCK_BANNERS);
+  const { data, isLoading } = useGetAdminAdsQuery(undefined);
+  const [toggleStatus] = useToggleAdStatusMutation();
+  const [deleteAd] = useDeleteAdMutation();
+
+  const banners: Ad[] = data?.data || [];
+
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("All Statuses");
   const [placementFilter, setPlacementFilter] = useState("All Placement");
@@ -22,14 +31,21 @@ export default function BannersTable({ onEdit }: BannersTableProps) {
   const itemsPerPage = 4;
 
   const filteredBanners = banners.filter((banner) => {
-    const matchesSearch = banner.title
-      .toLowerCase()
+    const matchesSearch = banner.ads_title
+      ?.toLowerCase()
       .includes(searchQuery.toLowerCase());
+    
+    // Status in API seems to be 1/0 or true/false. Map to simple strings for filter.
+    const isActv = banner.status === 1 || banner.status === true;
+    const bannerStatusStr = isActv ? "ACTIVE" : "INACTIVE";
+
     const matchesStatus =
-      statusFilter === "All Statuses" || banner.status === statusFilter;
+      statusFilter === "All Statuses" || bannerStatusStr === statusFilter;
+      
+    const bannerPlacements = banner.placement ? banner.placement.split(",").map(s => s.trim()) : [];
     const matchesPlacement =
       placementFilter === "All Placement" ||
-      banner.placement.includes(placementFilter);
+      bannerPlacements.includes(placementFilter);
     return matchesSearch && matchesStatus && matchesPlacement;
   });
 
@@ -40,13 +56,33 @@ export default function BannersTable({ onEdit }: BannersTableProps) {
     startIndex + itemsPerPage,
   );
 
-  const toggleBannerStatus = (id: number) => {
-    setBanners((prev) =>
-      prev.map((banner) =>
-        banner.id === id ? { ...banner, isEnabled: !banner.isEnabled } : banner,
-      ),
-    );
+  const toggleBannerStatus = async (id: number) => {
+    try {
+      await toggleStatus(id).unwrap();
+      toast.success("Banner status updated successfully");
+    } catch (err: any) {
+      toast.error(err?.data?.message || "Failed to update banner status");
+    }
   };
+
+  const handleDelete = async (id: number) => {
+    if (confirm("Are you sure you want to delete this banner?")) {
+      try {
+        await deleteAd(id).unwrap();
+        toast.success("Banner deleted successfully");
+      } catch (err: any) {
+        toast.error(err?.data?.message || "Failed to delete banner");
+      }
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center py-20">
+        <Loader2 className="animate-spin text-teal-600" size={40} />
+      </div>
+    );
+  }
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -133,7 +169,12 @@ export default function BannersTable({ onEdit }: BannersTableProps) {
             </tr>
           </thead>
           <tbody>
-            {paginatedBanners.map((banner, index) => (
+            {paginatedBanners.map((banner, index) => {
+              const isActv = banner.status === 1 || banner.status === true;
+              const statusStr = isActv ? "ACTIVE" : "INACTIVE";
+              const plmnts = banner.placement ? banner.placement.split(",") : [];
+              
+              return (
               <tr
                 key={banner.id}
                 className={`border-b border-[#9AAEB2] bg-white`}
@@ -142,12 +183,16 @@ export default function BannersTable({ onEdit }: BannersTableProps) {
                 <td className="px-6 py-4">
                   <div className="flex items-center gap-3">
                     <div className="text-gray-400 text-lg">⋮⋮</div>
-                    <div className="w-25 h-12.5">
-                      <img
-                        src={banner.preview}
-                        alt={banner.title}
-                        className="w-full h-full rounded object-cover"
-                      />
+                    <div className="w-25 h-12.5 overflow-hidden rounded bg-gray-100 flex items-center justify-center">
+                      {banner.image ? (
+                        <img
+                          src={banner.image}
+                          alt={banner.ads_title}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <span className="text-xs text-gray-400">No Image</span>
+                      )}
                     </div>
                   </div>
                 </td>
@@ -155,11 +200,11 @@ export default function BannersTable({ onEdit }: BannersTableProps) {
                 {/* Banner Details */}
                 <td className="px-6 py-4">
                   <div className="space-y-2">
-                    <p className="font-medium text-gray-900">{banner.title}</p>
+                    <p className="font-medium text-gray-900">{banner.ads_title}</p>
                     <span
                       className={`inline-block px-3 py-1 rounded text-base font-regular bg-[#0FA4A91A] text-black border border-[#0D9488]`}
                     >
-                      {banner.type}
+                      {banner.ads_type}
                     </span>
                   </div>
                 </td>
@@ -167,12 +212,12 @@ export default function BannersTable({ onEdit }: BannersTableProps) {
                 {/* Placement */}
                 <td className="px-6 py-4">
                   <div className="flex flex-col w-fit gap-2">
-                    {banner.placement.map((place) => (
+                    {plmnts.map((place) => (
                       <span
                         key={place}
                         className="inline-flex items-center gap-1 px-3 py-1 bg-[#5E5E5E1A] text-[#5E5E5E] border border-[#5E5E5E] rounded-lg text-base font-medium"
                       >
-                        <Layers /> {place}
+                        <Layers /> {place.trim()}
                       </span>
                     ))}
                   </div>
@@ -180,16 +225,16 @@ export default function BannersTable({ onEdit }: BannersTableProps) {
 
                 {/* Schedule */}
                 <td className="px-6 py-4 text-base text-[#5E5E5E]">
-                  <div>FROM {banner.scheduleFrom}</div>
-                  <div>TO {banner.scheduleTo}</div>
+                  <div>FROM {banner.start_date}</div>
+                  <div>TO {banner.end_date}</div>
                 </td>
 
                 {/* Status */}
                 <td className="px-6 py-4">
                   <span
-                    className={`font-semibold text-base ${getStatusColor(banner.status)}`}
+                    className={`font-semibold text-base ${getStatusColor(statusStr)}`}
                   >
-                    {banner.status}
+                    {statusStr}
                   </span>
                 </td>
 
@@ -200,12 +245,12 @@ export default function BannersTable({ onEdit }: BannersTableProps) {
                     <button
                       onClick={() => toggleBannerStatus(banner.id)}
                       className={`relative inline-flex h-6 w-11 rounded-full transition-colors ${
-                        banner.isEnabled ? "bg-[#0FA4A9]" : "bg-[#9AAEB2]"
+                        isActv ? "bg-[#0FA4A9]" : "bg-[#9AAEB2]"
                       }`}
                     >
                       <span
                         className={`inline-block h-5 w-5 rounded-full bg-white transition-transform ${
-                          banner.isEnabled ? "translate-x-5" : "translate-x-0.5"
+                          isActv ? "translate-x-5" : "translate-x-0.5"
                         } mt-0.5`}
                       />
                     </button>
@@ -219,13 +264,16 @@ export default function BannersTable({ onEdit }: BannersTableProps) {
                     </button>
 
                     {/* Delete Button */}
-                    <button className="p-2 text-gray-600 hover:text-red-600 hover:bg-gray-100 rounded transition-colors">
+                    <button
+                      onClick={() => handleDelete(banner.id)}
+                      className="p-2 text-gray-600 hover:text-red-600 hover:bg-gray-100 rounded transition-colors"
+                    >
                       <Trash2 size={18} />
                     </button>
                   </div>
                 </td>
               </tr>
-            ))}
+            )})}
           </tbody>
         </table>
       </div>

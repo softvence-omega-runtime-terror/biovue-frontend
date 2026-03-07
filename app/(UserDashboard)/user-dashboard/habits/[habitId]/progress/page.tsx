@@ -10,6 +10,7 @@ import {
   Calendar,
   Sparkles,
   User,
+  Droplets,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
@@ -29,14 +30,19 @@ import LogNutritionModal from "@/components/dashboard/LogNutritionModal";
 import LogNutritionView from "@/components/dashboard/LogNutritionView";
 import LogStressView from "@/components/dashboard/LogStressView";
 
+import { useGetSleepReportQuery } from "@/redux/features/api/userDashboard/sleeplog";
+import { useGetNutritionReportQuery } from "@/redux/features/api/userDashboard/nutrition";
+import { useGetHydrationReportQuery } from "@/redux/features/api/userDashboard/hydration";
+import { Loader2 } from "lucide-react";
+
 const MOCK_DATA = [
-  { name: "M", val: 2, Protin: 35, Carbs: 45, Fats: 20 },
-  { name: "T", val: 6, Protin: 30, Carbs: 50, Fats: 20 },
-  { name: "W", val: 4, Protin: 40, Carbs: 40, Fats: 20 },
-  { name: "T", val: 8, Protin: 35, Carbs: 45, Fats: 20 },
-  { name: "F", val: 6, Protin: 35, Carbs: 45, Fats: 20 },
-  { name: "S", val: 9, Protin: 35, Carbs: 45, Fats: 20 },
-  { name: "S", val: 12, Protin: 35, Carbs: 45, Fats: 20 },
+  { name: "M", val: 0, Protin: 35, Carbs: 45, Fats: 20 },
+  { name: "T", val: 0, Protin: 30, Carbs: 50, Fats: 20 },
+  { name: "W", val: 0, Protin: 40, Carbs: 40, Fats: 20 },
+  { name: "T", val: 0, Protin: 35, Carbs: 45, Fats: 20 },
+  { name: "F", val: 0, Protin: 35, Carbs: 45, Fats: 20 },
+  { name: "S", val: 0, Protin: 35, Carbs: 45, Fats: 20 },
+  { name: "S", val: 0, Protin: 35, Carbs: 45, Fats: 20 },
 ];
 
 const HABIT_META: Record<string, any> = {
@@ -44,16 +50,14 @@ const HABIT_META: Record<string, any> = {
     title: "Sleep",
     icon: <Bed size={24} className="text-[#3A86FF]" />,
     iconBg: "bg-blue-100/50",
-    avgStr: "7.4 Hrs",
+    avgStr: "0 Hrs",
     unit: "Hrs",
-    consistency: "71%",
-    streak: "7 DAYS",
-    trend: "Improving",
+    consistency: "0%",
+    streak: "0 DAYS",
+    trend: "Stable",
     trendColor: "text-[#10B981]",
-    insight:
-      "your sleep consistency improved this weekly after tuesday, maintaining regular timing will significantly increase your physical recovery markers.",
-    coachNote:
-      "your sleep consistency improved this weekly after tuesday, maintaining regular timing will significantly increase your physical recovery markers.",
+    insight: "Log your sleep to see insights.",
+    coachNote: "Maintaining regular timing will significantly increase your physical recovery markers.",
     coachName: "JORDAN",
     coachTime: "2H AGO",
   },
@@ -61,15 +65,13 @@ const HABIT_META: Record<string, any> = {
     title: "Nutrition",
     icon: <Apple size={24} className="text-[#0FA4A9]" />,
     iconBg: "bg-[#E6F6F6]",
-    avgStr: "4 Glasses GLS", // Matched screenshot typo/style: "4 Glasses GLS" (though it says Nutrition, the stats card says Glasses GLS in screenshot)
-    consistency: "14%",
-    streak: "7 DAYS",
-    trend: "Improving",
+    avgStr: "0 Glasses GLS", 
+    consistency: "0%",
+    streak: "0 DAYS",
+    trend: "Stable",
     trendColor: "text-[#10B981]",
-    insight:
-      "your sleep consistency improved this weekly after tuesday, maintaining regular timing will significantly increase your physical recovery markers.",
-    coachNote:
-      "your sleep consistency improved this weekly after tuesday, maintaining regular timing will significantly increase your physical recovery markers.",
+    insight: "Log your nutrition to see insights.",
+    coachNote: "Proper nutrition provides essential macronutrients and micros for sustained energy.",
     coachName: "JORDAN",
     coachTime: "2H AGO",
   },
@@ -77,15 +79,13 @@ const HABIT_META: Record<string, any> = {
     title: "Stress",
     icon: <Frown size={24} className="text-[#A855F7]" />,
     iconBg: "bg-purple-100",
-    avgStr: "4/10 PTS",
-    consistency: "57%",
-    streak: "7 DAYS",
-    trend: "Improving",
+    avgStr: "0/10 PTS",
+    consistency: "0%",
+    streak: "0 DAYS",
+    trend: "Stable",
     trendColor: "text-[#10B981]",
-    insight:
-      "your sleep consistency improved this weekly after tuesday, maintaining regular timing will significantly increase your physical recovery markers.",
-    coachNote:
-      "managing cortisol prevents metabolic interference. stress oversight is critical for longevity.",
+    insight: "Log your stress levels to see insights.",
+    coachNote: "Managing cortisol prevents metabolic interference. Stress oversight is critical for longevity.",
     coachName: "JORDAN",
     coachTime: "2H AGO",
   },
@@ -95,19 +95,98 @@ export default function HabitProgressPage() {
   const params = useParams();
   const router = useRouter();
   const habitId = params.habitId as string;
-  const habit = HABIT_META[habitId] || HABIT_META["sleep"];
+  
+  const { data: sleepReport, isLoading: isSleepLoading } = useGetSleepReportQuery(undefined, {
+    skip: habitId !== 'sleep'
+  });
+
+  const { data: nutritionReport, isLoading: isNutritionLoading } = useGetNutritionReportQuery(undefined, {
+    skip: habitId !== 'nutrition'
+  });
+
+  const { data: hydrationReport, isLoading: isHydrationLoading } = useGetHydrationReportQuery(undefined, {
+    skip: habitId !== 'hydration'
+  });
+
+  const habit = habitId === 'sleep' && sleepReport?.data ? {
+    title: "Sleep",
+    icon: <Bed size={24} className="text-[#3A86FF]" />,
+    iconBg: "bg-blue-100/50",
+    avgStr: sleepReport.data.statistics.average_sleep,
+    unit: "Hrs",
+    consistency: sleepReport.data.statistics.consistency,
+    streak: sleepReport.data.statistics.best_streak,
+    trend: sleepReport.data.statistics.current_trend,
+    trendColor: "text-[#10B981]",
+    insight: sleepReport.data.bio_insight,
+    coachNote: sleepReport.data.bio_insight,
+    coachName: "JORDAN",
+    coachTime: "2H AGO",
+  } : habitId === 'nutrition' && nutritionReport?.data ? {
+    title: "Nutrition",
+    icon: <Apple size={24} className="text-[#0FA4A9]" />,
+    iconBg: "bg-[#E6F6F6]",
+    avgStr: nutritionReport.data.statistics.average,
+    unit: "",
+    consistency: nutritionReport.data.statistics.consistency,
+    streak: nutritionReport.data.statistics.best_streak,
+    trend: nutritionReport.data.statistics.current_trend,
+    trendColor: "text-[#10B981]",
+    insight: nutritionReport.data.bio_insight,
+    coachNote: nutritionReport.data.bio_insight,
+    coachName: "JORDAN",
+    coachTime: "2H AGO",
+  } : habitId === 'hydration' && hydrationReport?.hydration ? {
+    title: "Hydration",
+    icon: <Droplets size={24} className="text-[#3A86FF]" />,
+    iconBg: "bg-blue-100/50",
+    avgStr: hydrationReport.hydration.average,
+    unit: "Glasses",
+    consistency: hydrationReport.hydration.consistency,
+    streak: hydrationReport.hydration.best_streak,
+    trend: hydrationReport.hydration.current_trend,
+    trendColor: "text-[#10B981]",
+    insight: "Your hydration levels are tracked based on your daily water intake.",
+    coachNote: "Adequate water intake is crucial for cellular function and metabolism.",
+    coachName: "JORDAN",
+    coachTime: "2H AGO",
+  } : (HABIT_META[habitId] || HABIT_META["sleep"]);
+
+  const chartData = habitId === 'sleep' && sleepReport?.data?.chart_data ? 
+    sleepReport.data.chart_data.map((item: any) => ({
+      name: item.label,
+      val: item.hours,
+    })) : habitId === 'nutrition' && nutritionReport?.data?.chart_data ? 
+      nutritionReport.data.chart_data.map((item: any) => ({
+        name: item.label,
+        Protin: item.protein,
+        Carbs: item.carbs,
+        Fats: item.fats
+      })) : habitId === 'hydration' && hydrationReport?.hydration?.chart ? 
+        Object.entries(hydrationReport.hydration.chart).map(([label, value]) => ({
+          name: label,
+          val: value
+        })) : MOCK_DATA;
 
   const [view, setView] = useState<"trends" | "logging">("trends");
   const [timeframe, setTimeframe] = useState("Weekly");
   const [isLogModalOpen, setIsLogModalOpen] = useState(false);
 
   const handleLogClick = () => {
-    if (habitId === "nutrition" || habitId === "stress") {
+    if (habitId === "stress") {
       setView("logging");
     } else {
       setIsLogModalOpen(true);
     }
   };
+
+  if (isSleepLoading || isNutritionLoading || isHydrationLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-[calc(100vh-80px)]">
+        <Loader2 className="animate-spin text-[#3A86FF]" size={48} />
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col min-h-[calc(100vh-80px)] p-6 md:p-8 container mx-auto w-full">
@@ -144,34 +223,33 @@ export default function HabitProgressPage() {
 
           <div className="flex flex-col gap-6 w-full">
             {/* Main Chart Card */}
-            <div className="bg-white rounded-3xl p-8 md:p-10 border border-[#3A86FF]/25 shadow-sm flex flex-col gap-8 w-full">
+            <div className="bg-white rounded-[24px] p-8 md:p-10 border border-[#EDF2F7] shadow-[0_4px_20px_rgba(0,0,0,0.02)] flex flex-col gap-8 w-full">
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div className="flex items-center gap-6">
                   <div
                     className={cn(
-                      "w-14 h-14 rounded-xl flex items-center justify-center shrink-0",
-                      habit.iconBg,
+                      "w-16 h-16 rounded-[12px] flex items-center justify-center shrink-0 bg-[#EAF1FF]",
                     )}
                   >
-                    {habit.icon}
+                    {habitId === 'sleep' ? <Bed size={32} className="text-[#3A86FF]" /> : habit.icon}
                   </div>
                   <div className="flex flex-col gap-1">
                     <h2 className="text-2xl font-bold text-[#3A86FF]">
-                      {habit.title} Treands
+                      {habitId === 'sleep' ? "Sleep Progress" : `${habit.title} Trends`}
                     </h2>
-                    <p className="text-[#94A3B8] text-xs font-semibold italic">
-                      Based on your logged meals and nutrition quality
+                    <p className="text-[#94A3B8] text-sm font-medium italic">
+                      {habitId === 'sleep' ? "Based on your logged sleep data" : `Based on your logged ${habitId === 'nutrition' ? 'meals and nutrition quality' : 'data'}`}
                     </p>
                   </div>
                 </div>
 
-                <div className="flex p-1 bg-white border border-gray-200 rounded-xl overflow-hidden self-start md:self-auto shrink-0">
+                <div className="flex p-1.5 bg-white border border-[#E2E8F0] rounded-[12px] overflow-hidden self-start md:self-auto shrink-0">
                   {["Weekly", "Monthly", "Last 3 months"].map((t) => (
                     <button
                       key={t}
                       onClick={() => setTimeframe(t)}
                       className={cn(
-                        "px-4 py-2 text-sm font-semibold rounded-lg transition-all cursor-pointer",
+                        "px-5 py-2 text-sm font-semibold rounded-[8px] transition-all cursor-pointer",
                         t === timeframe
                           ? "bg-[#D9E6FF] text-[#1F2D2E]"
                           : "text-[#5F6F73] hover:bg-gray-50",
@@ -183,28 +261,28 @@ export default function HabitProgressPage() {
                 </div>
               </div>
 
-              <div className="h-75 w-full mt-4 -ml-4 pr-4">
+              <div className="h-80 w-full mt-4 -ml-4 pr-4">
                 <ResponsiveContainer width="100%" height="100%">
                   {habitId === "nutrition" ? (
                     <BarChart
-                      data={MOCK_DATA}
+                      data={chartData}
                       margin={{ top: 10, right: 30, left: 20, bottom: 0 }}
                     >
                       <CartesianGrid
                         strokeDasharray="3 3"
                         vertical={false}
-                        stroke="#E2E8F0"
+                        stroke="#F1F5F9"
                       />
                       <XAxis
                         dataKey="name"
                         axisLine={false}
                         tickLine={false}
                         tick={{
-                          fontSize: 12,
+                          fontSize: 14,
                           fill: "#94A3B8",
-                          fontWeight: 600,
+                          fontWeight: 500,
                         }}
-                        dy={10}
+                        dy={15}
                       />
                       <YAxis
                         axisLine={false}
@@ -212,7 +290,7 @@ export default function HabitProgressPage() {
                         tick={{
                           fontSize: 12,
                           fill: "#94A3B8",
-                          fontWeight: 600,
+                          fontWeight: 500,
                         }}
                         tickFormatter={(val) => `${val}%`}
                         domain={[0, 100]}
@@ -259,12 +337,12 @@ export default function HabitProgressPage() {
                     </BarChart>
                   ) : (
                     <AreaChart
-                      data={MOCK_DATA}
-                      margin={{ top: 10, right: 10, left: 10, bottom: 0 }}
+                      data={chartData}
+                      margin={{ top: 10, right: 10, left: 30, bottom: 10 }}
                     >
                       <defs>
                         <linearGradient
-                          id="colorVal"
+                          id="colorGreen"
                           x1="0"
                           y1="0"
                           x2="0"
@@ -282,22 +360,32 @@ export default function HabitProgressPage() {
                           />
                         </linearGradient>
                       </defs>
+                      <CartesianGrid
+                        strokeDasharray="0"
+                        vertical={false}
+                        stroke="#F8FAFC"
+                      />
                       <XAxis
                         dataKey="name"
                         axisLine={false}
                         tickLine={false}
                         tick={{
-                          fontSize: 12,
+                          fontSize: 14,
                           fill: "#94A3B8",
-                          fontWeight: 600,
+                          fontWeight: 500,
                         }}
-                        dy={10}
+                        dy={15}
+                      />
+                      <YAxis
+                        hide
+                        axisLine={false}
+                        tickLine={false}
                       />
                       <Tooltip
                         contentStyle={{
                           borderRadius: "12px",
                           border: "none",
-                          boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+                          boxShadow: "0 8px 30px rgba(0,0,0,0.08)",
                         }}
                         labelStyle={{ fontWeight: 600, color: "#1F2D2E" }}
                       />
@@ -307,7 +395,7 @@ export default function HabitProgressPage() {
                         stroke="#4ade80"
                         strokeWidth={2}
                         fillOpacity={1}
-                        fill="url(#colorVal)"
+                        fill="url(#colorGreen)"
                       />
                     </AreaChart>
                   )}

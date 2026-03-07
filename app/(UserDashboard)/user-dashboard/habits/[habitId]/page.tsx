@@ -88,7 +88,7 @@ export default function HabitDetailPage() {
   const [isLogModalOpen, setIsLogModalOpen] = useState(false);
 
   const handleLogClick = () => {
-    if (habitId === 'nutrition' || habitId === 'stress') {
+    if (habitId === 'stress') {
       setView("logging");
     } else {
       setIsLogModalOpen(true);
