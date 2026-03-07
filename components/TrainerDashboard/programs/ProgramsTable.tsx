@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import { Program } from "./ProgramsData";
+import { Program } from "@/redux/features/api/TrainerDashboard/Program/GetPrograms";
 import { useRouter } from "next/navigation";
 
 interface ProgramsTableProps {
@@ -42,9 +42,7 @@ export default function ProgramsTable({ programs }: ProgramsTableProps) {
             <th className="px-6 py-4 text-left text-base font-semibold text-[#111827] uppercase">
               Clients
             </th>
-            <th className="px-6 py-4 text-left text-base font-semibold text-[#111827] uppercase">
-              Status
-            </th>
+           
             <th className="px-6 py-4 text-left text-base font-semibold text-[#111827] uppercase">
               Updated
             </th>
@@ -63,24 +61,21 @@ export default function ProgramsTable({ programs }: ProgramsTableProps) {
                 <div className="text-sm font-semibold text-[#111827]">
                   {program.name}
                 </div>
-                <div className="text-xs text-[#6B7280]">{program.duration}</div>
+                <div className="text-xs text-[#6B7280]">{program.duration} weeks</div>
               </td>
               <td className="px-6 py-4 text-sm font-medium text-[#111827]">
-                {program.primaryGoal}
+                {program.primary_goal}
               </td>
               <td className="px-6 py-4">
-                <span className={getIntensityStyles(program.intensity)}>
-                  {program.intensity}
+                <span className={getIntensityStyles(program.target_intensity)}>
+                  {program.target_intensity}
                 </span>
               </td>
               <td className="px-6 py-4 text-sm font-medium text-[#111827]">
-                {program.clients} CLIENTS
+                0 CLIENTS
               </td>
               <td className="px-6 py-4 text-sm font-medium text-[#111827]">
-                {program.status}
-              </td>
-              <td className="px-6 py-4 text-sm font-medium text-[#111827]">
-                {program.updatedAgo}
+                {new Date(program.updated_at).toLocaleDateString()}
               </td>
               <td className="px-6 py-4">
                 <div className="flex items-center gap-3">
