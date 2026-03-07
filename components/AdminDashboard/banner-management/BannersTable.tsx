@@ -13,6 +13,7 @@ import {
 import { Ad } from "./data";
 import { useGetAdminAdsQuery, useToggleAdStatusMutation, useDeleteAdMutation } from "@/redux/features/api/adminDashboard/ads";
 import { toast } from "sonner";
+import Swal from "sweetalert2";
 
 interface BannersTableProps {
   onEdit: (banner: Ad) => void;
@@ -66,14 +67,32 @@ export default function BannersTable({ onEdit }: BannersTableProps) {
   };
 
   const handleDelete = async (id: number) => {
-    if (confirm("Are you sure you want to delete this banner?")) {
-      try {
-        await deleteAd(id).unwrap();
-        toast.success("Banner deleted successfully");
-      } catch (err: any) {
-        toast.error(err?.data?.message || "Failed to delete banner");
+    Swal.fire({
+      title: "Are you sure?",
+      text: "You won't be able to revert this!",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Yes, delete it!"
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        try {
+          await deleteAd(id).unwrap();
+          Swal.fire({
+            title: "Deleted!",
+            text: "Your banner has been deleted.",
+            icon: "success"
+          });
+        } catch (err: any) {
+          Swal.fire({
+             title: "Error!",
+             text: err?.data?.message || "Failed to delete banner.",
+             icon: "error"
+          });
+        }
       }
-    }
+    });
   };
 
   if (isLoading) {
