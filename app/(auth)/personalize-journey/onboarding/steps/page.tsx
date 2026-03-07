@@ -92,10 +92,10 @@ const OnboardingStepsPage = () => {
         "daily": "Daily" 
       };
       const waterMap: any = { 
-        "less_1L": "5 liters", 
-        "1_2L": "10 liters", 
-        "2_3L": "17 liters", 
-        "3L_plus": "25 liters" 
+        "less_1L": "5", 
+        "1_2L": "10", 
+        "2_3L": "17", 
+        "3L_plus": "25" 
       };
 
       apiData.append("smoking_status", smokingMap[formData.smoking] || "0");
@@ -103,11 +103,11 @@ const OnboardingStepsPage = () => {
       apiData.append("stress_level", stressMap[formData.stress] || "5");
       apiData.append("daily_step", formData.steps || "8000");
       apiData.append("sleep_hour", formData.sleep || "7.5");
-      apiData.append("water_consumption_week", waterMap[formData.water] || "10 liters");
+      apiData.append("water_consumption_week", waterMap[formData.water] || "10");
       apiData.append("overall_diet_quality", dietMap[formData.diet] || "Good");
       apiData.append("fast_food_frequency", fastFoodMap[formData.fastFood] || "Once a week");
-      apiData.append("strength_training_week", (formData.strength || "2") + " sessions");
-      apiData.append("workout_week", (formData.workout || "3") + " sessions");
+      apiData.append("strength_training_week", (formData.strength || "2"));
+      apiData.append("workout_week", (formData.workout || "3"));
 
       // Goals Mapping (Ensure keys match screenshot and values are "1" or "0")
       apiData.append("is_athletic", formData.goals.includes("Athletic") ? "1" : "0");
