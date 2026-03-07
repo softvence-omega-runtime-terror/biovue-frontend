@@ -1,85 +1,120 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect, useMemo, useRef } from "react";
 import Image from "next/image";
-import { Search, Send, MoreVertical } from "lucide-react";
+import { Search, Send, MoreVertical, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import {
+  useGetConversationsQuery,
+  useGetMessagesByUserIdQuery,
+  useSendMessageMutation,
+  Message,
+} from "@/redux/features/api/userDashboard/messagesApi";
+import { useSelector } from "react-redux";
 
-// --- Mock Data ---
-const CONTACTS = [
-  {
-    id: 1,
-    name: "Sarah Jenkins",
-    handle: "@sarah.jenkins",
-    avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=150&h=150&auto=format&fit=crop",
-    lastMessage: "Great progress this week keep going!",
-    time: "Just now",
-    isActive: true,
-  },
-  {
-    id: 2,
-    name: "Brooklyn Simmons",
-    handle: "@brooklyn.s",
-    avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=150&h=150&auto=format&fit=crop",
-    lastMessage: "Great progress this week keep going!",
-    time: "5 Hrs ago",
-    isActive: false,
-  },
-  {
-    id: 3,
-    name: "Theresa Webb",
-    handle: "@theresa.webb",
-    avatar: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?q=80&w=150&h=150&auto=format&fit=crop",
-    lastMessage: "Great progress this week keep going!",
-    time: "Yesterday",
-    isActive: false,
-  },
-];
+const formatMessageTime = (dateString: string) => {
+  const date = new Date(dateString);
+  const now = new Date();
+  
+  const isToday = 
+    date.getDate() === now.getDate() && 
+    date.getMonth() === now.getMonth() && 
+    date.getFullYear() === now.getFullYear();
+    
+  const yesterday = new Date(now);
+  yesterday.setDate(now.getDate() - 1);
+  const isYesterday = 
+    date.getDate() === yesterday.getDate() && 
+    date.getMonth() === yesterday.getMonth() && 
+    date.getFullYear() === yesterday.getFullYear();
 
-const INITIAL_MESSAGES = [
-  {
-    id: 1,
-    senderId: "other",
-    text: "Hi coach, feeling good about this week!",
-    time: "Today - 8:30 AM",
-  },
-  {
-    id: 2,
-    senderId: "me",
-    text: "Hi coach, feeling good about this week!",
-    time: "Today - 8:30 AM",
-  },
-  {
-    id: 3,
-    senderId: "other",
-    text: "Hi coach, feeling good about this week!",
-    time: "Today - 8:30 AM",
-  },
-  {
-    id: 4,
-    senderId: "me",
-    text: "Hi coach, feeling good about this week!",
-    time: "Today - 8:30 AM",
-  },
-];
+  const timeString = date.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', hour12: true });
+
+  if (isToday) return `Today - ${timeString}`;
+  if (isYesterday) return `Yesterday - ${timeString}`;
+  
+  const dateStr = date.toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' });
+  return `${dateStr} - ${timeString}`;
+};
 
 const MessagesPage = () => {
-  const [activeContact, setActiveContact] = useState(CONTACTS[0]);
+  const [activeContactId, setActiveContactId] = useState<number | null>(null);
   const [messageText, setMessageText] = useState("");
-  const [messages, setMessages] = useState(INITIAL_MESSAGES);
+  const [searchQuery, setSearchQuery] = useState("");
 
-  const handleSendMessage = () => {
-    if (!messageText.trim()) return;
+  const { data: conversationsData, isLoading: isConversationsLoading } = useGetConversationsQuery();
+  const { data: messagesData, isLoading: isMessagesLoading } = useGetMessagesByUserIdQuery(
+    activeContactId as number,
+    { skip: !activeContactId }
+  );
+  const [sendMessage, { isLoading: isSending }] = useSendMessageMutation();
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  const authUser = useSelector((state: any) => state.auth.user); // Assuming user is in auth state
+  // Or if auth state isn't easily accessible, derive it from the sender/receiver id logic
+  
+  // 1. Process Conversations Map into an array of Contacts
+  const contacts = useMemo(() => {
+    if (!conversationsData) return [];
     
-    const newMessage = {
-      id: messages.length + 1,
-      senderId: "me",
-      text: messageText,
-      time: "Just now",
-    };
+    // The API returns a map where the key is the other user's ID
+    const contactList = Object.entries(conversationsData).map(([otherUserId, messages]) => {
+      // Find the last message to get contact details and preview
+      const lastMessage = messages[messages.length - 1];
+      
+      // Determine which user is the "other" contact
+      const isSender = lastMessage.sender_id.toString() === otherUserId;
+      const contactUser = isSender ? lastMessage.sender : lastMessage.receiver;
+      const myId = isSender ? lastMessage.receiver_id : lastMessage.sender_id;
+
+      return {
+        id: contactUser.id,
+        name: contactUser.name,
+        handle: contactUser.email,
+        avatar: contactUser.image_url || `https://ui-avatars.com/api/?name=${contactUser.name}`,
+        lastMessage: lastMessage.message,
+        time: new Date(lastMessage.updated_at).toLocaleDateString([], { month: 'short', day: 'numeric' }),
+        isActive: false, // Could add real logic if needed
+        myId, // Keep track of the logged-in user's ID
+      };
+    });
+
+    return contactList.sort((a, b) => b.id - a.id); // Simple sort if needed, maybe by date in real app
+  }, [conversationsData]);
+
+  // Set initial active contact
+  useEffect(() => {
+    if (contacts.length > 0 && !activeContactId) {
+      setActiveContactId(contacts[0].id);
+    }
+  }, [contacts, activeContactId]);
+
+  const activeContact = contacts.find((c) => c.id === activeContactId);
+  const currentUserId = activeContact?.myId;
+
+  // Auto-scroll to bottom of messages
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messagesData]);
+
+  // Search Filter
+  const filteredContacts = contacts.filter(c => 
+    c.name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  const handleSendMessage = async () => {
+    if (!messageText.trim() || !activeContactId) return;
     
-    setMessages([...messages, newMessage]);
-    setMessageText("");
+    try {
+      await sendMessage({
+        receiver_id: activeContactId,
+        message: messageText,
+      }).unwrap();
+      
+      setMessageText("");
+    } catch (error) {
+      console.error("Failed to send message:", error);
+    }
   };
 
   return (
@@ -101,7 +136,9 @@ const MessagesPage = () => {
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-[#5F6F73]" size={18} />
               <input
                 type="text"
-                placeholder="Search Clients"
+                placeholder="Search Contacts"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
                 className="w-full bg-[#F4FBFA] border-none rounded-xl py-3 pl-10 pr-4 text-sm focus:ring-2 focus:ring-[#0FA4A9] outline-none placeholder:text-[#5F6F73]/60"
               />
             </div>
@@ -109,117 +146,145 @@ const MessagesPage = () => {
 
           {/* Contacts List */}
           <div className="flex-1 overflow-y-auto">
-            {CONTACTS.map((contact) => (
-              <div
-                key={contact.id}
-                onClick={() => setActiveContact(contact)}
-                className={cn(
-                  "p-4 cursor-pointer transition-all flex items-start gap-3 border-b border-gray-50",
-                  contact.id === activeContact.id ? "bg-[#E4EFFF]/50" : "hover:bg-gray-50"
-                )}
-              >
-                <div className="relative flex-shrink-0">
-                  <div className="w-12 h-12 rounded-full overflow-hidden bg-gray-100 border border-gray-200">
-                     {/* Using a generic UI image or local one if available */}
-                     <Image 
-                       src={contact.avatar} 
-                       alt={contact.name} 
-                       width={48} 
-                       height={48} 
-                       className="object-cover"
-                       onError={(e) => {
-                         (e.target as any).src = "https://ui-avatars.com/api/?name=" + contact.name;
-                       }}
-                     />
-                  </div>
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex justify-between items-start mb-1">
-                    <h3 className="text-sm font-bold text-[#1F2D2E] truncate">{contact.name}</h3>
-                    <span className="text-[10px] font-medium text-[#5F6F73] whitespace-nowrap">{contact.time}</span>
-                  </div>
-                  <p className="text-xs text-[#5F6F73] truncate leading-tight">
-                    {contact.lastMessage}
-                  </p>
-                </div>
+            {isConversationsLoading ? (
+              <div className="flex justify-center py-10">
+                 <Loader2 className="w-6 h-6 animate-spin text-teal-600" />
               </div>
-            ))}
+            ) : filteredContacts.length === 0 ? (
+              <div className="p-4 text-center text-sm text-gray-500">No conversations found.</div>
+            ) : (
+              filteredContacts.map((contact) => (
+                <div
+                  key={contact.id}
+                  onClick={() => setActiveContactId(contact.id)}
+                  className={cn(
+                    "p-4 cursor-pointer transition-all flex items-start gap-3 border-b border-gray-50",
+                    contact.id === activeContactId ? "bg-[#E4EFFF]/50" : "hover:bg-gray-50"
+                  )}
+                >
+                  <div className="relative flex-shrink-0">
+                    <div className="w-12 h-12 rounded-full overflow-hidden bg-gray-100 border border-gray-200">
+                       <img 
+                         src={contact.avatar || `https://ui-avatars.com/api/?name=${contact.name}&background=0D9488&color=fff`} 
+                         alt={contact.name} 
+                         className="object-cover w-full h-full"
+                         onError={(e) => {
+                           (e.target as HTMLImageElement).src = `https://ui-avatars.com/api/?name=${contact.name}&background=0D9488&color=fff`;
+                         }}
+                       />
+                    </div>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex justify-between items-start mb-1">
+                      <h3 className="text-sm font-bold text-[#1F2D2E] truncate">{contact.name}</h3>
+                      <span className="text-[10px] font-medium text-[#5F6F73] whitespace-nowrap">{contact.time}</span>
+                    </div>
+                    <p className="text-xs text-[#5F6F73] truncate leading-tight">
+                      {contact.lastMessage}
+                    </p>
+                  </div>
+                </div>
+              ))
+            )}
           </div>
         </div>
 
         {/* Chat Area */}
         <div className="flex-1 flex flex-col bg-white">
-          {/* Chat Header */}
-          <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full overflow-hidden bg-gray-100 border border-gray-200">
-                <Image 
-                  src={activeContact.avatar} 
-                  alt={activeContact.name} 
-                  width={40} 
-                  height={40} 
-                  className="object-cover"
-                  onError={(e) => {
-                    (e.target as any).src = "https://ui-avatars.com/api/?name=" + activeContact.name;
-                  }}
-                />
-              </div>
-              <div className="flex flex-col">
-                <h2 className="text-sm font-bold text-[#1F2D2E]">{activeContact.name}</h2>
-                <span className="text-xs text-[#5F6F73]">{activeContact.name}</span>
-              </div>
-            </div>
-            {/* Optional menu icon */}
-            <button className="text-[#5F6F73] hover:text-[#1F2D2E] transition-colors">
-              <MoreVertical size={20} />
-            </button>
-          </div>
-
-          {/* Message History */}
-          <div className="flex-1 overflow-y-auto p-6 flex flex-col gap-8 bg-[#F8FAFB]">
-            {messages.map((msg) => (
-              <div
-                key={msg.id}
-                className={cn(
-                  "flex flex-col max-w-[70%]",
-                  msg.senderId === "me" ? "self-end items-end text-right" : "self-start items-start text-left"
-                )}
-              >
-                <div
-                  className={cn(
-                    "px-6 py-4 rounded-2xl shadow-sm mb-2 text-sm md:text-base leading-relaxed font-medium",
-                    msg.senderId === "me" 
-                      ? "bg-[#C7F5CB] text-[#1F2D2E] rounded-tr-none" 
-                      : "bg-white text-[#1F2D2E] border border-gray-50 rounded-tl-none"
-                  )}
-                >
-                  {msg.text}
+          {activeContact ? (
+            <>
+              {/* Chat Header */}
+              <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between shadow-sm z-10">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full overflow-hidden bg-gray-100 border border-gray-200">
+                    <img 
+                      src={activeContact.avatar || `https://ui-avatars.com/api/?name=${activeContact.name}&background=0D9488&color=fff`} 
+                      alt={activeContact.name} 
+                      className="object-cover w-full h-full"
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).src = `https://ui-avatars.com/api/?name=${activeContact.name}&background=0D9488&color=fff`;
+                      }}
+                    />
+                  </div>
+                  <div className="flex flex-col">
+                    <h2 className="text-sm font-bold text-[#1F2D2E]">{activeContact.name}</h2>
+                    <span className="text-xs text-[#5F6F73]">{activeContact.handle}</span>
+                  </div>
                 </div>
-                <span className="text-[10px] font-medium text-[#5F6F73]">{msg.time}</span>
+                <button className="text-[#5F6F73] hover:text-[#1F2D2E] transition-colors">
+                  <MoreVertical size={20} />
+                </button>
               </div>
-            ))}
-          </div>
 
-          {/* Message Input */}
-          <div className="p-6 bg-[#F8FAFB]">
-            <div className="relative bg-white rounded-2xl border border-gray-100 shadow-sm p-4 flex items-center gap-4">
-              <input
-                type="text"
-                value={messageText}
-                onChange={(e) => setMessageText(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && handleSendMessage()}
-                placeholder="Type your message..."
-                className="flex-1 bg-transparent border-none outline-none text-[#1F2D2E] text-sm md:text-base placeholder:text-[#5F6F73]/50"
-              />
-              <button 
-                onClick={handleSendMessage}
-                disabled={!messageText.trim()}
-                className="text-[#1F2D2E] hover:text-[#0FA4A9] transition-colors disabled:opacity-30 flex-shrink-0"
-              >
-                <Send size={24} className="rotate-[-30deg]" />
-              </button>
+              {/* Message History */}
+              <div className="flex-1 overflow-y-auto p-6 flex flex-col gap-6 bg-[#F8FAFB]">
+                {isMessagesLoading ? (
+                   <div className="flex justify-center items-center h-full">
+                     <Loader2 className="w-8 h-8 animate-spin text-teal-600" />
+                   </div>
+                ) : !messagesData || messagesData.length === 0 ? (
+                   <div className="flex justify-center items-center h-full text-gray-500 text-sm">
+                     Start a conversation!
+                   </div>
+                ) : (
+                  messagesData.map((msg) => {
+                    // If sender_id matches the active contact, it's from them.
+                    const isMe = msg.sender_id !== activeContact.id;
+                    
+                    return (
+                      <div
+                        key={msg.id}
+                        className={cn(
+                          "flex flex-col max-w-[70%]",
+                          isMe ? "self-end items-end text-right" : "self-start items-start text-left"
+                        )}
+                      >
+                        <div
+                          className={cn(
+                            "px-5 py-3 rounded-2xl shadow-sm mb-1.5 text-[15px] leading-relaxed",
+                            isMe 
+                              ? "bg-[#C7F5CB] text-[#1F2D2E] rounded-tr-none" 
+                              : "bg-white text-[#1F2D2E] border border-gray-100 rounded-tl-none"
+                          )}
+                        >
+                          {msg.message}
+                        </div>
+                        <span className="text-[10px] font-medium text-[#5F6F73]">
+                          {formatMessageTime(msg.created_at)}
+                        </span>
+                      </div>
+                    );
+                  })
+                )}
+                <div ref={messagesEndRef} />
+              </div>
+
+              {/* Message Input */}
+              <div className="p-6 bg-[#F8FAFB] border-t border-gray-50">
+                <div className="relative bg-white rounded-2xl border border-gray-200 shadow-sm p-3 flex items-center gap-3">
+                  <input
+                    type="text"
+                    value={messageText}
+                    onChange={(e) => setMessageText(e.target.value)}
+                    onKeyDown={(e) => e.key === "Enter" && handleSendMessage()}
+                    placeholder="Type your message..."
+                    className="flex-1 bg-transparent border-none outline-none text-[#1F2D2E] text-[15px] placeholder:text-[#5F6F73]/50 ml-2"
+                  />
+                  <button 
+                    onClick={handleSendMessage}
+                    disabled={!messageText.trim() || isSending}
+                    className="w-10 h-10 flex items-center justify-center bg-teal-600 rounded-xl text-white hover:bg-teal-700 transition-colors disabled:opacity-50 flex-shrink-0"
+                  >
+                    {isSending ? <Loader2 size={18} className="animate-spin" /> : <Send size={18} className="ml-1" />}
+                  </button>
+                </div>
+              </div>
+            </>
+          ) : (
+            <div className="flex-1 flex items-center justify-center text-gray-400 bg-[#F8FAFB]">
+              Select a conversation to start chatting
             </div>
-          </div>
+          )}
         </div>
 
       </div>
