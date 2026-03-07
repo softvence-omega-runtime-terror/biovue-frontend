@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, Roboto, Inter, Poppins } from "next/font/google";
 import "./globals.css";
-
 // redux
 import ReduxProvider from "../redux/provider";
 import { Toaster } from "sonner";
