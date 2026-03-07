@@ -1,7 +1,7 @@
 "use client";
 
 import { AlertCircle, Activity, User } from "lucide-react";
-import { Card } from "@/components/ui/card";
+import { Card } from "../../ui/card";
 
 export interface StatCard {
   icon: React.ReactNode;
@@ -9,28 +9,29 @@ export interface StatCard {
   label: string;
   description: string;
 }
-const statCards: StatCard[] = [
-  {
-    icon: <Activity className="w-6 h-6" />,
-    number: 3,
-    label: "Active Programs",
-    description: "Currently assigned to clients",
-  },
-  {
-    icon: <AlertCircle className="w-6 h-6" />,
-    number: 2,
-    label: "Draft Programs",
-    description: "Not yet assigned",
-  },
-  {
-    icon: <User className="w-6 h-6" />,
-    number: 18,
-    label: "Clients in Programs",
-    description: "Active participants",
-  },
-];
 
-export default function StatCards() {
+export default function StatCards({ activeCount = 0 }: { activeCount?: number }) {
+  const statCards: StatCard[] = [
+    {
+      icon: <Activity className="w-6 h-6" />,
+      number: activeCount,
+      label: "Active Programs",
+      description: "Currently assigned to clients",
+    },
+    {
+      icon: <AlertCircle className="w-6 h-6" />,
+      number: 0,
+      label: "Draft Programs",
+      description: "Not yet assigned",
+    },
+    {
+      icon: <User className="w-6 h-6" />,
+      number: 18, // Keeping this as mock for now as client data might be different API
+      label: "Clients in Programs",
+      description: "Active participants",
+    },
+  ];
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 mb-8">
       {statCards.map((stat, index) => (

@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { ProgramFormData } from "../CreateProgramsModal";
 import { useMemo, useState } from "react";
-import { USERS_DATA } from "@/components/AdminDashboard/Data";
+import { USERS_DATA } from "../../../AdminDashboard/Data";
 import { Check, Search, UserPlus, X } from "lucide-react";
 
 interface Step4Props {
@@ -280,7 +280,7 @@ export default function Step4ReviewProgram({
                 <h3 className="text-2xl font-semibold">Program Created!</h3>
 
                 <p className="text-[#8C9094] text-sm mt-2">
-                  "Power Recomp" has been successfully saved to your dashboard.
+                  Power Recomp has been successfully saved to your dashboard.
                 </p>
 
                 <button

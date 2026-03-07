@@ -25,7 +25,7 @@ function mapProgramToEdit(program: Program) {
       fat: program.wellnessMetrics?.fat ?? 0,
     },
     supplements: Object.entries(program.supplementRecommendations ?? {})
-      .filter(([_, enabled]) => enabled)
+      .filter(([, enabled]) => enabled)
       .map(([key]) =>
         key.replace(/([A-Z])/g, " $1").replace(/^./, (s) => s.toUpperCase()),
       ),

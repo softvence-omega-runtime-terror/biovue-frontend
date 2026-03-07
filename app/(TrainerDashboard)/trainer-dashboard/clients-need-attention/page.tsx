@@ -4,69 +4,10 @@ import { useState } from "react";
 import { ChevronLeft } from "lucide-react";
 import Link from "next/link";
 import ClientDetailModal from "@/components/TrainerDashboard/overview/ClientNeedAttentionModal";
-
-interface ClientNeedingAttention {
-  id: number;
-  name: string;
-  status: "need-attention" | "on-track" | "inactive";
-  turningRate: number; // Percentage of client turning away
-  reason: string; // Reason for needing attention
-  lastActivity: string;
-  goal: string;
-}
-
-const clientsNeedingAttention: ClientNeedingAttention[] = [
-  {
-    id: 1,
-    name: "Alex Rivera",
-    status: "need-attention",
-    turningRate: 45,
-    reason:
-      "No logging activity for 3 days. Client engagement has dropped by 45%.",
-    lastActivity: "3 days ago",
-    goal: "Fat loss",
-  },
-  {
-    id: 2,
-    name: "Sarah Chen",
-    status: "need-attention",
-    turningRate: 32,
-    reason:
-      "Inconsistent workout completion. Missed 2 out of last 4 scheduled sessions.",
-    lastActivity: "2 hours ago",
-    goal: "Muscle gain",
-  },
-  {
-    id: 3,
-    name: "Jordan Smith",
-    status: "need-attention",
-    turningRate: 58,
-    reason:
-      "Missed weekly check-in and has not logged any nutrition data this week.",
-    lastActivity: "5 days ago",
-    goal: "General wellness",
-  },
-  {
-    id: 4,
-    name: "Marcus Johnson",
-    status: "need-attention",
-    turningRate: 38,
-    reason:
-      "Weight fluctuations indicate possible diet inconsistency. Trending downward in adherence.",
-    lastActivity: "1 day ago",
-    goal: "Weight loss",
-  },
-  {
-    id: 5,
-    name: "Lisa Anderson",
-    status: "need-attention",
-    turningRate: 52,
-    reason:
-      "Low activity tracking compliance. Only 20% of daily steps logged this week.",
-    lastActivity: "4 days ago",
-    goal: "Fitness improvement",
-  },
-];
+import {
+  ClientNeedingAttention,
+  clientsNeedingAttention,
+} from "./ClientsAttentiondata";
 
 const getStatusColor = (status: "need-attention" | "on-track" | "inactive") => {
   switch (status) {
@@ -104,7 +45,7 @@ export default function ClientsNeedingAttentionPage() {
             <span>Back to Overview</span>
           </Link>
         </div>
-        <div className="flex flex-col mb-8 gap-[9px]">
+        <div className="flex flex-col mb-8 gap-3">
           <h1 className="text-[20px] font-medium">Clients Needing Attention</h1>
           <p className="text-[14px] font-normal">
             {clientsNeedingAttention.length} clients require immediate attention

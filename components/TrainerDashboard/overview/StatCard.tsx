@@ -39,6 +39,9 @@ export default function StatCards() {
     if (label === "Clients Needing Attention") {
       router.push("/trainer-dashboard/clients-need-attention");
     }
+    if (label === "Active Clients") {
+      router.push("/trainer-dashboard/active-clients");
+    }
   };
 
   return (
@@ -46,11 +49,7 @@ export default function StatCards() {
       {statCards.map((stat, index) => (
         <Card
           key={index}
-          className={`p-5 bg-white ${
-            stat.label === "Clients Needing Attention"
-              ? "cursor-pointer hover:shadow-lg transition-shadow"
-              : ""
-          }`}
+          className={`p-5 bg-white cursor-pointer hover:shadow-lg`}
           onClick={() => handleCardClick(stat.label)}
         >
           <div className="flex flex-col items-start gap-4">
@@ -64,7 +63,9 @@ export default function StatCards() {
               <div className="text-lg font-medium text-foreground">
                 {stat.label}
               </div>
-              <div className="text-base text-[#5F6F73] ">{stat.description}</div>
+              <div className="text-base text-[#5F6F73] ">
+                {stat.description}
+              </div>
             </div>
           </div>
         </Card>

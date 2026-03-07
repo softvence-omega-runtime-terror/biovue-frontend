@@ -28,13 +28,13 @@ export default function ClientDetailModal({
   const router = useRouter();
 
   const handleSendMessage = () => {
-    // Navigate to messages page with client ID and name as query params
+    // message page e navigate koro
     router.push(
       `/trainer-dashboard/messages?clientId=${client.id}&clientName=${encodeURIComponent(
         client.name,
       )}`,
     );
-    onClose(); // Close modal after navigation
+    onClose(); 
   };
   return (
     <div className="fixed inset-0 bg-black/50 bg-opacity-50 flex items-center justify-center z-50 p-4">
