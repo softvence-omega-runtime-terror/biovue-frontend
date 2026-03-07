@@ -2,6 +2,10 @@
 
 import { useRouter } from "next/navigation";
 import {
+  AdjustProgramRequest,
+  useAdjustProgramMutation,
+} from "../../../../../redux/features/api/TrainerDashboard/Clients/AdjustProgram/CreateAdjustProgram";
+import {
   AlertCircle,
   ArrowLeft,
   Eye,
@@ -11,9 +15,9 @@ import {
   Save,
   Settings,
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-import { Switch } from "@/components/ui/switch";
+import { Button } from "../../../../../components/ui/button";
+import { Card } from "../../../../../components/ui/card";
+import { Switch } from "../../../../../components/ui/switch";
 import { clientDetailsMock } from "./clientdetailsmockdata";
 
 export default function CoachingDashboard() {

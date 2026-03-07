@@ -3,8 +3,8 @@
 import {
   Program,
   programs,
-} from "@/components/TrainerDashboard/programs/ProgramsData";
-import ProgramView from "@/components/TrainerDashboard/programs/ProgramView";
+} from "../../../../../components/TrainerDashboard/programs/ProgramsData";
+import ProgramView from "../../../../../components/TrainerDashboard/programs/ProgramView";
 import { useParams } from "next/navigation";
 
 export default function ProgramDetailsPage() {

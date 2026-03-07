@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import { Program } from "@/redux/features/api/TrainerDashboard/Program/GetPrograms";
+import { Program } from "../../../redux/features/api/TrainerDashboard/Program/GetPrograms";
 import { useRouter } from "next/navigation";
 
 interface ProgramsTableProps {

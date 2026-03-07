@@ -1,12 +1,12 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import DashboardHeading from "@/components/common/DashboardHeading";
-import StatCards from "@/components/TrainerDashboard/programs/StatCard";
+import DashboardHeading from "../../../../components/common/DashboardHeading";
+import StatCards from "../../../../components/TrainerDashboard/programs/StatCard";
 import { Funnel, Plus, ArrowDownUp, Loader2 } from "lucide-react";
-import ProgramsTable from "@/components/TrainerDashboard/programs/ProgramsTable";
-import CreateProgramModal from "@/components/TrainerDashboard/programs/CreateProgramsModal";
-import { useGetProgramsQuery, Program } from "@/redux/features/api/TrainerDashboard/Program/GetPrograms";
+import ProgramsTable from "../../../../components/TrainerDashboard/programs/ProgramsTable";
+import CreateProgramModal from "../../../../components/TrainerDashboard/programs/CreateProgramsModal";
+import { useGetProgramsQuery, Program } from "../../../../redux/features/api/TrainerDashboard/Program/GetPrograms";
 
 export default function ProgramsPage() {
   const { data, isLoading } = useGetProgramsQuery();
