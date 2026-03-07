@@ -1,4 +1,4 @@
-import { ClientDetails } from "@/components/TrainerDashboard/overview/data";
+import { ClientDetails } from "../../../../../components/TrainerDashboard/overview/data";
 
 export const clientDetailsMock: ClientDetails = {
   id: 1,
