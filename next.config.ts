@@ -20,8 +20,8 @@ const nextConfig: NextConfig = {
         hostname: "overapprehensive-optatively-meri.ngrok-free.dev",
       },
       {
-        protocol: "https",
-        hostname: "overapprehensive-optatively-meri.ngrok-free.dev",
+        protocol: "http",
+        hostname: "103.174.189.183",
       },
     ],
   },

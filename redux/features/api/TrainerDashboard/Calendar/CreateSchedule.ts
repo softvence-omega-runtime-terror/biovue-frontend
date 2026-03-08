@@ -25,7 +25,7 @@ export const scheduleApi = baseApi.injectEndpoints({
         method: "POST",
         body,
       }),
-      invalidatesTags: ["Schedule", "Clients"],
+      invalidatesTags: [{ type: "Schedule", id: "LIST" }, "Clients"],
     }),
   }),
   overrideExisting: false,

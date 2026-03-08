@@ -44,7 +44,13 @@ export const getSchedulesApi = baseApi.injectEndpoints({
         method: "GET",
         params: { date },
       }),
-      providesTags: ["Schedule"],
+      providesTags: (result) =>
+        result
+          ? [
+              ...result.data.map(({ id }) => ({ type: "Schedule" as const, id })),
+              { type: "Schedule", id: "LIST" },
+            ]
+          : [{ type: "Schedule", id: "LIST" }],
     }),
   }),
 });
