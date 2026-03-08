@@ -1,17 +1,66 @@
 "use client";
 
 import { Card, CardContent } from "@/components/ui/card";
-import { Calendar, CheckCircle2, Save } from "lucide-react";
+import { Calendar, CheckCircle2, Loader2, Save } from "lucide-react";
 import { ClientDetails } from "../../overview/data";
+import { useState } from "react";
+import { useCreateTargetGoalMutation } from "@/redux/features/api/TrainerDashboard/Clients/TargetGoal/PostTargetGoal";
+import { toast } from "sonner";
 
 interface CoachSetGoalsProps {
   goals: ClientDetails["coachSetGoals"];
   clientDetails: ClientDetails;
 }
+
 export default function CoachSetGoals({
   goals,
   clientDetails,
 }: CoachSetGoalsProps) {
+  const [targetWeight, setTargetWeight] = useState<string>(
+    goals.targetWeight.toString()
+  );
+  const [weeklyWorkoutGoal, setWeeklyWorkoutGoal] = useState<string>(
+    goals.weeklyWorkoutGoal.toString()
+  );
+  const [dailyStepGoal, setDailyStepGoal] = useState<string>(
+    goals.dailyStepGoal.toString()
+  );
+  const [sleepTarget, setSleepTarget] = useState<string>(
+    goals.sleepTargetHours.toString()
+  );
+
+  const [createTargetGoal, { isLoading }] = useCreateTargetGoalMutation();
+
+  const handleSave = async () => {
+    try {
+      const now = new Date();
+      const startDate = now.toISOString().split("T")[0];
+      const endDate = new Date(now.setDate(now.getDate() + 30))
+        .toISOString()
+        .split("T")[0];
+
+      const payload = {
+        user_id: clientDetails.id,
+        target_weight: parseFloat(targetWeight),
+        weekly_workout_goal: parseInt(weeklyWorkoutGoal),
+        daily_step_goal: parseInt(dailyStepGoal),
+        sleep_target: parseFloat(sleepTarget),
+        start_date: startDate,
+        end_date: endDate,
+      };
+
+      const response = await createTargetGoal(payload).unwrap();
+
+      if (response.success) {
+        toast.success(response.message || "Goal saved successfully");
+      } else {
+        toast.error(response.message || "Failed to save goal");
+      }
+    } catch (error: any) {
+      toast.error(error?.data?.message || "An error occurred while saving");
+    }
+  };
+
   return (
     <Card className="border-none ">
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -25,9 +74,17 @@ export default function CoachSetGoals({
                 Define benchmarks for the client&apos;s dashboard
               </p>
             </div>
-            <button className="flex items-center gap-2 bg-[#0D9488] text-white p-4 cursor-pointer rounded-lg text-base font-medium hover:bg-[#0A7A6F] transition-colors">
-              <Save size={16} />
-              Save Goal
+            <button
+              onClick={handleSave}
+              disabled={isLoading}
+              className="flex items-center gap-2 bg-[#0D9488] text-white p-4 cursor-pointer rounded-lg text-base font-medium hover:bg-[#0A7A6F] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isLoading ? (
+                <Loader2 size={16} className="animate-spin" />
+              ) : (
+                <Save size={16} />
+              )}
+              {isLoading ? "Saving..." : "Save Goal"}
             </button>
           </div>
 
@@ -37,8 +94,9 @@ export default function CoachSetGoals({
                 Target weight (lbs)
               </label>
               <input
-                type="text"
-                defaultValue={goals.targetWeight}
+                type="number"
+                value={targetWeight}
+                onChange={(e) => setTargetWeight(e.target.value)}
                 className="w-full mt-5 px-4 py-3 bg-white border border-[#E5E7EB] rounded-lg focus:ring-2 focus:ring-[#0D9488] focus:border-transparent outline-none transition-all placeholder:text-[#9AAEB2]"
                 placeholder="190"
               />
@@ -49,8 +107,9 @@ export default function CoachSetGoals({
                 Weekly workout goal (sessions)
               </label>
               <input
-                type="text"
-                defaultValue={goals.weeklyWorkoutGoal}
+                type="number"
+                value={weeklyWorkoutGoal}
+                onChange={(e) => setWeeklyWorkoutGoal(e.target.value)}
                 className="w-full mt-5 px-4 py-3 bg-white border border-[#E5E7EB] rounded-lg focus:ring-2 focus:ring-[#0D9488] focus:border-transparent outline-none transition-all placeholder:text-[#9AAEB2]"
                 placeholder="4"
               />
@@ -61,10 +120,11 @@ export default function CoachSetGoals({
                 Daily step goal
               </label>
               <input
-                type="text"
-                defaultValue={`${goals.dailyStepGoal} Steps`}
+                type="number"
+                value={dailyStepGoal}
+                onChange={(e) => setDailyStepGoal(e.target.value)}
                 className="w-full mt-5 px-4 py-3 bg-white border border-[#E5E7EB] rounded-lg focus:ring-2 focus:ring-[#0D9488] focus:border-transparent outline-none transition-all placeholder:text-[#9AAEB2]"
-                placeholder="800 Steps"
+                placeholder="800"
               />
             </div>
 
@@ -73,8 +133,9 @@ export default function CoachSetGoals({
                 Sleep target (hours)
               </label>
               <input
-                type="text"
-                defaultValue={goals.sleepTargetHours}
+                type="number"
+                value={sleepTarget}
+                onChange={(e) => setSleepTarget(e.target.value)}
                 className="w-full mt-5 px-4 py-3 bg-white border border-[#E5E7EB] rounded-lg focus:ring-2 focus:ring-[#0D9488] focus:border-transparent outline-none transition-all placeholder:text-[#9AAEB2]"
                 placeholder="8"
               />
