@@ -88,12 +88,13 @@ export default function HabitDetailPage() {
   const [isLogModalOpen, setIsLogModalOpen] = useState(false);
 
   const handleLogClick = () => {
-    if (habitId === 'stress') {
+    if (habitId === 'nutrition' || habitId === 'stress') {
       setView("logging");
     } else {
       setIsLogModalOpen(true);
     }
   };
+
 
   return (
     <div className="flex flex-col min-h-[calc(100vh-80px)] p-6 md:p-8 container mx-auto w-full">
