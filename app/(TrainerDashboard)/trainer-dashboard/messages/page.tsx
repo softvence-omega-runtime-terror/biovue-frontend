@@ -18,9 +18,6 @@ export default function MessagesPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [openMotivation, setOpenMotivation] = useState(false);
   const selectedClient = mockClients.find((c) => c.id === selectedClientId);
-  const filteredClients = mockClients.filter((c) =>
-    c.name.toLowerCase().includes(searchQuery.toLowerCase()),
-  );
   const [selectedPreHireId, setSelectedPreHireId] = useState<string | null>(
     null,
   );
@@ -95,7 +92,6 @@ export default function MessagesPage() {
             {/* Sidebar */}
             <div className="w-[320px] border-r border-[#E5E7EB] pt-6 pr-4 h-full">
               <ClientsListSidebar
-                clients={filteredClients}
                 selectedClientId={selectedClientId}
                 onSelectClient={setSelectedClientId}
                 searchQuery={searchQuery}
