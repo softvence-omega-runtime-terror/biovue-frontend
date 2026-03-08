@@ -5,6 +5,8 @@ import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { ArrowLeft, BarChart2, CheckCircle2, Bed, Apple, Footprints, Frown, Droplets, Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useGetCardDataQuery } from "@/redux/features/api/userDashboard/habit";
+import { Loader2 } from "lucide-react";
 import LogHabitModal from "@/components/dashboard/LogHabitModal";
 import LogNutritionModal from "@/components/dashboard/LogNutritionModal";
 import LogNutritionView from "@/components/dashboard/LogNutritionView";
@@ -83,9 +85,34 @@ export default function HabitDetailPage() {
   const params = useParams();
   const router = useRouter();
   const habitId = params.habitId as string;
-  const habit = HABIT_DETAILS[habitId] || HABIT_DETAILS["sleep"];
+  const { data: cardData, isLoading: isCardLoading } = useGetCardDataQuery();
+
   const [view, setView] = useState<"details" | "logging">("details");
   const [isLogModalOpen, setIsLogModalOpen] = useState(false);
+
+  if (isCardLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-[calc(100vh-80px)]">
+        <Loader2 className="animate-spin text-[#3A86FF]" size={48} />
+      </div>
+    );
+  }
+
+  const habitMetrics = cardData?.data?.consistency_metrics?.find(
+    (m: any) => m.title.toLowerCase() === habitId.toLowerCase()
+  );
+
+  const habit = {
+    ...HABIT_DETAILS[habitId] || HABIT_DETAILS["sleep"],
+    ...(habitMetrics ? {
+      avg: habitMetrics.avg,
+      daysLogged: habitMetrics.ratio,
+      status: habitMetrics.status,
+      statusBg: habitMetrics.status === "Need Attention" 
+        ? "bg-pink-100 text-pink-500" 
+        : "bg-teal-100 text-[#0FA4A9]"
+    } : {})
+  };
 
   const handleLogClick = () => {
     if (habitId === 'nutrition' || habitId === 'stress') {
@@ -172,11 +199,11 @@ export default function HabitDetailPage() {
                 <div className="grid grid-cols-2 gap-8">
                   <div className="bg-[#EAF6F6] rounded-2xl p-8 flex flex-col gap-2">
                     <div className="text-[#94A3B8] font-bold text-[11px] uppercase tracking-widest">WEEKLY AVERAGE</div>
-                    <div className="text-[28px] font-bold text-[#1F2D2E] leading-none">{habit.avg}</div>
+                    <div className="text-[20px] font-bold text-[#1F2D2E] leading-tight">{habit.avg}</div>
                   </div>
                   <div className="bg-[#EAF6F6] rounded-2xl p-8 flex flex-col gap-2">
                     <div className="text-[#94A3B8] font-bold text-[11px] uppercase tracking-widest">CONSISTENCY</div>
-                    <div className="text-[28px] font-bold text-[#1F2D2E] leading-none">{habit.consistency}</div>
+                    <div className="text-[28px] font-bold text-[#1F2D2E] leading-none">{habitMetrics ? (parseInt(habitMetrics.ratio.split('/')[0]) / 7 * 100).toFixed(0) + '%' : habit.consistency}</div>
                   </div>
                 </div>
               </div>

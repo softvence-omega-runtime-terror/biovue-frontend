@@ -33,7 +33,8 @@ import LogStressView from "@/components/dashboard/LogStressView";
 import { useGetSleepReportQuery } from "@/redux/features/api/userDashboard/sleeplog";
 import { useGetNutritionReportQuery } from "@/redux/features/api/userDashboard/nutrition";
 import { useGetHydrationReportQuery } from "@/redux/features/api/userDashboard/hydration";
-import { Loader2 } from "lucide-react";
+import { useGetActivityReportQuery } from "@/redux/features/api/userDashboard/activitylog";
+import { Loader2, Footprints } from "lucide-react";
 
 const MOCK_DATA = [
   { name: "M", val: 0, Protin: 35, Carbs: 45, Fats: 20 },
@@ -104,22 +105,43 @@ export default function HabitProgressPage() {
     skip: habitId !== 'nutrition'
   });
 
+  const { data: activityReport, isLoading: isActivityLoading } = useGetActivityReportQuery(undefined, {
+    skip: habitId !== 'activity'
+  });
+
   const { data: hydrationReport, isLoading: isHydrationLoading } = useGetHydrationReportQuery(undefined, {
     skip: habitId !== 'hydration'
   });
 
-  const habit = habitId === 'sleep' && sleepReport?.data ? {
+  const sleepData = sleepReport?.data || sleepReport;
+  const activityData = activityReport?.data || activityReport;
+
+  const habit = habitId === 'sleep' && sleepData?.statistics ? {
     title: "Sleep",
     icon: <Bed size={24} className="text-[#3A86FF]" />,
     iconBg: "bg-blue-100/50",
-    avgStr: sleepReport.data.statistics.average_sleep,
+    avgStr: sleepData.statistics.average_sleep || "0 Hrs",
     unit: "Hrs",
-    consistency: sleepReport.data.statistics.consistency,
-    streak: sleepReport.data.statistics.best_streak,
-    trend: sleepReport.data.statistics.current_trend,
+    consistency: sleepData.statistics.consistency || "0%",
+    streak: sleepData.statistics.total_logged || "0 / 7 Days",
+    trend: sleepData.statistics.current_trend || "Stable",
     trendColor: "text-[#10B981]",
-    insight: sleepReport.data.bio_insight,
-    coachNote: sleepReport.data.bio_insight,
+    insight: sleepData.bio_insight || "Your sleep quality supports physical recovery and mental clarity.",
+    coachNote: sleepData.bio_insight || "Maintaining regular timing will significantly increase your physical recovery markers.",
+    coachName: "JORDAN",
+    coachTime: "2H AGO",
+  } : habitId === 'activity' && activityData?.statistics ? {
+    title: "Activity",
+    icon: <Footprints size={24} className="text-[#3A86FF]" />,
+    iconBg: "bg-blue-100/50",
+    avgStr: activityData.statistics.average_steps || "0 Steps",
+    unit: "Steps",
+    consistency: activityData.statistics.consistency || "0%",
+    streak: activityData.statistics.best_streak || "0 DAYS",
+    trend: activityData.statistics.current_trend || "Stable",
+    trendColor: "text-[#10B981]",
+    insight: activityData.bio_insight || "Daily movement improves cardiovascular health and boosts cognitive function.",
+    coachNote: activityData.bio_insight || "Increasing your daily step count is one of the most effective ways to improve metabolic health.",
     coachName: "JORDAN",
     coachTime: "2H AGO",
   } : habitId === 'nutrition' && nutritionReport?.data ? {
@@ -140,11 +162,11 @@ export default function HabitProgressPage() {
     title: "Hydration",
     icon: <Droplets size={24} className="text-[#3A86FF]" />,
     iconBg: "bg-blue-100/50",
-    avgStr: hydrationReport.hydration.average,
+    avgStr: hydrationReport.hydration.average || "0 Glasses GLS",
     unit: "Glasses",
-    consistency: hydrationReport.hydration.consistency,
-    streak: hydrationReport.hydration.best_streak,
-    trend: hydrationReport.hydration.current_trend,
+    consistency: hydrationReport.hydration.consistency || "0%",
+    streak: hydrationReport.hydration.best_streak || "0 DAYS",
+    trend: hydrationReport.hydration.current_trend || "Stable",
     trendColor: "text-[#10B981]",
     insight: "Your hydration levels are tracked based on your daily water intake.",
     coachNote: "Adequate water intake is crucial for cellular function and metabolism.",
@@ -152,10 +174,15 @@ export default function HabitProgressPage() {
     coachTime: "2H AGO",
   } : (HABIT_META[habitId] || HABIT_META["sleep"]);
 
-  const chartData = habitId === 'sleep' && sleepReport?.data?.chart_data ? 
-    sleepReport.data.chart_data.map((item: any) => ({
+  const chartData = habitId === 'sleep' && sleepData?.chart_data ? 
+    sleepData.chart_data.map((item: any) => ({
+      name: item.label, // Mon, Tue etc.
+      date: item.date,  // 02 Mar etc.
+      val: item.sleep_hours || 0,
+    })) : habitId === 'activity' && activityData?.chart_data ?
+      activityData.chart_data.map((item: any) => ({
       name: item.label,
-      val: item.hours,
+      val: item.steps || 0,
     })) : habitId === 'nutrition' && nutritionReport?.data?.chart_data ? 
       nutritionReport.data.chart_data.map((item: any) => ({
         name: item.label,
@@ -165,7 +192,7 @@ export default function HabitProgressPage() {
       })) : habitId === 'hydration' && hydrationReport?.hydration?.chart ? 
         Object.entries(hydrationReport.hydration.chart).map(([label, value]) => ({
           name: label,
-          val: value
+          val: value || 0
         })) : MOCK_DATA;
 
   const [view, setView] = useState<"trends" | "logging">("trends");
