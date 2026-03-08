@@ -46,10 +46,23 @@ const PricingPage = () => {
     });
 
   const handlePlanSelection = async (plan: Plan) => {
-    // Enterprise plan special handling
-    if (plan.name.toLowerCase().includes("enterprise") || plan.price === "0.00" || plan.price === 0) {
+    // Enterprise and Custom plan special handling
+    if (
+      plan.name.toLowerCase().includes("enterprise") ||
+      (plan.plan_type === "professional" && (plan.price === "0.00" || plan.price === 0))
+    ) {
       setContactEmail(user?.email || "");
       setIsContactModalOpen(true);
+      return;
+    }
+
+    // Free Trial / Zero Price handling
+    if (plan.price === "0.00" || plan.price === 0 || plan.name.toLowerCase().includes("free trial")) {
+      if (token) {
+        router.push("/user-dashboard");
+      } else {
+        router.push("/login");
+      }
       return;
     }
 

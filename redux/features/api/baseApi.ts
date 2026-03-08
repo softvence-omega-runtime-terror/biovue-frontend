@@ -14,12 +14,12 @@ export const baseApi = createApi({
         console.warn("No token found in auth state");
       }
       // Add ngrok skip warning header for development
-      // headers.set("ngrok-skip-browser-warning", "any");
+      headers.set("ngrok-skip-browser-warning", "any");
       // headers.set("Accept", "application/json");
       return headers;
     },
   }),
-  tagTypes: ["Users", "Plans", "Reports", "SleepLog", "Nutrition", "Hydration", "Ads", "Programs", "Messages"],
+  tagTypes: ["Users", "Plans", "Reports", "SleepLog", "Nutrition", "Hydration", "Ads", "Programs", "Messages","Clients",],
 
   endpoints: () => ({}),
 });

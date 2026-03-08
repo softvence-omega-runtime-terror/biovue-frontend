@@ -2,10 +2,8 @@
 
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Apple, Loader2 } from "lucide-react";
+import { X, Apple } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { usePostNutritionLogMutation } from "@/redux/features/api/userDashboard/nutrition";
-import { toast } from "sonner";
 
 interface LogNutritionModalProps {
   isOpen: boolean;
@@ -13,42 +11,39 @@ interface LogNutritionModalProps {
 }
 
 const MEAL_BALANCES = [
-  { label: "High Protein", value: "high_protein" },
-  { label: "Balanced", value: "balanced" },
-  { label: "High Carb", value: "high_carb" },
-  { label: "High Fat", value: "high_fat" },
+  "Mostly Carbs",
+  "Balanced",
+  "Protein-Focused",
+  "High Fat/Processed",
+];
+const FAT_SOURCES = ["Fried/Processed", "Dairy", "Nut & Seeds", "Healthy Oils"];
+const CARB_QUALITIES = [
+  {
+    title: "Mostly Refined Carbs",
+    desc: "White Bread, Pasta, Sugary Snacks",
+    id: "refined",
+  },
+  {
+    title: "Mixed",
+    desc: "A Mix Of Refined And Whole Foods",
+    id: "mixed",
+  },
+  {
+    title: "Mostly Whole Grains/Fruits",
+    desc: "Quinoa, Oats, Berries, Legumes",
+    id: "whole",
+  },
 ];
 
 export default function LogNutritionModal({
   isOpen,
   onClose,
 }: LogNutritionModalProps) {
-  const [mealBalance, setMealBalance] = useState("high_protein");
-  const [proteinServings, setProteinServings] = useState(4);
-  const [carbQuality, setCarbQuality] = useState("");
-  const [fatSource, setFatSource] = useState("");
-  const [vegServings, setVegServings] = useState(4);
-
-  const [postNutritionLog, { isLoading }] = usePostNutritionLogMutation();
-
-  const handleSave = async () => {
-    try {
-      const payload = {
-        log_date: new Date().toISOString().split('T')[0],
-        meal_balance: mealBalance,
-        protein_servings: Number(proteinServings),
-        vegetable_servings: Number(vegServings),
-        carb_quality: carbQuality || "N/A",
-        fat_sources: fatSource || "N/A",
-      };
-
-      await postNutritionLog(payload).unwrap();
-      toast.success("Nutrition log saved successfully!");
-      onClose();
-    } catch (error: any) {
-      toast.error(error?.data?.message || "Failed to save nutrition log");
-    }
-  };
+  const [mealBalance, setMealBalance] = useState("Mostly Carbs");
+  const [proteinServings, setProteinServings] = useState(2);
+  const [carbQuality, setCarbQuality] = useState("mixed");
+  const [fatSource, setFatSource] = useState("Fried/Processed");
+  const [vegServings, setVegServings] = useState(2);
 
   return (
     <AnimatePresence>
@@ -97,16 +92,16 @@ export default function LogNutritionModal({
                     <div className="grid grid-cols-2 gap-2">
                       {MEAL_BALANCES.map((option) => (
                         <button
-                          key={option.value}
-                          onClick={() => setMealBalance(option.value)}
+                          key={option}
+                          onClick={() => setMealBalance(option)}
                           className={cn(
                             "px-1 py-2.5 rounded-lg text-[12px] font-bold transition-all border shrink-0",
-                            mealBalance === option.value
+                            mealBalance === option
                               ? "bg-[#D9E6FF] text-[#1F2D2E] border-[#3A86FF]/30"
                               : "bg-white text-[#5F6F73] border-gray-100 hover:bg-gray-50",
                           )}
                         >
-                          {option.label}
+                          {option}
                         </button>
                       ))}
                     </div>
@@ -118,14 +113,36 @@ export default function LogNutritionModal({
                       <h3 className="text-[#1F2D2E] font-bold text-[14px]">
                         Protein Servings
                       </h3>
+                      <span className="bg-[#EAF6F6] text-[#1F2D2E] px-2.5 py-1 rounded-md text-[11px] font-bold border border-teal-100">
+                        {proteinServings === 3
+                          ? "6+"
+                          : proteinServings === 2
+                            ? "4-5"
+                            : proteinServings === 1
+                              ? "2-3"
+                              : "0-1"}{" "}
+                        Servings
+                      </span>
                     </div>
-                    <input
-                      type="number"
-                      value={proteinServings}
-                      onChange={(e) => setProteinServings(parseInt(e.target.value) || 0)}
-                      className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl focus:outline-none focus:border-[#3A86FF] font-bold text-[#1F2D2E]"
-                      placeholder="e.g. 4"
-                    />
+                    <div className="relative px-2">
+                      <input
+                        type="range"
+                        min="0"
+                        max="3"
+                        step="1"
+                        value={proteinServings}
+                        onChange={(e) =>
+                          setProteinServings(parseInt(e.target.value))
+                        }
+                        className="w-full h-1 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-[#3A86FF]"
+                      />
+                      <div className="flex justify-between mt-3 text-[11px] font-bold text-[#1F2D2E]">
+                        <span>0-1</span>
+                        <span>2-3</span>
+                        <span>4-5</span>
+                        <span>6+</span>
+                      </div>
+                    </div>
                   </div>
 
                   {/* Carb Quality */}
@@ -133,13 +150,27 @@ export default function LogNutritionModal({
                     <h3 className="text-[#1F2D2E] font-bold text-[14px]">
                       Carb Quality
                     </h3>
-                    <input
-                      type="text"
-                      value={carbQuality}
-                      onChange={(e) => setCarbQuality(e.target.value)}
-                      className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl focus:outline-none focus:border-[#3A86FF] font-medium text-[#1F2D2E]"
-                      placeholder="e.g. Whole grain oats"
-                    />
+                    <div className="flex flex-col gap-2">
+                      {CARB_QUALITIES.map((item) => (
+                        <button
+                          key={item.id}
+                          onClick={() => setCarbQuality(item.id)}
+                          className={cn(
+                            "flex flex-col gap-0.5 p-3 rounded-xl border transition-all text-left",
+                            carbQuality === item.id
+                              ? "bg-[#EAF6F6] border-[#0FA4A9]/30"
+                              : "bg-white border-gray-100 hover:border-gray-200",
+                          )}
+                        >
+                          <span className="text-[#1F2D2E] font-bold text-[14px]">
+                            {item.title}
+                          </span>
+                          <span className="text-[#5F6F73] text-[12px] font-medium">
+                            {item.desc}
+                          </span>
+                        </button>
+                      ))}
+                    </div>
                   </div>
                 </div>
 
@@ -150,13 +181,22 @@ export default function LogNutritionModal({
                     <h3 className="text-[#1F2D2E] font-bold text-[14px]">
                       Fat Sources
                     </h3>
-                    <input
-                      type="text"
-                      value={fatSource}
-                      onChange={(e) => setFatSource(e.target.value)}
-                      className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl focus:outline-none focus:border-[#3A86FF] font-medium text-[#1F2D2E]"
-                      placeholder="e.g. Avocado, Olive oil"
-                    />
+                    <div className="grid grid-cols-2 gap-2">
+                      {FAT_SOURCES.map((option) => (
+                        <button
+                          key={option}
+                          onClick={() => setFatSource(option)}
+                          className={cn(
+                            "px-1 py-2.5 rounded-lg text-[12px] font-bold transition-all border",
+                            fatSource === option
+                              ? "bg-[#D9E6FF] text-[#1F2D2E] border-[#3A86FF]/30"
+                              : "bg-white text-[#5F6F73] border-gray-100 hover:bg-gray-50",
+                          )}
+                        >
+                          {option}
+                        </button>
+                      ))}
+                    </div>
                   </div>
 
                   {/* Vegetable Servings */}
@@ -165,24 +205,36 @@ export default function LogNutritionModal({
                       <h3 className="text-[#1F2D2E] font-bold text-[14px]">
                         Vegetable Servings
                       </h3>
+                      <span className="bg-[#EAF6F6] text-[#1F2D2E] px-2.5 py-1 rounded-md text-[11px] font-bold border border-teal-100">
+                        {vegServings === 6 ? "6+" : vegServings} Servings
+                      </span>
                     </div>
-                    <input
-                      type="number"
-                      value={vegServings}
-                      onChange={(e) => setVegServings(parseInt(e.target.value) || 0)}
-                      className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl focus:outline-none focus:border-[#3A86FF] font-bold text-[#1F2D2E]"
-                      placeholder="e.g. 4"
-                    />
+                    <div className="relative px-2">
+                      <input
+                        type="range"
+                        min="0"
+                        max="6"
+                        step="1"
+                        value={vegServings}
+                        onChange={(e) =>
+                          setVegServings(parseInt(e.target.value))
+                        }
+                        className="w-full h-1 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-[#10B981]"
+                      />
+                      <div className="flex justify-between mt-3 text-[11px] font-bold text-[#1F2D2E]">
+                        {[0, 1, 2, 3, 4, 5, "6+"].map((v, i) => (
+                          <span key={i}>{v}</span>
+                        ))}
+                      </div>
+                    </div>
                   </div>
 
                   {/* Save Button Placeholder for spacing or just the button */}
                   <div className="mt-auto pt-4 hidden md:block">
                     <button
-                      onClick={handleSave}
-                      disabled={isLoading}
-                      className="w-full bg-[#0FA4A9] text-white py-4 rounded-xl font-bold text-[17px] hover:bg-opacity-90 transition-all cursor-pointer shadow-lg shadow-[#0FA4A9]/20 flex items-center justify-center gap-2"
+                      onClick={onClose}
+                      className="w-full bg-[#0FA4A9] text-white py-4 rounded-xl font-bold text-[17px] hover:bg-opacity-90 transition-all cursor-pointer shadow-lg shadow-[#0FA4A9]/20"
                     >
-                      {isLoading && <Loader2 className="animate-spin" size={20} />}
                       Save Today&apos;s Nutrition
                     </button>
                   </div>
@@ -192,11 +244,9 @@ export default function LogNutritionModal({
               {/* Mobile Save Button */}
               <div className="md:hidden">
                 <button
-                  onClick={handleSave}
-                  disabled={isLoading}
-                  className="w-full bg-[#0FA4A9] text-white py-4 rounded-xl font-bold text-[17px] hover:bg-opacity-90 transition-all cursor-pointer shadow-lg shadow-[#0FA4A9]/20 flex items-center justify-center gap-2"
+                  onClick={onClose}
+                  className="w-full bg-[#0FA4A9] text-white py-4 rounded-xl font-bold text-[17px] hover:bg-opacity-90 transition-all cursor-pointer shadow-lg shadow-[#0FA4A9]/20"
                 >
-                  {isLoading && <Loader2 className="animate-spin" size={20} />}
                   Save Today&apos;s Nutrition
                 </button>
               </div>

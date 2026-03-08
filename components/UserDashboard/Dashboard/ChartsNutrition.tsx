@@ -140,8 +140,8 @@ export default function ChartsNutrition() {
               />
               <Tooltip
                 formatter={(
-                  value: number | undefined,
-                  name: string | undefined,
+                  value: any,
+                  name: any,
                 ) => {
                   const displayValue =
                     value !== undefined ? `${value} kcal` : "-";
