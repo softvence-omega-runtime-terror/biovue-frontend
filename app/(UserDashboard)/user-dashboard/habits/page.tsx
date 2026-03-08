@@ -14,6 +14,7 @@ import {
   ArrowRight,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useGetCardDataQuery } from "@/redux/features/api/userDashboard/habit";
 
 // Mock Data
 const HABITS = [
@@ -77,6 +78,9 @@ const HABITS = [
 ];
 
 export default function HabitsPage() {
+
+  const { data: cardData, isLoading, error } = useGetCardDataQuery();
+  console.log(cardData, "carddata")
   return (
     <div className="flex flex-col min-h-[calc(100vh-80px)] p-6 md:p-8 container  mx-auto w-full">
       {/* Top Navigation */}
