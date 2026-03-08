@@ -34,6 +34,7 @@ import { useGetSleepReportQuery } from "@/redux/features/api/userDashboard/sleep
 import { useGetNutritionReportQuery } from "@/redux/features/api/userDashboard/nutrition";
 import { useGetHydrationReportQuery } from "@/redux/features/api/userDashboard/hydration";
 import { useGetActivityReportQuery } from "@/redux/features/api/userDashboard/activitylog";
+import { useGetStressReportQuery } from "@/redux/features/api/userDashboard/stresslog";
 import { Loader2, Footprints } from "lucide-react";
 
 const MOCK_DATA = [
@@ -113,8 +114,13 @@ export default function HabitProgressPage() {
     skip: habitId !== 'hydration'
   });
 
+  const { data: stressReport, isLoading: isStressLoading } = useGetStressReportQuery(undefined, {
+    skip: habitId !== 'stress'
+  });
+
   const sleepData = sleepReport?.data || sleepReport;
   const activityData = activityReport?.data || activityReport;
+  const stressData = stressReport; // Stress API returns success/period/chart_data/stats at top level
 
   const habit = habitId === 'sleep' && sleepData?.statistics ? {
     title: "Sleep",
@@ -172,6 +178,20 @@ export default function HabitProgressPage() {
     coachNote: "Adequate water intake is crucial for cellular function and metabolism.",
     coachName: "JORDAN",
     coachTime: "2H AGO",
+  } : habitId === 'stress' && stressData?.stats ? {
+    title: "Stress",
+    icon: <Frown size={24} className="text-[#A855F7]" />,
+    iconBg: "bg-purple-100",
+    avgStr: stressData.stats.average || "0/10 PTS",
+    unit: "PTS",
+    consistency: stressData.stats.consistency || "0%",
+    streak: stressData.stats.best_streak || "0 DAYS",
+    trend: stressData.stats.current_trend || "Stable",
+    trendColor: "text-[#10B981]",
+    insight: stressData.bio_insight || "Managing cortisol prevents metabolic interference. Stress oversight is critical for longevity.",
+    coachNote: stressData.bio_insight || "Managing cortisol prevents metabolic interference. Stress oversight is critical for longevity.",
+    coachName: "JORDAN",
+    coachTime: "2H AGO",
   } : (HABIT_META[habitId] || HABIT_META["sleep"]);
 
   const chartData = habitId === 'sleep' && sleepData?.chart_data ? 
@@ -191,9 +211,15 @@ export default function HabitProgressPage() {
         Fats: item.fats
       })) : habitId === 'hydration' && hydrationReport?.hydration?.chart ? 
         Object.entries(hydrationReport.hydration.chart).map(([label, value]) => ({
-          name: label,
-          val: value || 0
-        })) : MOCK_DATA;
+      name: label,
+      val: value || 0
+    })) : habitId === 'stress' && stressData?.chart_data ?
+      stressData.chart_data.map((item: any) => ({
+        name: item.day,
+        date: item.date,
+        val: item.stress_level || 0,
+        mood: item.mood
+      })) : MOCK_DATA;
 
   const [view, setView] = useState<"trends" | "logging">("trends");
   const [timeframe, setTimeframe] = useState("Weekly");
@@ -207,7 +233,7 @@ export default function HabitProgressPage() {
     }
   };
 
-  if (isSleepLoading || isNutritionLoading || isHydrationLoading) {
+  if (isSleepLoading || isNutritionLoading || isHydrationLoading || isActivityLoading || isStressLoading) {
     return (
       <div className="flex items-center justify-center min-h-[calc(100vh-80px)]">
         <Loader2 className="animate-spin text-[#3A86FF]" size={48} />

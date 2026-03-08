@@ -1,8 +1,10 @@
 "use client";
 
 import React, { useState } from "react";
-import { Frown, Meh, Smile, X, ArrowLeft } from "lucide-react";
+import { Frown, Meh, Smile, X, ArrowLeft, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { usePostStressLogMutation } from "@/redux/features/api/userDashboard/stresslog";
+import { toast } from "sonner";
 
 interface LogStressViewProps {
   onSave: () => void;
@@ -10,40 +12,54 @@ interface LogStressViewProps {
 }
 
 const MOODS = [
-  { 
-    id: "motivated", 
-    label: "Motivated", 
-    icon: <Smile size={24} />, 
-    bg: "bg-[#EAF6F6]", 
-    activeBorder: "border-[#0FA4A9]/30",
-    color: "text-[#0FA4A9]"
-  },
-  { 
-    id: "normal", 
-    label: "Normal", 
-    icon: <Meh size={24} />, 
-    bg: "bg-[#F5F3FF]", 
-    activeBorder: "border-[#A855F7]/30",
-    color: "text-[#A855F7]"
-  },
-  { 
-    id: "low", 
-    label: "Low", 
-    icon: <Frown size={24} />, 
-    bg: "bg-pink-50", 
-    activeBorder: "border-pink-200",
-    color: "text-pink-500"
-  }
+  { id: "motivated", label: "Motivated", color: "text-[#0FA4A9]", bg: "bg-[#EAF6F6]" },
+  { id: "happy", label: "Happy", color: "text-[#10B981]", bg: "bg-green-50" },
+  { id: "normal", label: "Normal", color: "text-[#3A86FF]", bg: "bg-blue-50" },
+  { id: "neutral", label: "Neutral", color: "text-gray-500", bg: "bg-gray-100" },
+  { id: "low", label: "Low", color: "text-[#A855F7]", bg: "bg-purple-50" },
+  { id: "sad", label: "Sad", color: "text-pink-500", bg: "bg-pink-50" },
+  { id: "anxious", label: "Anxious", color: "text-orange-500", bg: "bg-orange-50" },
+  { id: "angry", label: "Angry", color: "text-red-500", bg: "bg-red-50" },
 ];
 
 export default function LogStressView({ onSave, onBack }: LogStressViewProps) {
   const [stressLevel, setStressLevel] = useState(5);
   const [selectedMood, setSelectedMood] = useState("normal");
+  const [description, setDescription] = useState("");
+  
+  const [postStressLog, { isLoading: isPosting }] = usePostStressLogMutation();
+
+  const handleSubmit = async () => {
+    try {
+      const payload = {
+        user_id: 3, // Consistency with other logs
+        stress_level: stressLevel,
+        mood: selectedMood,
+        description: description,
+        log_date: new Date().toISOString().slice(0, 10),
+      };
+
+      console.log("Sending Stress Log Payload:", payload);
+      
+      const response = await postStressLog(payload).unwrap();
+      if (response.success || response.status === "success") {
+        toast.success("Stress data logged successfully!");
+        onSave(); // Close or return
+      } else {
+        toast.error(response.message || "Failed to log stress data.");
+      }
+    } catch (err: any) {
+      console.error("Error logging stress:", err);
+      if (err.status === 400 || err.data?.message?.toLowerCase().includes("already logged")) {
+        toast.error("You have already logged data for today.");
+      } else {
+        toast.error("An error occurred while logging stress data.");
+      }
+    }
+  };
 
   return (
     <div className="flex flex-col gap-4 w-full max-w-[800px] mx-auto animate-in fade-in slide-in-from-bottom-4 duration-500 pb-10">
-      
-      {/* Back Button */}
       <div className="self-start">
         <button 
           onClick={onBack}
@@ -54,10 +70,7 @@ export default function LogStressView({ onSave, onBack }: LogStressViewProps) {
         </button>
       </div>
 
-      {/* Main Container */}
       <div className="bg-white rounded-[24px] p-6 md:p-10 border border-gray-100 shadow-sm flex flex-col gap-8">
-        
-        {/* Header */}
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-4">
             <div className="w-10 h-10 rounded-xl bg-[#F5F3FF] border border-purple-100 flex items-center justify-center shrink-0">
@@ -73,10 +86,10 @@ export default function LogStressView({ onSave, onBack }: LogStressViewProps) {
           </button>
         </div>
 
-        {/* Stress Level Level */}
-        <div className="flex flex-col gap-6 p-8 rounded-[16px] border border-[#3A86FF]/25 bg-white shadow-sm">
+        {/* Stress Level */}
+        <div className="flex flex-col gap-6 p-6 rounded-[16px] border border-[#3A86FF]/25 bg-white shadow-sm">
           <div className="flex items-center justify-between">
-            <h3 className="text-[#1F2D2E] font-medium text-[16px]">Stress Level</h3>
+            <h3 className="text-[#1F2D2E] font-medium text-[16px]">Rate your stress level</h3>
             <span className="text-[#3A86FF] font-bold text-[18px]">
               {stressLevel}/10
             </span>
@@ -97,35 +110,45 @@ export default function LogStressView({ onSave, onBack }: LogStressViewProps) {
         {/* Today's Mood */}
         <div className="flex flex-col gap-4">
           <h3 className="text-[#1F2D2E] font-medium text-[16px]">Today's Mood</h3>
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             {MOODS.map((mood) => (
               <button
                 key={mood.id}
                 onClick={() => setSelectedMood(mood.id)}
                 className={cn(
-                  "flex flex-col items-center justify-center gap-2 p-6 rounded-xl border transition-all",
+                  "flex flex-col items-center justify-center gap-2 py-4 px-2 rounded-xl border transition-all",
                   selectedMood === mood.id
-                    ? cn(mood.bg, mood.activeBorder, "border-2")
+                    ? cn(mood.bg, "border-[#3A86FF] border-2 shadow-sm")
                     : "bg-white border-gray-100 hover:border-gray-200"
                 )}
               >
-                <div className={cn(mood.color)}>
-                  {mood.icon}
-                </div>
-                <span className="text-[#1F2D2E] font-medium text-[15px]">{mood.label}</span>
+                <span className={cn("text-xs font-bold uppercase tracking-wider", mood.color)}>
+                  {mood.label}
+                </span>
               </button>
             ))}
           </div>
         </div>
 
+        {/* Description */}
+        <div className="flex flex-col gap-4">
+          <h3 className="text-[#1F2D2E] font-medium text-[16px]">Tell us more (Optional)</h3>
+          <textarea
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            placeholder="How was your day? What influenced your stress level?"
+            className="w-full min-h-[120px] p-4 rounded-xl border border-gray-100 focus:border-[#3A86FF]/30 focus:ring-4 focus:ring-blue-50/50 focus:outline-none transition-all resize-none text-[15px] bg-gray-50/30"
+          />
+        </div>
+
         {/* Save Button */}
         <button 
-          onClick={onSave}
-          className="w-full bg-[#0FA4A9] text-white py-4.5 rounded-xl font-bold text-[18px] hover:bg-opacity-90 transition-all cursor-pointer shadow-lg shadow-[#0FA4A9]/20"
+          onClick={handleSubmit}
+          disabled={isPosting}
+          className="w-full bg-[#0FA4A9] text-white py-4 rounded-xl font-bold text-[18px] hover:bg-opacity-90 transition-all cursor-pointer shadow-lg shadow-[#0FA4A9]/20 flex items-center justify-center gap-2"
         >
-          Save Today's Stress
+          {isPosting ? <Loader2 className="animate-spin" /> : "Save Today's Stress"}
         </button>
-
       </div>
     </div>
   );
