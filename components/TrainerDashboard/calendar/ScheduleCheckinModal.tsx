@@ -1,7 +1,9 @@
 "use client";
 
+import { useCreateScheduleMutation } from "@/redux/features/api/TrainerDashboard/Calendar/CreateSchedule";
 import { X, ChevronDown } from "lucide-react";
 import { useState } from "react";
+import { toast } from "sonner";
 
 interface Props {
   isOpen: boolean;
@@ -9,10 +11,44 @@ interface Props {
 }
 
 export default function ScheduleCheckinModal({ isOpen, onClose }: Props) {
+  const [clientId, setClientId] = useState<number | null>(null);
   const [selectedDate, setSelectedDate] = useState("");
   const [selectedTime, setSelectedTime] = useState("");
+  const [checkinType, setCheckinType] = useState("");
+  const [privateNote, setPrivateNote] = useState("");
+  const [createSchedule, { isLoading }] = useCreateScheduleMutation();
 
   if (!isOpen) return null;
+
+  const handleSubmit = async () => {
+    if (!clientId || !selectedDate || !selectedTime || !checkinType) {
+      toast.error("Please fill all required fields");
+      return;
+    }
+
+    try {
+      const res = await createSchedule({
+        client_id: clientId,
+        date: selectedDate,
+        time: selectedTime,
+        check_in_type: checkinType,
+        private_note: privateNote,
+      }).unwrap();
+
+      toast.success(res.message || "Check-in scheduled successfully");
+
+      onClose();
+
+      // reset form
+      setClientId(null);
+      setSelectedDate("");
+      setSelectedTime("");
+      setCheckinType("");
+      setPrivateNote("");
+    } catch (error: any) {
+      toast.error(error?.data?.message || "Failed to schedule check-in");
+    }
+  };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
@@ -40,8 +76,14 @@ export default function ScheduleCheckinModal({ isOpen, onClose }: Props) {
               Clients
             </label>
             <div className="relative group">
-              <select className="w-full appearance-none bg-[#F0FDFD] border border-[#CCFBF1] text-[#0D9488] px-5 py-4 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-[#0D9488]/20 cursor-pointer transition-all">
-                <option>Alex Johnson</option>
+              <select
+                value={clientId ?? ""}
+                onChange={(e) => setClientId(Number(e.target.value))}
+                className="w-full appearance-none bg-[#F0FDFD] border border-[#CCFBF1] text-[#0D9488] px-5 py-4 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-[#0D9488]/20 cursor-pointer transition-all"
+              >
+                <option value="">Select Client</option>
+                <option value="3">Alex Johnson</option>
+                <option value="4">John Doe</option>
               </select>
               <ChevronDown
                 className="absolute right-4 top-1/2 -translate-y-1/2 text-[#0D9488] pointer-events-none group-hover:scale-110 transition-transform"
@@ -86,24 +128,15 @@ export default function ScheduleCheckinModal({ isOpen, onClose }: Props) {
               Check - in Type
             </label>
             <div className="relative group">
-              <select className="w-full appearance-none bg-[#F0FDFD] border border-[#CCFBF1] text-[#0D9488] px-5 py-4 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-[#0D9488]/20 cursor-pointer transition-all">
-                <option>Alex Johnson</option>
-              </select>
-              <ChevronDown
-                className="absolute right-4 top-1/2 -translate-y-1/2 text-[#0D9488] pointer-events-none group-hover:scale-110 transition-transform"
-                size={20}
-              />
-            </div>
-          </div>
-
-          {/* Check-in Type (Second) */}
-          <div>
-            <label className="block text-sm font-medium text-[#64748B] mb-2 uppercase tracking-wide">
-              Check - in Type
-            </label>
-            <div className="relative group">
-              <select className="w-full appearance-none bg-[#F0FDFD] border border-[#CCFBF1] text-[#0D9488] px-5 py-4 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-[#0D9488]/20 cursor-pointer transition-all">
-                <option>Alex Johnson</option>
+              <select
+                value={checkinType}
+                onChange={(e) => setCheckinType(e.target.value)}
+                className="w-full appearance-none bg-[#F0FDFD] border border-[#CCFBF1] text-[#0D9488] px-5 py-4 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-[#0D9488]/20 cursor-pointer transition-all"
+              >
+                <option value="">Select Type</option>
+                <option value="Upper Body Workout">Upper Body Workout</option>
+                <option value="Lower Body Workout">Lower Body Workout</option>
+                <option value="Full Body Session">Full Body Session</option>
               </select>
               <ChevronDown
                 className="absolute right-4 top-1/2 -translate-y-1/2 text-[#0D9488] pointer-events-none group-hover:scale-110 transition-transform"
@@ -118,6 +151,8 @@ export default function ScheduleCheckinModal({ isOpen, onClose }: Props) {
               Private Note (Trainer Only)
             </label>
             <textarea
+              value={privateNote}
+              onChange={(e) => setPrivateNote(e.target.value)}
               className="w-full h-32 bg-[#F0FDFD] border border-[#CCFBF1] text-[#0D9488] px-5 py-4 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-[#0D9488]/20 resize-none transition-all"
               defaultValue="Alex Johnson"
             ></textarea>
@@ -131,8 +166,11 @@ export default function ScheduleCheckinModal({ isOpen, onClose }: Props) {
             >
               Cancel
             </button>
-            <button className="py-4 rounded-xl bg-[#0D9488] text-white font-bold text-sm hover:opacity-90 transition-all shadow-lg active:scale-[0.98] uppercase tracking-widest cursor-pointer">
-              Send Reminder
+            <button
+              onClick={handleSubmit}
+              className="py-4 rounded-xl bg-[#0D9488] text-white font-bold text-sm hover:opacity-90 transition-all shadow-lg active:scale-[0.98] uppercase tracking-widest cursor-pointer"
+            >
+              {isLoading ? "Creating..." : "Create Schedule"}
             </button>
           </div>
         </div>

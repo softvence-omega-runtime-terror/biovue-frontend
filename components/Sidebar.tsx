@@ -25,6 +25,11 @@ export default function Sidebar({ role }: SidebarProps) {
 
   const [isExpanded, setIsExpanded] = useState(false);
   const [openSubmenus, setOpenSubmenus] = useState<string[]>([]);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const handleLogout = () => {
     dispatch(logout());
@@ -57,6 +62,9 @@ export default function Sidebar({ role }: SidebarProps) {
 
     return () => clearTimeout(id);
   }, [pathname, searchParams, menu]);
+
+  // Handle server-side rendering or non-mounted state
+  const showContent = mounted && (isExpanded || window.innerWidth >= 768);
 
   return (
     <>
@@ -134,12 +142,12 @@ export default function Sidebar({ role }: SidebarProps) {
                     }`}
                   >
                     <Icon size={20} className="shrink-0" />
-                    {(isExpanded || window.innerWidth >= 768) && (
+                    {showContent && (
                       <span>{item.label}</span>
                     )}
                   </Link>
 
-                  {hasChildren && (isExpanded || window.innerWidth >= 768) && (
+                  {hasChildren && showContent && (
                     <button
                       onClick={(e) => toggleSubmenu(item.label, e)}
                       className={`absolute right-2 p-1 rounded-md hover:opacity-80 text-gray-400 transition-transform duration-300 ${
@@ -154,7 +162,7 @@ export default function Sidebar({ role }: SidebarProps) {
                 {/* Submenu Children */}
                 {hasChildren &&
                   isOpen &&
-                  (isExpanded || window.innerWidth >= 768) && (
+                  showContent && (
                     <div className="ml-9 mt-1 flex flex-col gap-1 border-l border-gray-100">
                       {item.children?.map((child) => {
                         const fullPath = pathname + (searchParams.toString() ? `?${searchParams.toString()}` : "");

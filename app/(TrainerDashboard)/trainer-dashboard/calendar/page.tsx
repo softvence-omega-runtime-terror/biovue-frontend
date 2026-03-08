@@ -1,6 +1,7 @@
 "use client";
 
-import FiltersDropdown from "@/components/TrainerDashboard/calendar/FilterDropdown";
+import { useGetSchedulesQuery } from "@/redux/features/api/TrainerDashboard/Calendar/GetSchedule";
+import FilterDropdown from "@/components/TrainerDashboard/calendar/FilterDropdown";
 import WeeklyCalendar from "@/components/TrainerDashboard/calendar/WeeklyCalendar";
 import DashboardHeading from "@/components/common/DashboardHeading";
 import SendReminderModal from "@/components/TrainerDashboard/calendar/SendReminderModal";
@@ -18,6 +19,8 @@ export interface CalendarEvent {
   time: string;
   status: CalendarEventStatus;
   avatar?: string;
+  date?: string;
+  privateNote?: string;
 }
 
 export default function CalendarPage() {
@@ -41,6 +44,13 @@ export default function CalendarPage() {
   const views: Array<"day" | "week" | "month"> = ["day", "week", "month"];
 
   // Helpers
+  const formatDateLocal = (date: Date) => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+
   const getWeekRange = (date: Date) => {
     const start = new Date(date);
     start.setDate(date.getDate() - date.getDay());
@@ -52,6 +62,11 @@ export default function CalendarPage() {
   };
 
   const { start, end } = getWeekRange(currentDate);
+
+  // Format date for API (YYYY-MM-DD)
+  const formattedStartDate = formatDateLocal(start);
+
+  const { data: scheduleData, isLoading, isError } = useGetSchedulesQuery(formattedStartDate);
 
   const formatRange = (s: Date, e: Date) =>
     `${s.toLocaleDateString("en-US", {
@@ -181,20 +196,33 @@ export default function CalendarPage() {
                 {selectedType}
               </button>
 
-              {openClientFilter && <FiltersDropdown type="client" />}
-              {openTypeFilter && <FiltersDropdown type="type" />}
+              {openClientFilter && <FilterDropdown type="client" />}
+              {openTypeFilter && <FilterDropdown type="type" />}
             </div>
           </div>
         </div>
       </div>
 
       {/* Calendar */}
-      <div className="bg-white rounded-2xl shadow-sm border border-[#F1F5F9] overflow-hidden">
-        <WeeklyCalendar
-          startDate={start}
-          onEventClick={handleEventClick}
-          onAddCheckin={() => setIsCheckinOpen(true)}
-        />
+      <div className="bg-white rounded-2xl shadow-sm border border-[#F1F5F9] overflow-hidden min-h-[400px]">
+        {isLoading ? (
+          <div className="flex flex-col items-center justify-center p-20 gap-4">
+            <div className="w-10 h-10 border-4 border-[#0D9488] border-t-transparent rounded-full animate-spin"></div>
+            <p className="text-[#64748B] font-medium">Loading schedules...</p>
+          </div>
+        ) : isError ? (
+          <div className="flex flex-col items-center justify-center p-20 gap-4">
+            <p className="text-[#EF4444] font-bold text-lg">Error loading schedules</p>
+            <p className="text-[#64748B]">Please try refreshing the page or contact support.</p>
+          </div>
+        ) : (
+          <WeeklyCalendar
+            startDate={start}
+            schedules={scheduleData?.data}
+            onEventClick={handleEventClick}
+            onAddCheckin={() => setIsCheckinOpen(true)}
+          />
+        )}
       </div>
 
       {/* Modals */}

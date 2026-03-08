@@ -11,6 +11,7 @@ interface EventData {
   avatar?: string;
   date?: string;
   type?: string;
+  privateNote?: string;
 }
 
 interface Props {
@@ -29,6 +30,15 @@ export default function EventDetailsModal({
   onReschedule,
 }: Props) {
   if (!isOpen || !event) return null;
+
+  // Format date for display
+  const displayDate = event.date 
+    ? new Date(event.date).toLocaleDateString("en-US", {
+        month: "numeric",
+        day: "numeric",
+        year: "2-digit",
+      })
+    : "N/A";
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
@@ -61,7 +71,7 @@ export default function EventDetailsModal({
               </div>
               <div>
                 <h4 className="font-bold text-[#1E293B]">{event.name}</h4>
-                <p className="text-xs text-[#94A3B8] font-medium">Check-in</p>
+                <p className="text-xs text-[#94A3B8] font-medium">{event.title}</p>
               </div>
             </div>
             <div className={`px-3 py-1 rounded-full text-[11px] font-bold ${
@@ -79,11 +89,11 @@ export default function EventDetailsModal({
             <div className="space-y-4">
               <div className="flex items-center gap-3">
                 <Calendar size={18} className="text-[#1E293B]" />
-                <span className="text-sm font-semibold text-[#1E293B]">8/30/14</span>
+                <span className="text-sm font-semibold text-[#1E293B]">{displayDate}</span>
               </div>
               <div className="flex items-center gap-3">
                 <Clock size={18} className="text-[#1E293B]" />
-                <span className="text-sm font-semibold text-[#1E293B]">10.00 pm</span>
+                <span className="text-sm font-semibold text-[#1E293B]">{event.time}</span>
               </div>
             </div>
 
@@ -94,7 +104,7 @@ export default function EventDetailsModal({
           <div className="mb-6">
             <h5 className="text-[13px] font-medium text-[#94A3B8] mb-2 uppercase tracking-wide">Trainer Notes</h5>
             <div className="bg-[#F6EFE9] border border-[#EAC9B5] rounded-xl p-4 min-h-[60px]">
-              <p className="text-xs text-[#BC7F61] font-medium">Trainer Notes</p>
+              <p className="text-xs text-[#BC7F61] font-medium">{event.privateNote || "No notes provided."}</p>
             </div>
           </div>
 
