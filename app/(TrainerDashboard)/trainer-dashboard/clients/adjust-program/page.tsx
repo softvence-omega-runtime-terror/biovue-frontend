@@ -1,10 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import {
-  AdjustProgramRequest,
-  useAdjustProgramMutation,
-} from "../../../../../redux/features/api/TrainerDashboard/Clients/AdjustProgram/CreateAdjustProgram";
+
 import {
   AlertCircle,
   ArrowLeft,
@@ -18,17 +15,82 @@ import {
 import { Button } from "../../../../../components/ui/button";
 import { Card } from "../../../../../components/ui/card";
 import { Switch } from "../../../../../components/ui/switch";
-import { clientDetailsMock } from "./clientdetailsmockdata";
+
+import { useGetAdjustProgramQuery } from "@/redux/features/api/TrainerDashboard/Clients/AdjustProgram/GetAdjustProgram";
+import { useAdjustProgramMutation } from "@/redux/features/api/TrainerDashboard/Clients/AdjustProgram/CreateAdjustProgram";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
 
 export default function CoachingDashboard() {
-  const clientDetails = clientDetailsMock;
   const router = useRouter();
 
-  const statusConfig = {
-    "on-track": "bg-[#22C55E1A] text-[#22C55E]",
-    "need-attention": "bg-[#D3BB5B1A] text-[#D3BB5B]",
-    inactive: "bg-[#9AAEB24D] text-[#5F6F73]",
+  const userId = 3;
+
+  const { data, isLoading } = useGetAdjustProgramQuery(userId);
+  const [adjustProgram, { isLoading: saving }] = useAdjustProgramMutation();
+
+  const client = data?.data;
+
+  const [targetWeight, setTargetWeight] = useState(0);
+  const [weeklyWorkouts, setWeeklyWorkouts] = useState("");
+  const [sleepMin, setSleepMin] = useState(0);
+  const [sleepMax, setSleepMax] = useState(0);
+  const [hydration, setHydration] = useState(0);
+
+  const [showProgramGoals, setShowProgramGoals] = useState(false);
+  const [showPersonalTargets, setShowPersonalTargets] = useState(false);
+  const [showProgressGraphs, setShowProgressGraphs] = useState(false);
+  const [showAiInsights, setShowAiInsights] = useState(false);
+
+  const [program, setProgram] = useState("");
+  const [focusArea, setFocusArea] = useState("");
+  const [note, setNote] = useState("");
+
+  useEffect(() => {
+    if (client) {
+      setTargetWeight(client.target_weight);
+      setWeeklyWorkouts(client.weekly_workouts);
+      setHydration(client.hydration_target);
+
+      setShowProgramGoals(Boolean(client.show_program_goals));
+      setShowPersonalTargets(Boolean(client.show_personal_targets));
+      setShowProgressGraphs(Boolean(client.show_progress_graphs));
+      setShowAiInsights(Boolean(client.show_ai_insights));
+
+      setProgram(client.programs);
+      setFocusArea(client.primary_focus_area);
+      setNote(client.note);
+
+      const sleep = client.sleep_target_range.split("-");
+      setSleepMin(Number(sleep[0]));
+      setSleepMax(Number(sleep[1]));
+    }
+  }, [client]);
+
+  const handleSave = async () => {
+    try {
+      const res = await adjustProgram({
+        user_id: userId,
+        target_weight: targetWeight,
+        weekly_workouts: weeklyWorkouts,
+        sleep_target_range: `${sleepMin}-${sleepMax}`,
+        hydration_target: hydration,
+        show_program_goals: showProgramGoals,
+        show_personal_targets: showPersonalTargets,
+        show_progress_graphs: showProgressGraphs,
+        show_ai_insights: showAiInsights,
+        primary_focus_area: focusArea,
+        note,
+        programs: program,
+      }).unwrap();
+
+      toast.success(res.message || "Program updated successfully");
+    } catch (error: any) {
+      toast.error(error?.data?.message || "Failed to update program");
+    }
   };
+
+  if (isLoading) return <div className="p-10">Loading...</div>;
 
   return (
     <div className="min-h-screen ">
@@ -42,7 +104,11 @@ export default function CoachingDashboard() {
             <ArrowLeft className="h-4 w-4" />
             Back
           </button>
-          <div className="flex items-center gap-3">
+          <h1 className="text-2xl font-semibold text-[#111827]">
+            User #{client?.user_id}
+          </h1>
+          {/* pore client details er API dile ei part bosabo. */}
+          {/* <div className="flex items-center gap-3">
             <h1 className="text-2xl font-semibold text-[#111827]">
               {clientDetails.name}
             </h1>
@@ -54,11 +120,11 @@ export default function CoachingDashboard() {
           </div>
           <p className="text-base font-medium text-[#6B7280]">
             {clientDetails.primaryGoal.subtitle}
-          </p>
+          </p> */}
         </div>
 
         {/* Program Context */}
-        <div className="mb-8">
+        {/* <div className="mb-8">
           <h2 className="mb-4 text-xl font-semibold tracking-wide text-[#0F172A]">
             Program Context
           </h2>
@@ -91,10 +157,10 @@ export default function CoachingDashboard() {
               </Card>
             ))}
           </div>
-        </div>
+        </div> */}
 
         {/* AI-Observed Metrics */}
-        <div className="mb-8">
+        {/* <div className="mb-8">
           <h2 className="mb-4 text-xl font-semibold text-[#0F172A]">
             AI-Observed Metrics
           </h2>
@@ -119,7 +185,7 @@ export default function CoachingDashboard() {
               </div>
             ))}
           </div>
-        </div>
+        </div> */}
 
         {/* Bottom Section */}
         <div className="mb-8 grid grid-cols-1 gap-4 md:grid-cols-2">
@@ -141,7 +207,8 @@ export default function CoachingDashboard() {
                   <div className="mt-2 flex items-center gap-2">
                     <input
                       type="number"
-                      defaultValue={175}
+                      value={targetWeight}
+                      onChange={(e) => setTargetWeight(Number(e.target.value))}
                       className="flex-1 rounded border border-[#D1D5DB] bg-white px-3 py-2 text-base font-semibold text-[#5F6F73] placeholder-[#9CA3AF]"
                     />
                   </div>
@@ -151,7 +218,11 @@ export default function CoachingDashboard() {
                     Weekly Workouts
                   </label>
                   <div className="mt-2">
-                    <select className="w-full rounded border border-[#D1D5DB] bg-white px-3 py-2 text-base font-semibold text-[#5F6F73]">
+                    <select
+                      value={weeklyWorkouts}
+                      onChange={(e) => setWeeklyWorkouts(e.target.value)}
+                      className="w-full rounded border border-[#D1D5DB] bg-white px-3 py-2 text-base font-semibold text-[#5F6F73]"
+                    >
                       <option>4 Sessions / Week</option>
                       <option>3 Sessions / Week</option>
                       <option>5 Sessions / Week</option>
@@ -169,14 +240,16 @@ export default function CoachingDashboard() {
                     <div className="mt-2">
                       <input
                         type="number"
-                        defaultValue={7}
+                        value={sleepMin}
+                        onChange={(e) => setSleepMin(Number(e.target.value))}
                         className="w-full rounded border border-[#D1D5DB] bg-white px-3 py-2 text-base font-semibold text-[#5F6F73]"
                       />
                     </div>
                     <div className="mt-2">
                       <input
                         type="number"
-                        defaultValue={8}
+                        value={sleepMax}
+                        onChange={(e) => setSleepMax(Number(e.target.value))}
                         className="w-full rounded border border-[#D1D5DB] bg-white px-3 py-2 text-base font-semibold text-[#5F6F73]"
                       />
                     </div>
@@ -189,8 +262,9 @@ export default function CoachingDashboard() {
                   <div className="mt-2">
                     <input
                       type="number"
-                      defaultValue={3.5}
+                      value={hydration}
                       step="0.5"
+                      onChange={(e) => setHydration(Number(e.target.value))}
                       className="w-full rounded border border-[#D1D5DB] bg-white px-3 py-2 text-base font-semibold text-[#5F6F73]"
                     />
                   </div>
@@ -207,15 +281,37 @@ export default function CoachingDashboard() {
             </h3>
 
             <div className="space-y-4">
-              {clientDetails.visibilityControls.map((control) => (
-                <div
-                  key={control.label}
-                  className="flex items-center justify-between"
-                >
-                  <p className="text-sm text-[#5F6F73]">{control.label}</p>
-                  <Switch defaultChecked={control.enabled} />
-                </div>
-              ))}
+              <div className="flex justify-between">
+                <p>Show Program Goals</p>
+                <Switch
+                  checked={showProgramGoals}
+                  onCheckedChange={setShowProgramGoals}
+                />
+              </div>
+
+              <div className="flex justify-between">
+                <p>Show Personal Targets</p>
+                <Switch
+                  checked={showPersonalTargets}
+                  onCheckedChange={setShowPersonalTargets}
+                />
+              </div>
+
+              <div className="flex justify-between">
+                <p>Show Progress Graphs</p>
+                <Switch
+                  checked={showProgressGraphs}
+                  onCheckedChange={setShowProgressGraphs}
+                />
+              </div>
+
+              <div className="flex justify-between">
+                <p>Show AI Insights</p>
+                <Switch
+                  checked={showAiInsights}
+                  onCheckedChange={setShowAiInsights}
+                />
+              </div>
             </div>
           </Card>
 
@@ -230,28 +326,28 @@ export default function CoachingDashboard() {
                   Program
                 </label>
                 <div className="mt-3">
-                  <select className="w-full rounded border border-[#D1D5DB] bg-white px-3 py-2 text-base font-semibold text-[#5F6F73]">
+                  <select
+                    value={focusArea}
+                    onChange={(e) => setFocusArea(e.target.value)}
+                    className="w-full rounded border border-[#D1D5DB] bg-white px-3 py-2 text-base font-semibold text-[#5F6F73]"
+                  >
                     <option>Fat Loss</option>
                     <option>Bulking</option>
                     <option>Weight Gain</option>
                   </select>
                 </div>
               </div>
+
               <div className="">
                 <label className="text-base font-medium text-[#6B7280]">
                   Primary Focus Area
                 </label>
                 <div className="mt-4 flex gap-2 bg-[#0FA4A91A] rounded-lg px-6 py-2">
-                  {["Low", "Medium", "High", "Elite"].map((level) => (
-                    <button
-                      key={level}
-                      className={`rounded-md px-3 py-1 text-base font-medium ${
-                        level === "High" ? "bg-white " : "bg-transparent "
-                      }`}
-                    >
-                      {level}
-                    </button>
-                  ))}
+                  <input
+                    value={focusArea}
+                    onChange={(e) => setFocusArea(e.target.value)}
+                    className="border p-2 rounded w-full"
+                  />
                 </div>
               </div>
               <p className="text-sm text-[#E5A966] flex items-center gap-1 uppercase">
@@ -270,6 +366,8 @@ export default function CoachingDashboard() {
             <div className="space-y-4">
               <div>
                 <textarea
+                  value={note}
+                  onChange={(e) => setNote(e.target.value)}
                   placeholder="Add private observations, risks, or follow-up reminders..."
                   className="px-3 py-2 border rounded-lg w-full h-40 resize-none focus:outline-none focus:ring-2 focus:ring-[#0D9488]"
                 />
@@ -293,8 +391,12 @@ export default function CoachingDashboard() {
           >
             <History /> Reset to Program Defaults
           </Button>
-          <Button className="bg-[#0D9488] cursor-pointer hover:bg-[#0F766E]">
-            <Save /> Save Adjustments
+          <Button
+            onClick={handleSave}
+            disabled={saving}
+            className="bg-[#0D9488] cursor-pointer hover:bg-[#0F766E]"
+          >
+            <Save /> {saving ? "Saving..." : "Save Adjustments"}
           </Button>
         </div>
       </div>
