@@ -22,7 +22,7 @@ export default function CoachSetGoals({
                 Coach-set Goals & Targets
               </h2>
               <p className="text-base text-[#666666]">
-                Define benchmarks for the client's dashboard
+                Define benchmarks for the client&apos;s dashboard
               </p>
             </div>
             <button className="flex items-center gap-2 bg-[#0D9488] text-white p-4 cursor-pointer rounded-lg text-base font-medium hover:bg-[#0A7A6F] transition-colors">
