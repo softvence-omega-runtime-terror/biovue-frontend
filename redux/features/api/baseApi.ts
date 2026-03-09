@@ -40,6 +40,8 @@ export const baseApi = createApi({
     "Schedule",
     "Insights",
     "Profile",
+    "TargetGoals",
+    "HealthHabitOverview",
   ],
 
   endpoints: () => ({}),
