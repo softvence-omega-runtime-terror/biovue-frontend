@@ -3,8 +3,11 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Calendar, CheckCircle2, Loader2, Save } from "lucide-react";
 import { ClientDetails } from "../../overview/data";
-import { useState } from "react";
-import { useCreateTargetGoalMutation } from "@/redux/features/api/TrainerDashboard/Clients/TargetGoal/PostTargetGoal";
+import { useEffect, useState } from "react";
+import {
+  useCreateTargetGoalMutation,
+  useGetTargetGoalQuery,
+} from "@/redux/features/api/TrainerDashboard/Clients/TargetGoal/PostTargetGoal";
 import { toast } from "sonner";
 
 interface CoachSetGoalsProps {
@@ -17,19 +20,29 @@ export default function CoachSetGoals({
   clientDetails,
 }: CoachSetGoalsProps) {
   const [targetWeight, setTargetWeight] = useState<string>(
-    goals.targetWeight.toString()
+    goals.targetWeight.toString(),
   );
   const [weeklyWorkoutGoal, setWeeklyWorkoutGoal] = useState<string>(
-    goals.weeklyWorkoutGoal.toString()
+    goals.weeklyWorkoutGoal.toString(),
   );
   const [dailyStepGoal, setDailyStepGoal] = useState<string>(
-    goals.dailyStepGoal.toString()
+    goals.dailyStepGoal.toString(),
   );
   const [sleepTarget, setSleepTarget] = useState<string>(
-    goals.sleepTargetHours.toString()
+    goals.sleepTargetHours.toString(),
   );
 
   const [createTargetGoal, { isLoading }] = useCreateTargetGoalMutation();
+  const { data: goalData, isLoading: goalLoading } = useGetTargetGoalQuery();
+
+  useEffect(() => {
+    if (goalData?.data) {
+      setTargetWeight(goalData.data.target_weight.toString());
+      setWeeklyWorkoutGoal(goalData.data.weekly_workout_goal.toString());
+      setDailyStepGoal(goalData.data.daily_step_goal.toString());
+      setSleepTarget(goalData.data.sleep_target.toString());
+    }
+  }, [goalData]);
 
   const handleSave = async () => {
     try {
@@ -61,6 +74,13 @@ export default function CoachSetGoals({
     }
   };
 
+  if (goalLoading) {
+    return (
+      <div className="flex items-center justify-center h-50">
+        <Loader2 className="animate-spin" />
+      </div>
+    );
+  }
   return (
     <Card className="border-none ">
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">

@@ -4,46 +4,72 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Scale, Utensils, Activity, Moon, Wind, Droplet } from "lucide-react";
 import { ClientDetails } from "../../overview/data";
+import { useGetDashboardMetricsQuery } from "@/redux/features/api/TrainerDashboard/Clients/HealthHabitOverview";
 
 export default function HealthHabitOverview({
   clientDetails,
 }: {
   clientDetails: ClientDetails;
 }) {
-  const { healthHabitOverview: metrics } = clientDetails;
+  const { data } = useGetDashboardMetricsQuery();
+
+  const apiMetrics = data?.data ?? {
+    weight: null,
+    nutrition_quality: null,
+    steps: 0,
+    sleep: null,
+    stress: null,
+    hydration: null,
+  };
+  const staticMetrics = clientDetails.healthHabitOverview;
 
   const metricCards = [
     {
       title: "Weight",
-      value: `${metrics.weight.value} ${metrics.weight.unit}`,
+      value:
+        apiMetrics?.weight !== null
+          ? `${apiMetrics.weight} lbs`
+          : `${staticMetrics.weight.value} ${staticMetrics.weight.unit}`,
       icon: Scale,
-      targetApplied: metrics.weight.targetApplied,
+      targetApplied: staticMetrics.weight.targetApplied,
     },
     {
       title: "Nutrition Quality",
-      value: `${metrics.nutritionQuality.value}%`,
+      value:
+        apiMetrics?.nutrition_quality !== null
+          ? `${apiMetrics.nutrition_quality}%`
+          : `${staticMetrics.nutritionQuality.value}%`,
       icon: Utensils,
-      targetApplied: metrics.nutritionQuality.targetApplied,
+      targetApplied: staticMetrics.nutritionQuality.targetApplied,
     },
     {
       title: "Activity",
-      value: `${metrics.activity.steps.toLocaleString()} steps`,
+      value:
+        apiMetrics?.steps !== 0
+          ? `${apiMetrics.steps.toLocaleString()} steps`
+          : `${staticMetrics.activity.steps.toLocaleString()} steps`,
       icon: Activity,
     },
     {
       title: "Sleep",
-      value: `${metrics.sleep.hours}h ${metrics.sleep.minutes}m`,
+      value:
+        apiMetrics?.sleep !== null
+          ? apiMetrics.sleep
+          : `${staticMetrics.sleep.hours}h ${staticMetrics.sleep.minutes}m`,
       icon: Moon,
-      targetApplied: metrics.sleep.targetApplied,
+      targetApplied: staticMetrics.sleep.targetApplied,
     },
     {
       title: "Stress",
-      value: metrics.stress,
+      value: apiMetrics?.stress ?? staticMetrics.stress,
       icon: Wind,
     },
     {
       title: "Hydration",
-      value: `${metrics.hydration.value} ${metrics.hydration.unit}`,
+      value:
+        apiMetrics?.hydration !== null
+          ? `${apiMetrics.hydration} oz`
+          : `${staticMetrics.hydration.value} ${staticMetrics.hydration.unit}`,
       icon: Droplet,
     },
   ];

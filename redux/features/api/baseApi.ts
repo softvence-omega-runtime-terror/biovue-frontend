@@ -31,6 +31,8 @@ export const baseApi = createApi({
     "Messages",
     "Clients",
     "Schedule",
+    "TargetGoals",
+    "HealthHabitOverview",
   ],
 
   endpoints: () => ({}),
