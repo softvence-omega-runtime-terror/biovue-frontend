@@ -2,6 +2,26 @@
 
 import { baseApi } from "../../../baseApi";
 
+export interface TargetGoal {
+  id: number;
+  user_id: number;
+  target_weight: number;
+  weekly_workout_goal: number;
+  daily_step_goal: number;
+  sleep_target: number;
+  is_active: boolean;
+  start_date: string;
+  end_date: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface GetTargetGoalResponse {
+  success: boolean;
+  message: string;
+  data: TargetGoal;
+}
+
 export interface TargetGoalRequest {
   user_id: number;
   target_weight: number;
@@ -15,32 +35,29 @@ export interface TargetGoalRequest {
 export interface TargetGoalResponse {
   success: boolean;
   message: string;
-  data: {
-    id: number;
-    user_id: number;
-    target_weight: number;
-    weekly_workout_goal: number;
-    daily_step_goal: number;
-    sleep_target: number;
-    is_active: boolean;
-    start_date: string;
-    end_date: string;
-    created_at: string;
-    updated_at: string;
-  };
+  data: TargetGoal;
 }
 
 export const targetGoalApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
+    getTargetGoal: builder.query<GetTargetGoalResponse, void>({
+      query: () => ({
+        url: "/goals",
+        method: "GET",
+      }),
+      providesTags: ["TargetGoals"],
+    }),
+
     createTargetGoal: builder.mutation<TargetGoalResponse, TargetGoalRequest>({
       query: (body) => ({
         url: "/goals",
         method: "POST",
         body,
       }),
-      invalidatesTags: ["Clients"],
+      invalidatesTags: ["TargetGoals"],
     }),
   }),
 });
 
-export const { useCreateTargetGoalMutation } = targetGoalApi;
+export const { useGetTargetGoalQuery, useCreateTargetGoalMutation } =
+  targetGoalApi;
