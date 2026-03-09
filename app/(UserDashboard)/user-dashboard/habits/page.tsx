@@ -1,6 +1,5 @@
 "use client";
 
-import React from "react";
 import Link from "next/link";
 import {
   ArrowLeft,
@@ -17,6 +16,38 @@ import { cn } from "@/lib/utils";
 import { useGetCardDataQuery } from "@/redux/features/api/userDashboard/habit";
 import { Loader2, Activity as ActivityIcon } from "lucide-react";
 
+const DEFAULT_HABITS = [
+  {
+    title: "Sleep",
+    status: "Good",
+    avg: "7h 30m Average",
+    ratio: "7/7 Days",
+  },
+  {
+    title: "Nutrition",
+    status: "Need Attention",
+    avg: "2100 kcal Average",
+    ratio: "5/7 Days",
+  },
+  {
+    title: "Activity",
+    status: "Good",
+    avg: "8,500 Steps Average",
+    ratio: "6/7 Days",
+  },
+  {
+    title: "Stress",
+    status: "Good",
+    avg: "Low Stress",
+    ratio: "7/7 Days",
+  },
+  {
+    title: "Hydration",
+    status: "Good",
+    avg: "2.5L Average",
+    ratio: "7/7 Days",
+  },
+];
 
 export default function HabitsPage() {
   const { data: cardData, isLoading, error } = useGetCardDataQuery();
@@ -30,7 +61,10 @@ export default function HabitsPage() {
     );
   }
 
-  const consistencyMetrics = cardData?.data?.consistency_metrics || [];
+  const consistencyMetrics =
+    cardData?.data?.consistency_metrics?.length > 0
+      ? cardData.data.consistency_metrics
+      : DEFAULT_HABITS;
 
   const getIcon = (title: string) => {
     switch (title.toLowerCase()) {
