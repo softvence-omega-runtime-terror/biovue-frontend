@@ -31,7 +31,10 @@ const LoginPage = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
+      console.log("Attempting login with:", formData.email);
       const res = await login(formData).unwrap();
+      console.log("Login Successful:", res);
+
       if (res?.success || res?.status === "success") {
         toast.success(res?.message || "Login successful!");
         
@@ -48,9 +51,15 @@ const LoginPage = () => {
         } else {
           router.push("/personalize-journey/onboarding");
         }
+      } else {
+        console.warn("Login failed despite status code:", res);
+        toast.error(res?.message || "Login failed. Please check your credentials.");
       }
     } catch (err: any) {
-      toast.error(err?.data?.message || "Login failed. Please check your credentials.");
+      console.error("Login Error Captured:", err);
+      // Show server message if available, else default
+      const serverMessage = err?.data?.message || err?.message || "Login failed. Please check your credentials.";
+      toast.error(serverMessage);
     }
   };
 
