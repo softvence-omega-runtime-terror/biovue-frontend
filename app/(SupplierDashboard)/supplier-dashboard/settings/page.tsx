@@ -84,7 +84,7 @@ export default function SettingsPage() {
         </div>
 
         {/* Business Information */}
-        <div className="space-y-10">
+        {/* <div className="space-y-10">
           <h2 className="text-xl font-normal text-[#041228] border-b border-[#F8FBFA] pb-6">Business Information</h2>
           
           <div className="space-y-4">
@@ -109,7 +109,7 @@ export default function SettingsPage() {
               className="w-full bg-white border border-[#E4EFFF] rounded-xl py-4.5 px-6 focus:outline-none focus:ring-2 focus:ring-[#3A86FF]/10 text-[#041228] placeholder:text-[#94A3B8] font-normal shadow-sm transition-all resize-none text-[16px] leading-[24px]"
             />
           </div>
-        </div>
+        </div> */}
 
         {/* Change Password */}
         <div className="space-y-10">
