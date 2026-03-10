@@ -13,8 +13,11 @@ import {
   ArrowRight,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useGetCardDataQuery } from "@/redux/features/api/userDashboard/habit";
-import { Loader2, Activity as ActivityIcon } from "lucide-react";
+import { useGetCardDataQuery, useGetHabitsQuery, useUpdateHabitsMutation } from "@/redux/features/api/userDashboard/habit";
+import { Loader2, Activity as ActivityIcon, RefreshCw } from "lucide-react";
+import { useSelector } from "react-redux";
+import { selectCurrentUser } from "@/redux/features/slice/authSlice";
+import { toast } from "sonner";
 
 const DEFAULT_HABITS = [
   {
@@ -50,10 +53,31 @@ const DEFAULT_HABITS = [
 ];
 
 export default function HabitsPage() {
-  const { data: cardData, isLoading, error } = useGetCardDataQuery();
-  console.log(cardData, "carddata");
+  const currentUser = useSelector(selectCurrentUser);
+  const userId = currentUser?.id || currentUser?.user_id;
 
-  if (isLoading) {
+  const { data: cardData, isLoading: isLoadingCards } = useGetCardDataQuery();
+  const { data: habitData, isLoading: isLoadingHabits } = useGetHabitsQuery(userId, { skip: !userId });
+  const [updateHabits, { isLoading: isUpdating }] = useUpdateHabitsMutation();
+
+  console.log(cardData, "carddata");
+  console.log(habitData, "habitData");
+
+  const handleUpdateInsights = async () => {
+    if (!userId) {
+      toast.error("User ID not found");
+      return;
+    }
+    try {
+      await updateHabits({ user_id: userId }).unwrap();
+      toast.success("Insights updated successfully");
+    } catch (err) {
+      toast.error("Failed to update insights");
+      console.error(err);
+    }
+  };
+
+  if (isLoadingCards || isLoadingHabits) {
     return (
       <div className="flex items-center justify-center min-h-[calc(100vh-80px)]">
         <Loader2 className="w-10 h-10 animate-spin text-[#0FA4A9]" />
@@ -61,10 +85,29 @@ export default function HabitsPage() {
     );
   }
 
-  const consistencyMetrics =
-    cardData?.data?.consistency_metrics?.length > 0
-      ? cardData.data.consistency_metrics
-      : DEFAULT_HABITS;
+  // Merge habits from habitData into the card format
+  const getConsistencyMetrics = () => {
+    const baseMetrics = cardData?.data?.consistency_metrics || DEFAULT_HABITS;
+    
+    if (!habitData?.habits) return baseMetrics;
+
+    return baseMetrics.map((metric: any) => {
+      const habitKey = metric.title.toLowerCase();
+      const insight = habitData.habits[habitKey];
+      
+      if (insight) {
+        return {
+          ...metric,
+          status: insight.status.replace("_", " ").toLowerCase().split(" ").map((s: string) => s.charAt(0).toUpperCase() + s.slice(1)).join(" "),
+          // We can't really map insights to avg/ratio yet as they don't exist in new API
+          // but we keep the old ones if available
+        };
+      }
+      return metric;
+    });
+  };
+
+  const consistencyMetrics = getConsistencyMetrics();
 
   const getIcon = (title: string) => {
     switch (title.toLowerCase()) {
@@ -94,18 +137,29 @@ export default function HabitsPage() {
     <div className="flex flex-col min-h-[calc(100vh-80px)] p-6 md:p-8 container  mx-auto w-full">
       {/* Top Navigation */}
       <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-8">
-        <Link
-          href="/user-dashboard"
-          className="flex items-center gap-2 px-4 py-2 border border-[#3A86FF]/30 text-[#5F6F73] hover:text-[#1F2D2E] hover:bg-blue-50/50 rounded-lg text-sm font-medium transition-colors"
-        >
-          <ArrowLeft size={16} />
-          Back to Dashboard
-        </Link>
+        <div className="flex items-center gap-3">
+          <Link
+            href="/user-dashboard"
+            className="flex items-center gap-2 px-4 py-2 border border-[#3A86FF]/30 text-[#5F6F73] hover:text-[#1F2D2E] hover:bg-blue-50/50 rounded-lg text-sm font-medium transition-colors"
+          >
+            <ArrowLeft size={16} />
+            Back to Dashboard
+          </Link>
 
-        <button className="flex items-center gap-2 bg-[#0FA4A9] text-white px-5 py-2.5 rounded-lg font-medium hover:bg-opacity-90 transition-all text-sm shadow-sm cursor-pointer">
+          <button
+            onClick={handleUpdateInsights}
+            disabled={isUpdating}
+            className="flex items-center gap-2 px-4 py-2 bg-[#0FA4A9] text-white rounded-lg text-sm font-medium hover:bg-opacity-90 transition-all disabled:opacity-50 cursor-pointer"
+          >
+            <RefreshCw size={16} className={cn(isUpdating && "animate-spin")} />
+            {isUpdating ? "Updating..." : "Refresh Insights"}
+          </button>
+        </div>
+
+        {/* <button className="flex items-center gap-2 bg-[#0FA4A9] text-white px-5 py-2.5 rounded-lg font-medium hover:bg-opacity-90 transition-all text-sm shadow-sm cursor-pointer">
           <Plus size={18} />
           Log Today&apos;s Habit
-        </button>
+        </button> */}
       </div>
 
       {/* Habits Grid */}
@@ -205,8 +259,7 @@ export default function HabitsPage() {
         <div className="flex flex-col gap-1">
           <h4 className="text-[#1F2D2E] font-bold text-lg">Focus on Trends</h4>
           <p className="text-[#5C82C8] text-sm italic">
-            Missing a day happens. BioVue focuses on long-term consistency over
-            perfection.
+            {(habitData?.data?.focus_on_trends || habitData?.focus_on_trends) || "Missing a day happens. BioVue focuses on long-term consistency over perfection."}
           </p>
         </div>
       </div>

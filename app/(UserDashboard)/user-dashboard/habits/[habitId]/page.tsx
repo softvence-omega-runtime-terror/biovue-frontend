@@ -3,14 +3,16 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
-import { ArrowLeft, BarChart2, CheckCircle2, Bed, Apple, Footprints, Frown, Droplets, Plus } from "lucide-react";
+import { ArrowLeft, BarChart2, CheckCircle2, Bed, Apple, Footprints, Frown, Droplets, Plus, Activity as ActivityIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useGetCardDataQuery } from "@/redux/features/api/userDashboard/habit";
+import { useGetCardDataQuery, useGetHabitsQuery } from "@/redux/features/api/userDashboard/habit";
 import { Loader2 } from "lucide-react";
 import LogHabitModal from "@/components/dashboard/LogHabitModal";
 import LogNutritionModal from "@/components/dashboard/LogNutritionModal";
 import LogNutritionView from "@/components/dashboard/LogNutritionView";
 import LogStressView from "@/components/dashboard/LogStressView";
+import { useSelector } from "react-redux";
+import { selectCurrentUser } from "@/redux/features/slice/authSlice";
 
 
 const HABIT_DETAILS: Record<string, any> = {
@@ -85,12 +87,16 @@ export default function HabitDetailPage() {
   const params = useParams();
   const router = useRouter();
   const habitId = params.habitId as string;
+  const currentUser = useSelector(selectCurrentUser);
+  const userId = currentUser?.id || currentUser?.user_id;
+
   const { data: cardData, isLoading: isCardLoading } = useGetCardDataQuery();
+  const { data: habitData, isLoading: isHabitLoading } = useGetHabitsQuery(userId, { skip: !userId });
 
   const [view, setView] = useState<"details" | "logging">("details");
   const [isLogModalOpen, setIsLogModalOpen] = useState(false);
 
-  if (isCardLoading) {
+  if (isCardLoading || isHabitLoading) {
     return (
       <div className="flex items-center justify-center min-h-[calc(100vh-80px)]">
         <Loader2 className="animate-spin text-[#3A86FF]" size={48} />
@@ -102,15 +108,21 @@ export default function HabitDetailPage() {
     (m: any) => m.title.toLowerCase() === habitId.toLowerCase()
   );
 
+  const insight = habitData?.habits?.[habitId.toLowerCase()];
+
   const habit = {
     ...HABIT_DETAILS[habitId] || HABIT_DETAILS["sleep"],
     ...(habitMetrics ? {
       avg: habitMetrics.avg,
       daysLogged: habitMetrics.ratio,
-      status: habitMetrics.status,
-      statusBg: habitMetrics.status === "Need Attention" 
-        ? "bg-pink-100 text-pink-500" 
+      status: insight?.status ? insight.status.replace("_", " ").toLowerCase().split(" ").map((s: string) => s.charAt(0).toUpperCase() + s.slice(1)).join(" ") : habitMetrics.status,
+      statusBg: (insight?.status ? insight.status === "NEED_ATTENTION" : habitMetrics.status === "Need Attention")
+        ? "bg-pink-100 text-pink-500"
         : "bg-teal-100 text-[#0FA4A9]"
+    } : {}),
+    ...(insight ? {
+      why: insight.why_this_matters,
+      biovueInsights: insight.biovue_insights
     } : {})
   };
 
@@ -188,6 +200,7 @@ export default function HabitDetailPage() {
                   {habit.why}
                 </p>
               </div>
+
 
               {/* Current Pattern */}
               <div className="border border-gray-50 rounded-[16px] p-10 flex flex-col gap-8 bg-white shadow-[0_2px_12px_rgba(0,0,0,0.01)]">
