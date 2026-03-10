@@ -12,7 +12,7 @@ export const activityLogApi = baseApi.injectEndpoints({
         method: "POST",
         body: data,
       }),
-      invalidatesTags: ["Reports"],
+      invalidatesTags: ["Reports", "Habit"],
     }),
     getActivityReport: builder.query<any, void>({
       query: () => "/activity-report",

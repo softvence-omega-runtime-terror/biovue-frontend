@@ -6,7 +6,7 @@ export const baseApi = createApi({
     baseUrl: process.env.NEXT_PUBLIC_API_BASE_URL,
     prepareHeaders: (headers, { getState, endpoint }: any) => {
       console.log("Preparing headers for API call, endpoint:", endpoint);
-      
+
       // Skip auth header for login and register endpoints
       if (endpoint === "login" || endpoint === "register") {
         console.log(`Skipping authorization header for ${endpoint}`);
@@ -43,6 +43,8 @@ export const baseApi = createApi({
     "TargetGoals",
     "HealthHabitOverview",
     "Habit",
+    "Supplier",
+    "SupplierDashboard",
   ],
 
   endpoints: () => ({}),

@@ -16,10 +16,21 @@ export const nutritionApi = baseApi.injectEndpoints({
         method: "POST",
         body,
       }),
-      invalidatesTags: ["Nutrition"],
+      invalidatesTags: ["Nutrition", "Habit"],
     }),
     getNutritionReport: builder.query({
       query: () => "/nutrition-report",
+      providesTags: ["Nutrition"],
+    }),
+    calculateNutrition: builder.mutation({
+      query: (body) => ({
+        url: "/nutrition/calculate",
+        method: "POST",
+        body,
+      }),
+    }),
+    getNutritionShow: builder.query({
+      query: () => "/nutrition/show",
       providesTags: ["Nutrition"],
     }),
   }),
@@ -30,4 +41,6 @@ export const {
   useGetSingleNutritionLogQuery,
   usePostNutritionLogMutation,
   useGetNutritionReportQuery,
+  useCalculateNutritionMutation,
+  useGetNutritionShowQuery,
 } = nutritionApi;
