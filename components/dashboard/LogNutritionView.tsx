@@ -1,8 +1,17 @@
 "use client";
 
 import { useState } from "react";
-import { Apple, X, ArrowLeft, Plus, Trash2 } from "lucide-react";
+import { Apple, X, ArrowLeft, Plus, Trash2, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { 
+  useCalculateNutritionMutation, 
+  usePostNutritionLogMutation,
+  useGetNutritionShowQuery
+} from "@/redux/features/api/userDashboard/nutrition";
+import { useSelector } from "react-redux";
+import { selectCurrentUser } from "@/redux/features/slice/authSlice";
+import { toast } from "sonner";
+import { useEffect } from "react";
 
 interface FoodItem {
   id: string;
@@ -51,46 +60,71 @@ const MEAL_TYPES = [
 ];
 
 export default function FoodLogView({ onSave, onBack }: FoodLogViewProps) {
+  const currentUser = useSelector(selectCurrentUser);
+  const userId = currentUser?.id || currentUser?.user_id;
+
+  const { data: existingNutrition, isLoading: isLoadingExisting } = useGetNutritionShowQuery(undefined);
+  const [calculateNutrition, { isLoading: loadingAiCalories }] = useCalculateNutritionMutation();
+  const [postNutritionLog, { isLoading: isSaving }] = usePostNutritionLogMutation();
+
   const [calorieTarget, setCalorieTarget] = useState(2000);
   const [customUnitInput, setCustomUnitInput] = useState("");
   const [meals, setMeals] = useState<MealEntry[]>([
     {
-      id: "1",
+      id: "static-1",
       type: "breakfast",
       time: "08:00 AM",
       foods: [
         {
-          id: "1",
+          id: "f-1",
           name: "Eggs",
           quantity: 2,
           unit: "piece",
           caloriesPerUnit: 78,
           calories: 156,
           protein: 12.6,
-          carbs: 60.8,
+          carbs: 0.8,
           fat: 10.6,
         },
       ],
     },
-    {
-      id: "2",
-      type: "lunch",
-      time: "01:00 PM",
-      foods: [
-        {
-          id: "2",
-          name: "Chicken Breast",
-          quantity: 150,
-          unit: "g",
-          caloriesPerUnit: 1.65,
-          calories: 248,
-          protein: 46.5,
-          carbs: 0,
-          fat: 5.4,
-        },
-      ],
-    },
   ]);
+
+  useEffect(() => {
+    if (existingNutrition?.nutrition) {
+      const nutri = existingNutrition.nutrition;
+      
+      // Update calorie target if available in API (assuming a field exists or using fallback)
+      if (nutri.daily_target) {
+        setCalorieTarget(nutri.daily_target);
+      }
+
+      if (nutri.foods?.length > 0) {
+        const apiFoods = nutri.foods.map((f: any, index: number) => ({
+          id: `api-${index}`,
+          name: f.food,
+          quantity: f.quantity,
+          unit: f.unit,
+          // Since the API response gives a summary nutrition object, we use its values
+          calories: Number(nutri.calories.value),
+          protein: Number(nutri.macros.protein.value),
+          carbs: Number(nutri.macros.carbs.value),
+          fat: Number(nutri.macros.fat.value),
+          // We divide by quantity to get per-unit if needed for edits, but usually it's a fixed log
+          caloriesPerUnit: Number(nutri.calories.value) / f.quantity,
+        }));
+
+        setMeals([
+          {
+            id: "dynamic-1",
+            type: "breakfast",
+            time: "Today's Log",
+            foods: apiFoods,
+          }
+        ]);
+      }
+    }
+  }, [existingNutrition]);
   const [addingToMeal, setAddingToMeal] = useState<string | null>(null);
   const [foodNameInput, setFoodNameInput] = useState("");
   const [foodQuantityInput, setFoodQuantityInput] = useState("");
@@ -105,7 +139,6 @@ export default function FoodLogView({ onSave, onBack }: FoodLogViewProps) {
     carbSources?: string[];
     fatSources?: string[];
   } | null>(null);
-  const [loadingAiCalories, setLoadingAiCalories] = useState(false);
 
   const getTotalMacros = () => {
     const total = { calories: 0, protein: 0, carbs: 0, fat: 0 };
@@ -159,43 +192,38 @@ export default function FoodLogView({ onSave, onBack }: FoodLogViewProps) {
   // Fetch calorie info and macro breakdown from AI
   const fetchAiCalories = async () => {
     if (!foodNameInput.trim() || !foodQuantityInput) {
-      alert("Please enter food name and quantity");
+      toast.error("Please enter food name and quantity");
       return;
     }
 
-    setLoadingAiCalories(true);
     try {
-      const response = await fetch("/api/nutrition/get-calories", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          foodName: foodNameInput,
-          quantity: parseFloat(foodQuantityInput),
-          // unit: foodUnitInput,
-          unit: foodUnitInput === "custom" ? customUnitInput : foodUnitInput,
-        }),
-      });
+      const response = await calculateNutrition({
+        user_id: userId || 3,
+        foods: [
+          {
+            food: foodNameInput,
+            quantity: parseFloat(foodQuantityInput),
+            unit: foodUnitInput === "custom" ? customUnitInput : foodUnitInput,
+          }
+        ]
+      }).unwrap();
 
-      if (!response.ok) throw new Error("Failed to fetch calories");
-
-      const data = await response.json();
-      setAiCalorieResult({
-        calories: data.calories,
-        protein: data.protein,
-        carbs: data.carbs,
-        fat: data.fat,
-        mainIngredients: data.mainIngredients || [],
-        proteinSources: data.proteinSources || [],
-        carbSources: data.carbSources || [],
-        fatSources: data.fatSources || [],
-      });
+      const nutri = response.nutrition;
+      if (nutri) {
+        setAiCalorieResult({
+          calories: Number(nutri.calories.value),
+          protein: Number(nutri.macros.protein.value),
+          carbs: Number(nutri.macros.carbs.value),
+          fat: Number(nutri.macros.fat.value),
+          mainIngredients: nutri.foods?.[0]?.ingredients || [],
+          proteinSources: nutri.foods?.[0]?.protein_sources || [],
+          carbSources: nutri.foods?.[0]?.carb_sources || [],
+          fatSources: nutri.foods?.[0]?.fat_sources || [],
+        });
+      }
     } catch (error) {
-      console.error("[v0] AI calorie fetch error:", error);
-      alert(
-        "Unable to get calorie info. Please check food name and try again.",
-      );
-    } finally {
-      setLoadingAiCalories(false);
+      console.error("Nutrition calculation error:", error);
+      toast.error("Unable to get calorie info. Please check food name and try again.");
     }
   };
 
@@ -244,7 +272,6 @@ export default function FoodLogView({ onSave, onBack }: FoodLogViewProps) {
     setFoodQuantityInput("");
     setFoodUnitInput("g");
     setAiCalorieResult(null);
-    setFoodUnitInput("g");
     setCustomUnitInput("");
   };
 
@@ -273,6 +300,42 @@ export default function FoodLogView({ onSave, onBack }: FoodLogViewProps) {
 
   const totals = getTotalMacros();
   const caloriePercentage = getProgressPercentage();
+
+  const handleSave = async () => {
+    if (meals.every(meal => meal.foods.length === 0)) {
+      toast.error("Please add at least one food item before saving.");
+      return;
+    }
+
+    try {
+      const payload = {
+        user_id: userId || 3,
+        meals: meals.map(meal => ({
+          type: meal.type,
+          foods: meal.foods.map(f => ({
+            food: f.name,
+            quantity: f.quantity,
+            unit: f.unit,
+            calories: f.calories,
+            protein: f.protein,
+            carbs: f.carbs,
+            fat: f.fat
+          }))
+        }))
+      };
+
+      const response = await postNutritionLog(payload).unwrap();
+      if (response.success || response.status === "success") {
+        toast.success("Nutrition data logged successfully!");
+        onSave();
+      } else {
+        toast.error(response.message || "Failed to log nutrition data.");
+      }
+    } catch (error) {
+      console.error("Nutrition log submission error:", error);
+      toast.error("An error occurred while saving. Please try again.");
+    }
+  };
 
   return (
     <div className="flex flex-col gap-4 w-full mx-auto animate-in fade-in slide-in-from-bottom-4 duration-500 pb-10">
@@ -783,10 +846,12 @@ export default function FoodLogView({ onSave, onBack }: FoodLogViewProps) {
 
         {/* Save Button */}
         <button
-          onClick={onSave}
-          className="w-full bg-[#0FA4A9] text-white py-4 rounded-xl font-bold text-[18px] hover:bg-opacity-90 transition-all cursor-pointer shadow-lg shadow-[#0FA4A9]/20"
+          onClick={handleSave}
+          disabled={isSaving}
+          className="w-full bg-[#0FA4A9] text-white py-4 rounded-xl font-bold text-[18px] hover:bg-opacity-90 transition-all cursor-pointer shadow-lg shadow-[#0FA4A9]/20 flex items-center justify-center gap-2"
         >
-          Save Food Log
+          {isSaving && <Loader2 className="animate-spin" size={20} />}
+          {isSaving ? "Saving..." : "Save Food Log"}
         </button>
       </div>
     </div>

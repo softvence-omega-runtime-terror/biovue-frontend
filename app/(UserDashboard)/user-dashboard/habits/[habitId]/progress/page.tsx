@@ -35,7 +35,10 @@ import { useGetNutritionReportQuery } from "@/redux/features/api/userDashboard/n
 import { useGetHydrationReportQuery } from "@/redux/features/api/userDashboard/hydration";
 import { useGetActivityReportQuery } from "@/redux/features/api/userDashboard/activitylog";
 import { useGetStressReportQuery } from "@/redux/features/api/userDashboard/stresslog";
-import { Loader2, Footprints } from "lucide-react";
+import { useGetHabitsQuery } from "@/redux/features/api/userDashboard/habit";
+import { useSelector } from "react-redux";
+import { selectCurrentUser } from "@/redux/features/slice/authSlice";
+import { Loader2, Footprints, Activity as ActivityIcon } from "lucide-react";
 
 const MOCK_DATA = [
   { name: "M", val: 0, Protin: 35, Carbs: 45, Fats: 20 },
@@ -97,6 +100,10 @@ export default function HabitProgressPage() {
   const params = useParams();
   const router = useRouter();
   const habitId = params.habitId as string;
+  const currentUser = useSelector(selectCurrentUser);
+  const userId = currentUser?.id || currentUser?.user_id;
+
+  const { data: habitData, isLoading: isHabitLoading } = useGetHabitsQuery(userId, { skip: !userId });
   
   const { data: sleepReport, isLoading: isSleepLoading } = useGetSleepReportQuery(undefined, {
     skip: habitId !== 'sleep'
@@ -231,15 +238,32 @@ export default function HabitProgressPage() {
     } else {
       setIsLogModalOpen(true);
     }
-  };
+  }
 
-  if (isSleepLoading || isNutritionLoading || isHydrationLoading || isActivityLoading || isStressLoading) {
+  if (isSleepLoading || isNutritionLoading || isHydrationLoading || isActivityLoading || isStressLoading || isHabitLoading) {
     return (
       <div className="flex items-center justify-center min-h-[calc(100vh-80px)]">
         <Loader2 className="animate-spin text-[#3A86FF]" size={48} />
       </div>
     );
   }
+
+  const hData = habitData?.data || habitData;
+  const habitKey = habitId.toLowerCase();
+  
+  // Robust mapping for insights (handles nested and flat structures)
+  const biovueInsight = 
+    hData?.habits?.[habitKey]?.biovue_insights || 
+    hData?.habits?.[habitKey]?.insights || 
+    hData?.[`${habitKey}_biovue_insights`] || 
+    hData?.[`${habitKey}_insights`] || 
+    hData?.biovue_insights || 
+    hData?.insights;
+
+  const whyThisMatters = 
+    hData?.habits?.[habitKey]?.why_this_matters || 
+    hData?.[`${habitKey}_why_this_matters`] || 
+    hData?.why_this_matters;
 
   return (
     <div className="flex flex-col min-h-[calc(100vh-80px)] p-6 md:p-8 container mx-auto w-full">
@@ -492,13 +516,15 @@ export default function HabitProgressPage() {
               </div>
             </div>
 
+        
+
             {/* BIOVUE Insight */}
             <div className="bg-[#EAF6F6] rounded-4xl p-6 md:p-8 border border-teal-100 flex flex-col gap-3">
               <div className="flex items-center gap-2 text-[#0FA4A9] font-bold text-sm tracking-widest uppercase">
-                <Sparkles size={18} />
+                <ActivityIcon size={18} />
                 BIOVUE INSIGHT
               </div>
-              <p className="text-[#1F2D2E] italic">{habit.insight}</p>
+              <p className="text-[#1F2D2E] italic">{biovueInsight || habit.insight}</p>
             </div>
 
             {/* Coach Note */}

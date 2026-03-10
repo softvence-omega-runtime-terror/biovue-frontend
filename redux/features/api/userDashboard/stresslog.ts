@@ -12,7 +12,7 @@ export const stressLogApi = baseApi.injectEndpoints({
         method: "POST",
         body: data,
       }),
-      invalidatesTags: ["Reports"],
+      invalidatesTags: ["Reports", "Habit"],
     }),
     getStressReport: builder.query<any, void>({
       query: () => "/stress-report",
