@@ -20,16 +20,16 @@ export default function CoachSetGoals({
   clientDetails,
 }: CoachSetGoalsProps) {
   const [targetWeight, setTargetWeight] = useState<string>(
-    goals.targetWeight.toString(),
+    goals?.targetWeight?.toString() ?? "",
   );
   const [weeklyWorkoutGoal, setWeeklyWorkoutGoal] = useState<string>(
-    goals.weeklyWorkoutGoal.toString(),
+    goals?.weeklyWorkoutGoal?.toString() ?? "",
   );
   const [dailyStepGoal, setDailyStepGoal] = useState<string>(
-    goals.dailyStepGoal.toString(),
+    goals?.dailyStepGoal?.toString() ?? "",
   );
   const [sleepTarget, setSleepTarget] = useState<string>(
-    goals.sleepTargetHours.toString(),
+    goals?.sleepTargetHours?.toString() ?? "",
   );
 
   const [createTargetGoal, { isLoading }] = useCreateTargetGoalMutation();
@@ -37,10 +37,10 @@ export default function CoachSetGoals({
 
   useEffect(() => {
     if (goalData?.data) {
-      setTargetWeight(goalData.data.target_weight.toString());
-      setWeeklyWorkoutGoal(goalData.data.weekly_workout_goal.toString());
-      setDailyStepGoal(goalData.data.daily_step_goal.toString());
-      setSleepTarget(goalData.data.sleep_target.toString());
+      setTargetWeight(goalData.data.target_weight?.toString() ?? "");
+      setWeeklyWorkoutGoal(goalData.data.weekly_workout_goal?.toString() ?? "");
+      setDailyStepGoal(goalData.data.daily_step_goal?.toString() ?? "");
+      setSleepTarget(goalData.data.sleep_target?.toString() ?? "");
     }
   }, [goalData]);
 

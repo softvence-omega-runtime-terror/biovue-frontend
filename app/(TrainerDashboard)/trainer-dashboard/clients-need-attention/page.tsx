@@ -68,7 +68,7 @@ export default function ClientsNeedingAttentionPage() {
                     STATUS
                   </th>
                   <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">
-                    TURNING RATE
+                    TURNING POSSIBILITY
                   </th>
                   <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">
                     LAST ACTIVITY
