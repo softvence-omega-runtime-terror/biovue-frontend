@@ -14,6 +14,7 @@ import {
   X,
   User,
   Search,
+  Users,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
@@ -26,6 +27,7 @@ const MENU_ITEMS = [
     label: "Add New Product",
     href: "/supplier-dashboard/add-product",
   },
+  { icon: Users, label: "Client", href: "/supplier-dashboard/Client" },
   { icon: Settings, label: "Settings", href: "/supplier-dashboard/settings" },
 ];
 
@@ -42,6 +44,7 @@ export default function SupplierDashboardLayout({
     if (pathname === "/supplier-dashboard/products") return "My Products";
     if (pathname === "/supplier-dashboard/add-product")
       return "Add New Product";
+    if (pathname === "/supplier-dashboard/Client") return "Client";
     if (pathname === "/supplier-dashboard/settings") return "Settings";
     return "Dashboard";
   };
