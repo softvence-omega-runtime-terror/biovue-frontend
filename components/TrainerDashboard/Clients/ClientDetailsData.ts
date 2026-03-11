@@ -115,7 +115,7 @@
 import { ClientDetails, clients } from "../overview/data";
 
 const baseDetails = {
-  connectedDate: "Connected since",
+  connectedDate: "Connected Oct 24, 2023",
 
   // properties added to satisfy the new ClientDetails interface
   programContext: {
@@ -222,48 +222,56 @@ export const clientDetailsData: Record<string, ClientDetails> = {
     ...clients.find((c) => c.id === 1)!,
     ...baseDetails,
     name: "Alex Rivera",
-    connectedDate: "Connected client",
+    connectedDate: "Connected Oct 24, 2023",
   },
   "2": {
     ...clients.find((c) => c.id === 2)!,
     ...baseDetails,
     name: "Sarah Chen",
     goal: "Muscle gain",
+    connectedDate: "Connected Nov 12, 2023",
   },
   "3": {
     ...clients.find((c) => c.id === 3)!,
     ...baseDetails,
     name: "Jordan Smith",
     goal: "General wellness",
+    connectedDate: "Connected Jan 05, 2024",
   },
   "4": {
     ...clients.find((c) => c.id === 4)!,
     ...baseDetails,
     name: "Elena Rodriguez",
+    connectedDate: "Connected Feb 20, 2024",
   },
   "5": {
     ...clients.find((c) => c.id === 5)!,
     ...baseDetails,
     name: "Elena Rodriguez",
+    connectedDate: "Connected Mar 15, 2024",
   },
   "6": {
     ...clients.find((c) => c.id === 6)!,
     ...baseDetails,
     name: "Elena Rodriguez",
+    connectedDate: "Connected Apr 02, 2024",
   },
   "7": {
     ...clients.find((c) => c.id === 7)!,
     ...baseDetails,
     name: "Elena Rodriguez",
+    connectedDate: "Connected May 10, 2024",
   },
   "8": {
     ...clients.find((c) => c.id === 8)!,
     ...baseDetails,
     name: "Elena Rodriguez",
+    connectedDate: "Connected Jun 22, 2024",
   },
   "9": {
     ...clients.find((c) => c.id === 9)!,
     ...baseDetails,
     name: "Elena Rodriguez",
+    connectedDate: "Connected Jul 08, 2024",
   },
 };

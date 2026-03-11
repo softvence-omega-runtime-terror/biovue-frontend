@@ -5,8 +5,21 @@ import { Badge } from "@/components/ui/badge";
 import {
   MessageSquare,
   ChevronLeft,
+  Loader2,
+  BookOpen,
 } from "lucide-react";
 import Link from "next/link";
+import { useGetProgramsQuery } from "@/redux/features/api/TrainerDashboard/Program/GetPrograms";
+import { useAssignProgramUsersMutation } from "@/redux/features/api/TrainerDashboard/Program/AssignProgram";
+import { useState } from "react";
+import { toast } from "sonner";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 import HealthHabitOverview from "./sections/HealthHabitOverview";
 import CoachSetGoals from "./sections/CoachSetGoals";
@@ -27,6 +40,38 @@ export default function ClientDetailsContent({
     "need-attention": "bg-[#D3BB5B1A] text-[#D3BB5B]",
     inactive: "bg-[#9AAEB24D] text-[#5F6F73]",
   };
+
+  const { data: programsData, isLoading: programsLoading } = useGetProgramsQuery();
+  const [assignProgram, { isLoading: isAssigning }] = useAssignProgramUsersMutation();
+  const [selectedProgramId, setSelectedProgramId] = useState<string>("");
+
+  const handleAssignProgram = async () => {
+    if (!selectedProgramId) {
+      toast.error("Please select a program");
+      return;
+    }
+
+    try {
+      const response = await assignProgram({
+        program_set_id: Number(selectedProgramId),
+        user_ids: [clientDetails.id],
+      }).unwrap();
+
+      if (response.status) {
+        toast.success(response.message || "Client assigned to program successfully");
+      } else {
+        toast.error(response.message || "Failed to assign program");
+      }
+    } catch (error: any) {
+      toast.error(error?.data?.message || "An error occurred while assigning program");
+    }
+  };
+
+  // Determine if assigned
+  const hasProgram = clientDetails.programContext && 
+                     clientDetails.programContext.name && 
+                     clientDetails.programContext.name !== "Standard Training" &&
+                     clientDetails.programContext.name !== "Not Assigned";
 
   return (
     <div className="min-h-screen space-y-8">
@@ -129,27 +174,93 @@ export default function ClientDetailsContent({
         </Card>
       </div>
 
-      {/* Projection Usage */}
-      <Card className="w-fit border-none shadow-xs bg-white">
-        <CardContent className="p-5 space-y-4">
-          <p className="text-base mb-2 font-bold text-[#5F6F73] tracking-wider uppercase">
-            Projection Usage
-          </p>
-          <div className="space-y-1">
-            <h3 className="text-base font-medium text-[#111827]">
-              Used: {clientDetails.projectionUsage.used}/
-              {clientDetails.projectionUsage.total}
-            </h3>
-            <p className="text-sm text-[#5F6F73]">
-              Next reset: {clientDetails.projectionUsage.nextResetDays} days
+      {/* Program Assignment / Projection Usage */}
+      <div className="flex flex-wrap gap-4">
+        {/* Projection Usage */}
+        <Card className="w-fit border-none shadow-xs bg-white">
+          <CardContent className="p-5 space-y-4">
+            <p className="text-base mb-2 font-bold text-[#5F6F73] tracking-wider uppercase">
+              Projection Usage
             </p>
-            <p className="text-base text-[#22C55E] font-medium whitespace-nowrap">
-              Last projection:{" "}
-              {clientDetails.projectionUsage.lastProjectionDaysAgo} days ago
-            </p>
-          </div>
-        </CardContent>
-      </Card>
+            <div className="space-y-1">
+              <h3 className="text-base font-medium text-[#111827]">
+                Used: {clientDetails.projectionUsage.used}/
+                {clientDetails.projectionUsage.total}
+              </h3>
+              <p className="text-sm text-[#5F6F73]">
+                Next reset: {clientDetails.projectionUsage.nextResetDays} days
+              </p>
+              <p className="text-base text-[#22C55E] font-medium whitespace-nowrap">
+                Last projection:{" "}
+                {clientDetails.projectionUsage.lastProjectionDaysAgo} days ago
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Program Assignment */}
+        <Card className="flex-1 min-w-[300px] border-none shadow-xs bg-white">
+          <CardContent className="p-5 space-y-4">
+            <div className="flex items-center justify-between">
+              <p className="text-base mb-2 font-bold text-[#5F6F73] tracking-wider uppercase">
+                CONNECTED PROGRAM
+              </p>
+              {hasProgram && (
+                <Badge className="bg-[#0D94881A] text-[#0D9488] border-none font-medium">
+                  ACTIVE
+                </Badge>
+              )}
+            </div>
+
+            {hasProgram ? (
+              <div className="flex items-center gap-4">
+                <div className="p-3 bg-teal-50 rounded-lg text-[#0D9488]">
+                  <BookOpen size={24} />
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold text-[#111827]">
+                    {clientDetails.programContext.name}
+                  </h3>
+                  <p className="text-sm text-[#5F6F73]">
+                    {clientDetails.programContext.duration} • {clientDetails.programContext.primaryGoal}
+                  </p>
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                <p className="text-sm text-[#5F6F73]">No program connected yet. Assign one to help the client reach their goals.</p>
+                <div className="flex gap-2">
+                  <div className="flex-1">
+                    <Select value={selectedProgramId} onValueChange={setSelectedProgramId}>
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="Select a program" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {programsLoading ? (
+                          <div className="flex items-center justify-center p-2">
+                            <Loader2 className="animate-spin h-4 w-4" />
+                          </div>
+                        ) : programsData?.data?.map((program) => (
+                          <SelectItem key={program.id} value={String(program.id)}>
+                            {program.name}
+                          </SelectItem>
+                        )) || <SelectItem value="none" disabled>No programs found</SelectItem>}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <button
+                    onClick={handleAssignProgram}
+                    disabled={isAssigning || !selectedProgramId}
+                    className="bg-[#0D9488] text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-[#0A7A6F] transition-colors disabled:opacity-50"
+                  >
+                    {isAssigning ? <Loader2 size={16} className="animate-spin" /> : "Assign"}
+                  </button>
+                </div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
 
       <div className="">
         {/* Main Content Area */}

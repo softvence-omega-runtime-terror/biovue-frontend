@@ -26,7 +26,7 @@ export const actionCards: ActionCard[] = [
     title: "Review check-ins",
     description: "View scheduled check-ins for today",
     linkText: "GO TO CALENDAR",
-    href: "/trainer-dashboard/calender",
+    href: "/trainer-dashboard/calendar",
   },
 ];
 export default function Actions() {
