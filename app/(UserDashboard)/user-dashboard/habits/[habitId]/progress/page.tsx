@@ -574,3 +574,4 @@ export default function HabitProgressPage() {
     </div>
   );
 }
+
