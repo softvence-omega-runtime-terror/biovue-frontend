@@ -33,12 +33,12 @@ export default function SupplierDashboardPage() {
       icon: FileText,
       color: "bg-[#FFF3E6] text-[#FF8C42]",
     },
-    {
-      label: "Total Orders",
-      value: data?.stats.total_orders ?? 0,
-      icon: ShoppingCart,
-      color: "bg-[#F3E8FF] text-[#9333EA]",
-    },
+    // {
+    //   label: "Total Orders",
+    //   value: data?.stats.total_orders ?? 0,
+    //   icon: ShoppingCart,
+    //   color: "bg-[#F3E8FF] text-[#9333EA]",
+    // },
   ];
 
   const products = data?.recent_products ?? [];
@@ -46,7 +46,7 @@ export default function SupplierDashboardPage() {
   return (
     <div className="flex flex-col gap-8">
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mt-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-4">
         {stats.map((stat) => (
           <div
             key={stat.label}

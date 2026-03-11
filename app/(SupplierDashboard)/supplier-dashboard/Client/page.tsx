@@ -48,7 +48,7 @@ export default function SupplierClientPage() {
   const users = data?.data ?? [];
 
   return (
-    <div className="max-w-400 mx-auto p-4 md:p-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
+    <div className="mx-auto animate-in fade-in slide-in-from-bottom-4 duration-700">
       {/* Breadcrumb / Section Title */}
       <div className="flex items-center gap-3 mb-10">
         <div className="p-3 bg-white rounded-2xl border border-[#D9E6FF] shadow-sm">
