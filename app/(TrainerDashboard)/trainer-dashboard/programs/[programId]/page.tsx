@@ -44,6 +44,7 @@ export default function ProgramDetailsPage() {
           fat: program.fat ?? 0,
         },
         supplements: program.supplement_recommendation ?? [],
+        users: program.users ?? [],
       }}
     />
   );

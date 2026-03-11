@@ -42,6 +42,12 @@ export default function StatCards() {
     if (label === "Active Clients") {
       router.push("/trainer-dashboard/active-clients");
     }
+    if (label === "Pending Messages") {
+      router.push("/trainer-dashboard/messages");
+    }
+    if (label === "Todays Check-ins") {
+      router.push("/trainer-dashboard/calendar");
+    }
   };
 
   return (

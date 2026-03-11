@@ -1,4 +1,5 @@
 import { baseApi } from "../../baseApi";
+import { AssignedUser } from "./AssignProgram";
 
 export interface Program {
   id: number;
@@ -19,6 +20,7 @@ export interface Program {
   fat: number;
   supplement_recommendation: string[];
   supplement: string[];
+  users?: AssignedUser[];
   deleted_at?: string | null;
   created_at: string;
   updated_at: string;
