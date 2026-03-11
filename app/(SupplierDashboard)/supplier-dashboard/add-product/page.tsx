@@ -229,8 +229,9 @@ export default function AddProductPage() {
   ) => {
     const { name, value } = e.target;
 
-    if (e.target instanceof HTMLInputElement && e.target.files) {
-      setFormData((prev) => ({ ...prev, [name]: e.target.files![0] }));
+    const target = e.target as HTMLInputElement;
+    if (target.type === "file" && target.files) {
+      setFormData((prev) => ({ ...prev, [name]: target.files![0] }));
     } else {
       setFormData((prev) => ({ ...prev, [name]: value }));
     }
