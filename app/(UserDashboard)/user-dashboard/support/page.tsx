@@ -278,6 +278,18 @@ const BrowseCard = ({ item, onView }: { item: any; onView: () => void }) => (
 const SupportPage = () => {
   const [view, setView] = useState<"dashboard" | "chat" | "goals" | "detail" | "success">("dashboard");
   const [selectedCoach, setSelectedCoach] = useState<any>(RECOMMENDED_COACHES[0]);
+  const [healthImage, setHealthImage] = useState<string | null>(null);
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setHealthImage(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
   const handleSelectCoach = (coach: any) => {
     setSelectedCoach(coach);
@@ -621,21 +633,70 @@ const SupportPage = () => {
   }
 
   return (
-    <div className="flex flex-col gap-12 p-4 md:p-8 container mx-auto pb-24">
-      {/* Header */}
-      <div className="flex flex-col gap-6">
-        <Link href="/user-dashboard">
-          <button className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-100 rounded-lg text-[#5F6F73] text-xs font-semibold hover:bg-gray-50 transition-all cursor-pointer shadow-sm">
-            <ArrowLeft size={14} />
-            Back to Dashboard
-          </button>
-        </Link>
+    <div className="flex flex-col gap-12 container mx-auto pb-24">
+      {/* Header Row: Flex container for Nav/Title and Upload Widget */}
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-10">
+        {/* Column 1: Navigation & Title */}
+        <div className="flex flex-col gap-6">
+          <Link href="/user-dashboard">
+            <button className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-100 rounded-lg text-[#5F6F73] text-xs font-semibold hover:bg-gray-50 transition-all cursor-pointer shadow-sm w-fit">
+              <ArrowLeft size={14} />
+              Back to Dashboard
+            </button>
+          </Link>
 
-        <div className="flex flex-col gap-1">
-          <h1 className="text-2xl font-bold text-[#1F2D2E]">Support</h1>
-          <p className="text-[#5F6F73] text-sm font-medium">Get personalized help based on your health data</p>
+          <div className="flex flex-col gap-1">
+            <h1 className="text-3xl font-bold text-[#1F2D2E]">Support</h1>
+            <p className="text-[#5F6F73] text-sm font-medium">Get personalized help based on your health data</p>
+          </div>
+        </div>
+
+        {/* Column 2: Health upload Widget */}
+        <div className="flex flex-col items-center lg:items-end gap-3 min-w-[240px] p-4">
+           <h2 className="text-sm font-bold text-[#1F2D2E] text-center lg:text-right">Upload your health for better support</h2>
+           
+           <div className="flex flex-col items-center gap-4">
+              {/* Image Preview Container */}
+              <div className="relative w-28 h-28 rounded-2xl overflow-hidden border border-gray-100 shadow-sm bg-gray-50 group/preview transition-transform hover:scale-[1.02]">
+                <Image 
+                  src={healthImage || "https://images.unsplash.com/photo-1576091160550-217359f42f8c?auto=format&fit=crop&q=80&w=200"} 
+                  alt="Health Data" 
+                  fill 
+                  className="object-cover"
+                />
+                <div className="absolute inset-0 bg-black/5 opacity-0 group-hover/preview:opacity-100 transition-opacity flex items-center justify-center">
+                   <div className="bg-white/90 p-1.5 rounded-full shadow-sm">
+                      <LayoutGrid size={12} className="text-[#1F2D2E]" />
+                   </div>
+                </div>
+                {healthImage && (
+                  <div className="absolute top-2 right-2 bg-green-500 text-white p-1 rounded-full shadow-lg">
+                    <Check size={10} strokeWidth={4} />
+                  </div>
+                )}
+              </div>
+
+              {/* Upload Controls */}
+              <div className="flex flex-col items-center gap-2">
+                <input 
+                  type="file" 
+                  id="health-upload-v-stack" 
+                  className="hidden" 
+                  accept="image/*" 
+                  onChange={handleImageChange}
+                />
+                <label 
+                  htmlFor="health-upload-v-stack"
+                  className="bg-[#0FA4A9] text-white px-6 py-2.5 rounded-xl text-xs font-bold hover:bg-[#0d8d91] transition-all cursor-pointer shadow-lg shadow-[#0FA4A9]/10 flex items-center gap-2"
+                >
+                  <LayoutGrid size={14} />
+                  {healthImage ? "Change Image" : "Upload Image"}
+                </label>
+              </div>
+           </div>
         </div>
       </div>
+
 
       {/* Recommended Area */}
       <div className="flex flex-col gap-6">
