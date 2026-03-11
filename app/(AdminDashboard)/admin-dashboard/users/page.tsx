@@ -56,6 +56,7 @@ const getTypeColor = (type: string) => {
 export default function UsersPage() {
   const { data, isLoading, error } = useGetAdminUsersQuery({});
   const [deleteUser, { isLoading: isDeleting }] = useDeleteAdminUserMutation();
+  console.log(data,"users")
 
   const [selectedUser, setSelectedUser] = useState<any | null>(null);
   const [filterType, setFilterType] = useState<
