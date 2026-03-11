@@ -42,10 +42,10 @@ export const getSchedulesApi = baseApi.injectEndpoints({
       query: () => ({
         url: `/calendar-schedules`,
         method: "GET",
-       
+        // params: { date },
       }),
       providesTags: (result) =>
-        result
+        result?.data && Array.isArray(result.data)
           ? [
               ...result.data.map(({ id }) => ({ type: "Schedule" as const, id })),
               { type: "Schedule", id: "LIST" },
