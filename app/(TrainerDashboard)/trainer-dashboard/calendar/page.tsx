@@ -66,7 +66,11 @@ export default function CalendarPage() {
   // Format date for API (YYYY-MM-DD)
   const formattedStartDate = formatDateLocal(start);
 
-  const { data: scheduleData, isLoading, isError } = useGetSchedulesQuery(formattedStartDate);
+  const {
+    data: scheduleData,
+    isLoading,
+    isError,
+  } = useGetSchedulesQuery(formattedStartDate);
 
   const formatRange = (s: Date, e: Date) =>
     `${s.toLocaleDateString("en-US", {
