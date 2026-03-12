@@ -58,7 +58,10 @@ const OnboardingStepsPage = () => {
     water: "",
     // Step 4
     goals: [] as string[],
-    notes: ""
+    notes: "",
+    // Step 5
+    medicalHistory: [] as string[],
+    currentMedications: ""
   });
 
   const [createUpdateProfile, { isLoading: isSubmitting }] = useCreateUpdateProfileMutation();
@@ -80,32 +83,12 @@ const OnboardingStepsPage = () => {
       apiData.append("agreed_terms", agreed ? "1" : "0");
 
       // Habits mapping
-      const smokingMap: any = { "never": "0", "former": "1", "occasional": "2", "regular": "3" };
-      const alcoholMap: any = { "none": "0", "rarely": "1", "social": "2", "weekly": "3", "daily": "4" };
-      const stressMap: any = { "low": "1", "moderate": "3", "high": "5", "very_high": "7" };
-      const dietMap: any = { "excellent": "Excellent", "good": "Good", "average": "Average", "poor": "Poor" };
-      const fastFoodMap: any = { 
-        "never": "Never", 
-        "rarely": "Once a month", 
-        "sometimes": "Once a week", 
-        "often": "3-4 times a week", 
-        "daily": "Daily" 
-      };
-      const waterMap: any = { 
-        "less_1L": "5", 
-        "1_2L": "10", 
-        "2_3L": "17", 
-        "3L_plus": "25" 
-      };
-
-      apiData.append("smoking_status", smokingMap[formData.smoking] || "0");
-      apiData.append("alcohol_consumption", alcoholMap[formData.alcohol] || "0");
-      apiData.append("stress_level", stressMap[formData.stress] || "5");
+      apiData.append("stress_level", formData.stress || "5");
       apiData.append("daily_step", formData.steps || "8000");
       apiData.append("sleep_hour", formData.sleep || "7.5");
-      apiData.append("water_consumption_week", waterMap[formData.water] || "10");
-      apiData.append("overall_diet_quality", dietMap[formData.diet] || "Good");
-      apiData.append("fast_food_frequency", fastFoodMap[formData.fastFood] || "Once a week");
+      apiData.append("water_consumption_week", formData.water || "14");
+      apiData.append("overall_diet_quality", formData.diet || "Good");
+      apiData.append("fast_food_frequency", formData.fastFood || "Once a week");
       apiData.append("strength_training_week", (formData.strength || "2"));
       apiData.append("workout_week", (formData.workout || "3"));
 
@@ -117,6 +100,17 @@ const OnboardingStepsPage = () => {
       apiData.append("curvy_fit", formData.goals.includes("Curvy-Fit") ? "1" : "0");
       
       apiData.append("notes", formData.notes || "N/A");
+      apiData.append("diabetes", formData.medicalHistory.includes("Diabetes") ? "1" : "0");
+      apiData.append("high_blood_pressure", formData.medicalHistory.includes("High Blood Pressure") ? "1" : "0");
+      apiData.append("high_cholesterol", formData.medicalHistory.includes("High Cholesterol") ? "1" : "0");
+      apiData.append("heart_disease", formData.medicalHistory.includes("Heart Disease") ? "1" : "0");
+      apiData.append("asthma", formData.medicalHistory.includes("Asthma") ? "1" : "0");
+      apiData.append("athritis", formData.medicalHistory.includes("Arthritis") ? "1" : "0");
+      apiData.append("depression", formData.medicalHistory.includes("Depression") ? "1" : "0");
+      apiData.append("anxiety", formData.medicalHistory.includes("Anxiety") ? "1" : "0");
+      apiData.append("sleep_apnea", formData.medicalHistory.includes("Sleep Apnea") ? "1" : "0");
+      apiData.append("thyroid_issue", formData.medicalHistory.includes("Thyroid Issues") ? "1" : "0");
+      apiData.append("current_medication", formData.currentMedications || "0");
       apiData.append("user_type", "individual");
 
       // Log the data being sent for debugging
@@ -128,7 +122,7 @@ const OnboardingStepsPage = () => {
       const res = await createUpdateProfile(apiData).unwrap();
       if (res.success) {
         toast.success("Profile updated successfully!");
-        router.push("/user-dashboard");
+        router.push("/personalize-journey/onboarding?completed=true");
       }
     } catch (error: any) {
       console.error("Profile submission error:", error);
@@ -137,14 +131,14 @@ const OnboardingStepsPage = () => {
   };
 
   const nextStep = () => {
-    if (step < 4) setStep(step + 1);
+    if (step < 5) setStep(step + 1);
   };
 
   const prevStep = () => {
     if (step > 1) setStep(step - 1);
   };
 
-  const progress = step === 1 ? 20 : step === 2 ? 40 : step === 3 ? 60 : 100;
+  const progress = step === 1 ? 20 : step === 2 ? 40 : step === 3 ? 60 : step === 4 ? 80 : 100;
 
   return (
     <div className="bg-[#F8FAFB]  overflow-hidden">
@@ -152,7 +146,7 @@ const OnboardingStepsPage = () => {
       <div className="absolute top-4  md:top-6 md:left-10 z-10">
         {step === 1 ? (
           <Link
-            href="/personalize-journey/onboarding"
+            href="/welcome"
             className="w-10 h-10 border border-[rgba(58,134,255,0.2)] rounded-lg flex items-center justify-center hover:bg-white/50 transition-all bg-white shadow-sm"
           >
             <ChevronLeft size={24} className="text-[#041228]" />
@@ -173,7 +167,7 @@ const OnboardingStepsPage = () => {
           <div className="w-10" /> {/* Spacer for back arrow */}
           <div className="flex-1 px-0">
             <div className="flex justify-between items-center mb-2 text-[11px] font-bold text-gray-400 uppercase tracking-wider">
-              <span>STEP {step} OF 4</span>
+              <span>STEP {step} OF 5</span>
               <span>{progress}% Complete</span>
             </div>
             <div className="w-full h-1.5 bg-gray-200 rounded-full overflow-hidden">
@@ -396,10 +390,8 @@ const OnboardingStepsPage = () => {
                         onChange={(e) => setFormData({...formData, smoking: e.target.value})}
                         className="w-full bg-[#F8FAFF] border border-gray-100 rounded-xl py-3 px-5 text-gray-400 font-medium appearance-none">
                         <option value="">Select.....</option>
-                        <option value="never">Never Smoked</option>
-                        <option value="former">Former Smoker</option>
-                        <option value="occasional">Occasional</option>
-                        <option value="regular">Regular</option>
+                        <option value="false">No</option>
+                        <option value="true">Yes</option>
                     </select>
                 </div>
 
@@ -414,11 +406,8 @@ const OnboardingStepsPage = () => {
                         onChange={(e) => setFormData({...formData, alcohol: e.target.value})}
                         className="w-full bg-[#F8FAFF] border border-gray-100 rounded-xl py-3 px-5 text-gray-400 font-medium appearance-none">
                         <option value="">Select.....</option>
-                        <option value="none">None</option>
-                        <option value="rarely">Rarely</option>
-                        <option value="social">Social / Occasional</option>
-                        <option value="weekly">Weekly</option>
-                        <option value="daily">Daily</option>
+                        <option value="false">No</option>
+                        <option value="true">Yes</option>
                     </select>
                 </div>
 
@@ -484,16 +473,13 @@ const OnboardingStepsPage = () => {
                         <Utensils size={18} className="text-[#3A86FF]" />
                         Overall Diet Quality
                     </label>
-                    <select 
+                    <input 
+                        type="text" 
                         value={formData.diet}
                         onChange={(e) => setFormData({...formData, diet: e.target.value})}
-                        className="w-full bg-[#F8FAFF] border border-gray-100 rounded-xl py-3 px-5 text-gray-400 font-medium appearance-none">
-                        <option value="">Select.....</option>
-                        <option value="excellent">Excellent</option>
-                        <option value="good">Good</option>
-                        <option value="average">Average</option>
-                        <option value="poor">Poor</option>
-                    </select>
+                        placeholder="e.g. Good, Excellent"
+                        className="w-full bg-[#F8FAFF] border border-gray-100 rounded-xl py-3 px-5 text-gray-700 font-medium"
+                    />
                 </div>
 
                 {/* Fast Food */}
@@ -502,17 +488,13 @@ const OnboardingStepsPage = () => {
                         <Utensils size={18} className="text-[#3A86FF]" />
                         Fast Food Frequency
                     </label>
-                    <select 
+                    <input 
+                        type="text" 
                         value={formData.fastFood}
                         onChange={(e) => setFormData({...formData, fastFood: e.target.value})}
-                        className="w-full bg-[#F8FAFF] border border-gray-100 rounded-xl py-3 px-5 text-gray-400 font-medium appearance-none">
-                        <option value="">Select.....</option>
-                        <option value="never">Never</option>
-                        <option value="rarely">Rarely (1x/month)</option>
-                        <option value="sometimes">Sometimes (1-2x/week)</option>
-                        <option value="often">Often (3-4x/week)</option>
-                        <option value="daily">Daily</option>
-                    </select>
+                        placeholder="e.g. Once a week"
+                        className="w-full bg-[#F8FAFF] border border-gray-100 rounded-xl py-3 px-5 text-gray-700 font-medium"
+                    />
                 </div>
 
                 {/* Stress */}
@@ -521,16 +503,13 @@ const OnboardingStepsPage = () => {
                         <Activity size={18} className="text-[#3A86FF]" />
                         Stress Level
                     </label>
-                    <select 
+                    <input 
+                        type="number" 
                         value={formData.stress}
                         onChange={(e) => setFormData({...formData, stress: e.target.value})}
-                        className="w-full bg-[#F8FAFF] border border-gray-100 rounded-xl py-3 px-5 text-gray-400 font-medium appearance-none">
-                        <option value="">Select.....</option>
-                        <option value="low">Low</option>
-                        <option value="moderate">Moderate</option>
-                        <option value="high">High</option>
-                        <option value="very_high">Very High</option>
-                    </select>
+                        placeholder="e.g. 5"
+                        className="w-full bg-[#F8FAFF] border border-gray-100 rounded-xl py-3 px-5 text-gray-700 font-medium"
+                    />
                 </div>
 
                 {/* Water */}
@@ -539,16 +518,13 @@ const OnboardingStepsPage = () => {
                         <Droplets size={18} className="text-[#3A86FF]" />
                         Water Consumption Per Day
                     </label>
-                    <select 
+                    <input 
+                        type="number" 
                         value={formData.water}
                         onChange={(e) => setFormData({...formData, water: e.target.value})}
-                        className="w-full bg-[#F8FAFF] border border-gray-100 rounded-xl py-3 px-5 text-gray-400 font-medium appearance-none">
-                        <option value="">Select.....</option>
-                        <option value="less_1L">Less than 1L</option>
-                        <option value="1_2L">1-2 Liters</option>
-                        <option value="2_3L">2-3 Liters</option>
-                        <option value="3L_plus">3+ Liters</option>
-                    </select>
+                        placeholder="e.g. 14"
+                        className="w-full bg-[#F8FAFF] border border-gray-100 rounded-xl py-3 px-5 text-gray-700 font-medium"
+                    />
                 </div>
             </div>
 
@@ -614,24 +590,103 @@ const OnboardingStepsPage = () => {
 
             <div className="bg-[#F2F4F7] rounded-2xl p-6 mb-8">
                 <p className="text-[#475467] text-sm leading-relaxed font-medium">
-                    <span className="font-bold">Next Step:</span> After saving your profile, you'll be able to upload photos and generate AI-powered future body projections on your dashboard.
+                    <span className="font-bold">Next Step:</span> Provide your medical history to ensure safety and accuracy in our recommendations.
                 </p>
             </div>
 
             <div className="flex justify-center">
                 <button 
+                    onClick={nextStep}
+                    className="w-full md:w-auto min-w-[320px] bg-[#0FA4A9] text-white py-4 px-10 rounded-xl font-bold text-lg flex items-center justify-center gap-2 hover:bg-opacity-90 transition-all shadow-lg shadow-[#0FA4A9]/20 cursor-pointer"
+                >
+                    Continue
+                    <ArrowRight size={22} />
+                </button>
+            </div>
+          </div>
+        )}
+
+        {step === 5 && (
+          <div className="bg-white rounded-2xl p-6 md:p-8 border border-[rgba(58,134,255,0.25)] shadow-sm">
+            <div className="flex items-center gap-3 mb-2">
+                <div className="w-10 h-10 bg-[#E8F1FF] rounded-xl flex items-center justify-center text-[#3A86FF]">
+                    <FileText size={22} />
+                </div>
+                <h2 className="text-[#041228] text-2xl font-bold">Medical History</h2>
+            </div>
+            <p className="text-gray-400 text-[15px] mb-6 ml-12">Help us understand your health background for a safer and more accurate experience.</p>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-6">
+                {[
+                    { title: "Diabetes", desc: "Metabolic" },
+                    { title: "Heart Disease", desc: "Chronic" },
+                    { title: "High Blood Pressure", desc: "Metabolic" },
+                    { title: "High Cholesterol", desc: "Metabolic" },
+                    { title: "Asthma", desc: "Chronic" },
+                    { title: "Arthritis", desc: "Chronic" },
+                    { title: "Depression", desc: "Mental Health" },
+                    { title: "Anxiety", desc: "Mental Health" },
+                    { title: "Sleep Apnea", desc: "General" },
+                    { title: "Thyroid Issues", desc: "Metabolic" }
+                ].map((condition, i) => (
+                    <label key={i} className="flex items-center justify-between p-3 rounded-xl border border-[#E5E9EA] bg-white cursor-pointer hover:border-[#3A86FF]/30 hover:bg-[#F8FAFF] transition-all group">
+                        <div className="flex flex-col gap-1">
+                            <span className="text-[#041228] font-bold text-[15px] group-hover:text-[#3A86FF] transition-colors">{condition.title}</span>
+                            <span className="text-gray-400 text-[12px]">{condition.desc}</span>
+                        </div>
+                        <input 
+                            type="checkbox" 
+                            className="w-5 h-5 rounded border-gray-300 text-[#3A86FF] focus:ring-[#3A86FF]" 
+                            checked={formData.medicalHistory.includes(condition.title)}
+                            onChange={(e) => {
+                                const newHistory = e.target.checked 
+                                    ? [...formData.medicalHistory, condition.title]
+                                    : formData.medicalHistory.filter(c => c !== condition.title);
+                                setFormData({...formData, medicalHistory: newHistory});
+                            }}
+                        />
+                    </label>
+                ))}
+            </div>
+
+            <div className="mb-8">
+                <button
+                    onClick={() => setFormData({...formData, medicalHistory: []})}
+                    className="bg-[#2C3A4B] text-white px-5 py-2.5 rounded-xl text-sm font-bold hover:bg-opacity-90 transition-all cursor-pointer"
+                >
+                    None of the above
+                </button>
+            </div>
+
+            <div className="space-y-2 mb-6">
+                <h3 className="text-[#041228] font-bold text-[16px]">Current Medications (Optional)</h3>
+                <p className="text-gray-400 text-[14px] mb-2">List any prescriptions or supplements you're currently taking.</p>
+                <textarea 
+                    value={formData.currentMedications}
+                    onChange={(e) => setFormData({...formData, currentMedications: e.target.value})}
+                    className="w-full bg-[#F8FAFF] border border-[#E5E9EA] rounded-xl p-4 text-gray-700 font-medium min-h-[100px] focus:outline-none focus:ring-2 focus:ring-[#3A86FF]/10 transition-all placeholder:text-gray-300 mt-2"
+                    placeholder="E.g. Metformin 500mg daily, Omega-3 supplement..."
+                />
+            </div>
+
+            <div className="mb-8">
+                <p className="text-[#3A86FF] text-[13px] font-medium">This information is private & encrypted</p>
+            </div>
+
+            <div className="flex justify-center flex-col md:flex-row items-center">
+                <button 
                     onClick={handleSubmit}
                     disabled={isSubmitting}
-                    className="w-full md:w-auto min-w-[320px] bg-primary text-white py-4 px-10 rounded-xl font-bold text-lg flex items-center justify-center gap-2 hover:bg-opacity-90 transition-all shadow-lg shadow-primary/20 cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed"
+                    className="w-full md:w-auto min-w-[320px] bg-[#0FA4A9] text-white py-4 px-10 rounded-xl font-bold text-lg flex items-center justify-center gap-2 hover:bg-opacity-90 transition-all shadow-lg shadow-[#0FA4A9]/20 cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed"
                 >
                     {isSubmitting ? (
                         <>
                             <Loader2 className="animate-spin" size={22} />
-                            Saving Profile...
+                            Submitting...
                         </>
                     ) : (
                         <>
-                            Complete Onboarding
+                            Continue
                             <ArrowRight size={22} />
                         </>
                     )}
