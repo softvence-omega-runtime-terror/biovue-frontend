@@ -23,9 +23,13 @@ import {
   LayoutGrid,
   TrendingUp,
   Info,
-  Calendar
+  Calendar,
+  Loader2
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useGetRecommendedProfessionalsQuery } from "@/redux/features/api/userDashboard/support";
+import { useSelector } from "react-redux";
+import { selectCurrentUser } from "@/redux/features/slice/authSlice";
 
 // --- Mock Data ---
 const RECOMMENDED_COACHES = [
@@ -276,6 +280,40 @@ const BrowseCard = ({ item, onView }: { item: any; onView: () => void }) => (
 // --- Main Pages ---
 
 const SupportPage = () => {
+  const user = useSelector(selectCurrentUser);
+  const { data: recommendationsData, isLoading } = useGetRecommendedProfessionalsQuery(user?.id, { skip: !user?.id });
+
+  const suggestions = recommendationsData?.data?.suggestions || [];
+  const recommendedCoaches = suggestions.slice(0, 3).map((item: any) => ({
+    ...item,
+    id: item.professional.id,
+    name: item.professional.name,
+    role: item.professional_type.replace(/_/g, ' ').toUpperCase(),
+    avatar: item.professional.profile?.image || "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=300&h=300&auto=format&fit=crop",
+    priority: item.priority === "High" ? "HIGH PRIORITY" : item.priority === "Medium" ? "MEDIUM PRIORITY" : "LOW PRIORITY",
+    priorityColor: item.priority === "High" ? "text-[#EF4444] bg-[#FEF2F2]" : item.priority === "Medium" ? "text-[#F59E0B] bg-[#FFFBEB]" : "text-[#6B7280] bg-[#F3F4FB]",
+    description: item.match_reason,
+    bio: item.professional.profile?.bio || "Helps busy professionals improve body composition, energy, and consistency through data-driven lifestyle adjustments.",
+    specialties: item.professional.profile?.specialties?.length ? item.professional.profile.specialties : ["Fat loss", "Strength", "Habit building", "Nutrition guidance"],
+    services: item.professional.profile?.services?.length ? item.professional.profile.services : ["Set personalized goals", "Monitor your progress", "Provide weekly guidance", "Adjust targets based on your data"]
+  }));
+
+  const browseProfessionals = suggestions.slice(3).map((item: any) => ({
+    ...item,
+    id: item.professional.id,
+    name: item.professional.name,
+    role: item.professional_type.replace(/_/g, ' ').toUpperCase(),
+    avatar: item.professional.profile?.image || "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=300&h=300&auto=format&fit=crop",
+    rating: (item.relevance_score / 20).toFixed(1), // Map 100 to 5.0
+    isShop: item.professional_type === "supplement_supplier",
+    bio: item.professional.profile?.bio || "Helps busy professionals improve body composition, energy, and consistency through data-driven lifestyle adjustments.",
+    specialties: item.professional.profile?.specialties?.length ? item.professional.profile.specialties : ["Supplementation", "Recovery"],
+    services: item.professional.profile?.services?.length ? item.professional.profile.services : ["Provide quality products", "Nutrition advice"]
+  }));
+
+  const displayRecommended = suggestions.length > 0 ? recommendedCoaches : RECOMMENDED_COACHES;
+  const displayBrowse = suggestions.length > 0 ? browseProfessionals : ALL_PROFESSIONALS;
+
   const [view, setView] = useState<"dashboard" | "chat" | "goals" | "detail" | "success">("dashboard");
   const [selectedCoach, setSelectedCoach] = useState<any>(RECOMMENDED_COACHES[0]);
   const [healthImage, setHealthImage] = useState<string | null>(null);
@@ -518,7 +556,7 @@ const SupportPage = () => {
           </div>
 
           <p className="text-[#5F6F73] text-lg leading-relaxed italic max-w-2xl">
-            &quot;Helps busy professionals improve body composition, energy, and consistency through data-driven lifestyle adjustments.&quot;
+            &quot;{selectedCoach.bio || "Helps busy professionals improve body composition, energy, and consistency through data-driven lifestyle adjustments."}&quot;
           </p>
         </div>
 
@@ -532,7 +570,7 @@ const SupportPage = () => {
                  <h2 className="text-2xl font-bold text-[#1F2D2E]">Specialties</h2>
               </div>
               <div className="flex flex-col gap-5">
-                 {["Fat loss", "Strength", "Habit building", "Nutrition guidance"].map((item, i) => (
+                 {(selectedCoach.specialties || ["Fat loss", "Strength", "Habit building", "Nutrition guidance"]).map((item: string, i: number) => (
                    <div key={i} className="flex items-center gap-4">
                       <div className="w-7 h-7 rounded-full bg-[#E4EFFF] flex items-center justify-center shrink-0">
                         <Check size={16} className="text-[#3A86FF]" strokeWidth={3} />
@@ -552,12 +590,12 @@ const SupportPage = () => {
                  <h2 className="text-2xl font-bold text-[#1F2D2E]">What this coach will do for you</h2>
               </div>
               <div className="flex flex-col gap-5">
-                 {[
+                 {(selectedCoach.services || [
                    "Set personalized goals",
                    "Monitor your progress",
                    "Provide weekly guidance",
                    "Adjust targets based on your data"
-                 ].map((item, i) => (
+                 ]).map((item: string, i: number) => (
                    <div key={i} className="flex items-center gap-4">
                       <div className="w-7 h-7 rounded-full bg-[#E4EFFF] flex items-center justify-center shrink-0">
                         <Check size={16} className="text-[#3A86FF]" strokeWidth={3} />
@@ -709,7 +747,12 @@ const SupportPage = () => {
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-           {RECOMMENDED_COACHES.map(coach => (
+           {isLoading ? (
+             <div className="col-span-1 md:col-span-2 lg:col-span-3 text-center text-gray-500 py-12 flex flex-col items-center justify-center gap-4">
+               <Loader2 className="w-8 h-8 text-[#0FA4A9] animate-spin" />
+               <p className="text-sm font-medium">Finding the right professionals for you...</p>
+             </div>
+           ) : displayRecommended.map((coach: any) => (
              <RecommendationCard key={coach.id} coach={coach} onView={() => handleSelectCoach(coach)} />
            ))}
         </div>
@@ -757,7 +800,12 @@ const SupportPage = () => {
          <p className="text-[#5F6F73] text-[13px] font-medium -mt-4">Discover expert help across the BioVue network.</p>
          
          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {ALL_PROFESSIONALS.map(item => (
+            {isLoading ? (
+               <div className="col-span-1 md:col-span-2 lg:col-span-3 text-center text-gray-500 py-12 flex flex-col items-center justify-center gap-4">
+                 <Loader2 className="w-8 h-8 text-[#0FA4A9] animate-spin" />
+                 <p className="text-sm font-medium">Loading professionals network...</p>
+               </div>
+            ) : displayBrowse.map((item: any) => (
               <BrowseCard key={item.id} item={item} onView={() => handleSelectCoach(item)} />
             ))}
          </div>
