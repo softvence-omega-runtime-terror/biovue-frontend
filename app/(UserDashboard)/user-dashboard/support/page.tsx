@@ -652,7 +652,7 @@ const SupportPage = () => {
         </div>
 
         {/* Column 2: Health upload Widget */}
-        <div className="flex flex-col items-center lg:items-end gap-3 min-w-[240px] p-4">
+        <div className="flex flex-col items-center lg:items-end gap-3 min-w-[240px] mt-12">
            <h2 className="text-sm font-bold text-[#1F2D2E] text-center lg:text-right">Upload your health for better support</h2>
            
            <div className="flex flex-col items-center gap-4">

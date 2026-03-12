@@ -51,6 +51,7 @@ export default function ProgramViewModal({
                   .replace(/([A-Z])/g, " $1")
                   .replace(/^./, (s) => s.toUpperCase()),
               ),
+            users: [], // Added to satisfy TypeScript requirement
           }}
         />
       </div>
