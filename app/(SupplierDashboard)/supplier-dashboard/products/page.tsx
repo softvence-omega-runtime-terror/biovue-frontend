@@ -9,14 +9,18 @@ import {
   useDeleteSupplierProductMutation,
   useGetSupplierProductsQuery,
 } from "@/redux/features/api/SupplierDashboard/Product/SupplierProduct";
-import {  useState } from "react";
+import { useState } from "react";
 import { toast } from "sonner";
 import { EditProductModal } from "@/components/SupplierDashboard/EditProductModal";
 import { FetchBaseQueryError } from "@reduxjs/toolkit/query";
 
 const getSafeImageSrc = (src: string | null | undefined) => {
   if (!src) return "/images/placeholder-product.png";
-  if (src.startsWith("/") || src.startsWith("http://") || src.startsWith("https://")) {
+  if (
+    src.startsWith("/") ||
+    src.startsWith("http://") ||
+    src.startsWith("https://")
+  ) {
     try {
       if (src.startsWith("http")) {
         new URL(src);
@@ -36,7 +40,10 @@ export default function MyProductsPage() {
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
-  const products = data?.data ?? [];
+  const products = [...(data?.data ?? [])].sort(
+    (a, b) =>
+      new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
+  );
 
   const handleDelete = async (product: Product) => {
     const confirmed = confirm(
