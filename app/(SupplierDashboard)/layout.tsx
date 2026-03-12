@@ -27,7 +27,7 @@ const MENU_ITEMS = [
     label: "Add New Product",
     href: "/supplier-dashboard/add-product",
   },
-  { icon: Users, label: "Client", href: "/supplier-dashboard/Client" },
+  { icon: Users, label: "Client", href: "/supplier-dashboard/client" },
   { icon: Settings, label: "Settings", href: "/supplier-dashboard/settings" },
 ];
 
@@ -36,16 +36,22 @@ export default function SupplierDashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const [mounted, setMounted] = React.useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const pathname = usePathname();
 
+  React.useEffect(() => {
+    setMounted(true);
+  }, []);
+
   const getPageTitle = () => {
-    if (pathname === "/supplier-dashboard") return "Dashboard";
-    if (pathname === "/supplier-dashboard/products") return "My Products";
-    if (pathname === "/supplier-dashboard/add-product")
-      return "Add New Product";
-    if (pathname === "/supplier-dashboard/Client") return "Client";
-    if (pathname === "/supplier-dashboard/settings") return "Settings";
+    if (!mounted) return "Dashboard";
+    const path = pathname?.toLowerCase();
+    if (path === "/supplier-dashboard") return "Dashboard";
+    if (path === "/supplier-dashboard/products") return "My Products";
+    if (path === "/supplier-dashboard/add-product") return "Add New Product";
+    if (path === "/supplier-dashboard/client") return "Client";
+    if (path === "/supplier-dashboard/settings") return "Settings";
     return "Dashboard";
   };
 
@@ -78,7 +84,7 @@ export default function SupplierDashboardLayout({
               href={item.href}
               className={cn(
                 "flex items-center gap-5 px-6 py-4 rounded-xl transition-all group",
-                pathname === item.href
+                mounted && pathname === item.href
                   ? "bg-[#E4F0FF] text-[#041228]"
                   : "text-[#041228] hover:bg-gray-50",
               )}

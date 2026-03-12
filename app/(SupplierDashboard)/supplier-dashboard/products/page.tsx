@@ -14,6 +14,21 @@ import { toast } from "sonner";
 import { EditProductModal } from "@/components/SupplierDashboard/EditProductModal";
 import { FetchBaseQueryError } from "@reduxjs/toolkit/query";
 
+const getSafeImageSrc = (src: string | null | undefined) => {
+  if (!src) return "/images/placeholder-product.png";
+  if (src.startsWith("/") || src.startsWith("http://") || src.startsWith("https://")) {
+    try {
+      if (src.startsWith("http")) {
+        new URL(src);
+      }
+      return src;
+    } catch (e) {
+      return "/images/placeholder-product.png";
+    }
+  }
+  return "/images/placeholder-product.png";
+};
+
 export default function MyProductsPage() {
   const { data, isLoading } = useGetSupplierProductsQuery();
   const [deleteSupplierProduct] = useDeleteSupplierProductMutation();
@@ -120,11 +135,7 @@ export default function MyProductsPage() {
                   <td className="px-10 py-6">
                     <div className="w-16 h-16 rounded-xl bg-[#E4F0FF] overflow-hidden">
                       <Image
-                        src={
-                          product.image && product.image.startsWith("http")
-                            ? product.image
-                            : "/images/placeholder-product.png"
-                        }
+                        src={getSafeImageSrc(product.image)}
                         alt={product.name}
                         width={64}
                         height={64}
@@ -206,7 +217,7 @@ export default function MyProductsPage() {
             </button>
             <h2 className="text-xl font-bold mb-4">Product Details</h2>
             <Image
-              src={selectedProduct.image || "/images/placeholder-product.png"}
+              src={getSafeImageSrc(selectedProduct.image)}
               alt={selectedProduct.name}
               width={200}
               height={200}

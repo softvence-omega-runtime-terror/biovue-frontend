@@ -5,6 +5,21 @@ import { X, Sparkles, CheckCircle2, Send } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { User } from "@/redux/features/api/SupplierDashboard/AllUsers";
 
+const getSafeImageSrc = (src: string | null | undefined) => {
+  if (!src) return null;
+  if (src.startsWith("/") || src.startsWith("http://") || src.startsWith("https://")) {
+    try {
+      if (src.startsWith("http")) {
+        new URL(src);
+      }
+      return src;
+    } catch (e) {
+      return null;
+    }
+  }
+  return null;
+};
+
 interface Supplement {
   id: number;
   name: string;
@@ -64,9 +79,9 @@ export default function SupplementMatchModal({
 
           <div className="flex items-center gap-6">
             <div className="relative w-24 h-24 rounded-3xl border-4 border-white/20 overflow-hidden bg-white/10 flex items-center justify-center">
-              {user.profile_image ? (
+              {getSafeImageSrc(user.profile_image) ? (
                 <Image
-                  src={user.profile_image}
+                  src={getSafeImageSrc(user.profile_image)!}
                   alt={user.name}
                   fill
                   className="object-cover"
