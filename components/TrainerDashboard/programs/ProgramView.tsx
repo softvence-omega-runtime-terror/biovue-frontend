@@ -1,8 +1,18 @@
 "use client";
 
-import { CalendarRange, Check, EditIcon, Loader2, UserPlus, Users } from "lucide-react";
+import {
+  CalendarRange,
+  Check,
+  EditIcon,
+  Loader2,
+  UserPlus,
+  Users,
+} from "lucide-react";
 import { useRouter } from "next/navigation";
-import { AssignedUser, useAssignProgramUsersMutation } from "@/redux/features/api/TrainerDashboard/Program/AssignProgram";
+import {
+  AssignedUser,
+  useAssignProgramUsersMutation,
+} from "@/redux/features/api/TrainerDashboard/Program/AssignProgram";
 import { useGetUsersQuery } from "@/redux/features/api/TrainerDashboard/Program/GetUsersList";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -34,7 +44,8 @@ export default function ProgramView({ program }: ProgramViewProps) {
 
   const [selectedUserIds, setSelectedUserIds] = useState<number[]>([]);
   const { data: usersData, isLoading: usersLoading } = useGetUsersQuery();
-  const [assignUsers, { isLoading: isAssigning }] = useAssignProgramUsersMutation();
+  const [assignUsers, { isLoading: isAssigning }] =
+    useAssignProgramUsersMutation();
 
   const handleViewClick = () => {
     router.push(`/trainer-dashboard/programs`);
@@ -52,9 +63,11 @@ export default function ProgramView({ program }: ProgramViewProps) {
     "Magnesium",
   ];
 
+  // const connectedUserIds = program.users.map((u) => u.id);
+  // const availableUsers = usersData?.data?.filter((u) => !connectedUserIds.includes(u.id)) || [];
   const connectedUserIds = program.users.map((u) => u.id);
-  const availableUsers = usersData?.data?.filter((u) => !connectedUserIds.includes(u.id)) || [];
-
+  const availableUsers =
+    usersData?.data?.filter((u) => !connectedUserIds.includes(u.id)) || [];
   const handleAddClients = async () => {
     if (selectedUserIds.length === 0) {
       toast.error("Please select at least one client");
@@ -62,25 +75,34 @@ export default function ProgramView({ program }: ProgramViewProps) {
     }
 
     try {
+      // const response = await assignUsers({
+      //   program_set_id: Number(program.id),
+      //   user_ids: selectedUserIds,
+      // }).unwrap();
       const response = await assignUsers({
         program_set_id: Number(program.id),
         user_ids: selectedUserIds,
       }).unwrap();
-
       if (response.status) {
-        toast.success(response.message || "Clients added to program successfully");
+        toast.success(
+          response.message || "Clients added to program successfully",
+        );
         setSelectedUserIds([]);
       } else {
         toast.error(response.message || "Failed to add clients");
       }
     } catch (error: any) {
-      toast.error(error?.data?.message || "An error occurred while adding clients");
+      toast.error(
+        error?.data?.message || "An error occurred while adding clients",
+      );
     }
   };
 
   const toggleUserSelection = (userId: number) => {
     setSelectedUserIds((prev) =>
-      prev.includes(userId) ? prev.filter((id) => id !== userId) : [...prev, userId]
+      prev.includes(userId)
+        ? prev.filter((id) => id !== userId)
+        : [...prev, userId],
     );
   };
 
@@ -186,82 +208,103 @@ export default function ProgramView({ program }: ProgramViewProps) {
               </div>
             </div>
             {/* Connected Clients & Add Clients Section */}
-      <div className="flex flex-col gap-6 mt-6">
-        {/* Connected Clients */}
-        <div className="bg-white p-5 rounded-xl shadow-md">
-          <div className="flex items-center gap-2 mb-4">
-            <Users className="text-[#0D9488]" size={20} />
-            <h2 className="text-lg font-semibold text-gray-900">Connected Clients</h2>
-          </div>
-          <div className="space-y-3">
-            {program.users.length > 0 ? (
-              program.users.map((user) => (
-                <div key={user.id} className="flex items-center gap-3 p-3 border rounded-lg bg-gray-50">
-                  <div className="w-10 h-10 rounded-full bg-teal-100 flex items-center justify-center text-teal-700 font-bold">
-                    {user.name.charAt(0)}
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium text-gray-900">{user.name}</p>
-                    <p className="text-xs text-gray-500">{user.email}</p>
-                  </div>
+            <div className="flex flex-col gap-6 mt-6">
+              {/* Connected Clients */}
+              <div className="bg-white p-5 rounded-xl shadow-md">
+                <div className="flex items-center gap-2 mb-4">
+                  <Users className="text-[#0D9488]" size={20} />
+                  <h2 className="text-lg font-semibold text-gray-900">
+                    Connected Clients
+                  </h2>
                 </div>
-              ))
-            ) : (
-              <p className="text-sm text-gray-500 italic">No clients connected to this program yet.</p>
-            )}
-          </div>
-        </div>
-
-        {/* Add Clients */}
-        <div className="bg-white p-5 rounded-xl shadow-md">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-2">
-              <UserPlus className="text-[#0D9488]" size={20} />
-              <h2 className="text-lg font-semibold text-gray-900">Add Clients to Program</h2>
-            </div>
-            <button
-              onClick={handleAddClients}
-              disabled={isAssigning || selectedUserIds.length === 0}
-              className="bg-[#0D9488] text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-[#0A7A6F] transition-colors disabled:opacity-50"
-            >
-              {isAssigning ? <Loader2 size={16} className="animate-spin" /> : "Add to Program"}
-            </button>
-          </div>
-
-          <div className="max-h-60 overflow-y-auto border rounded-lg p-2 space-y-2">
-            {usersLoading ? (
-              <div className="flex justify-center p-4">
-                <Loader2 className="animate-spin text-teal-600" />
+                <div className="space-y-3">
+                  {program.users.length > 0 ? (
+                    program.users.map((user) => (
+                      <div
+                        key={user.id}
+                        className="flex items-center gap-3 p-3 border rounded-lg bg-gray-50"
+                      >
+                        <div className="w-10 h-10 rounded-full bg-teal-100 flex items-center justify-center text-teal-700 font-bold">
+                          {user.name.charAt(0)}
+                        </div>
+                        <div>
+                          <p className="text-sm font-medium text-gray-900">
+                            {user.name}
+                          </p>
+                          <p className="text-xs text-gray-500">{user.email}</p>
+                        </div>
+                      </div>
+                    ))
+                  ) : (
+                    <p className="text-sm text-gray-500 italic">
+                      No clients connected to this program yet.
+                    </p>
+                  )}
+                </div>
               </div>
-            ) : availableUsers.length > 0 ? (
-              availableUsers.map((user) => (
-                <div
-                  key={user.id}
-                  className="flex items-center gap-3 p-2 hover:bg-gray-50 rounded-lg cursor-pointer transition-colors"
-                  onClick={() => toggleUserSelection(user.id)}
-                >
-                  <Checkbox
-                    id={`user-${user.id}`}
-                    checked={selectedUserIds.includes(user.id)}
-                    onCheckedChange={() => toggleUserSelection(user.id)}
-                  />
-                  <div className="flex items-center gap-3 flex-1">
-                    <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-600 text-xs font-bold">
-                      {user.name.charAt(0)}
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium text-gray-900">{user.name}</p>
-                      <p className="text-xs text-gray-500">{user.email}</p>
-                    </div>
+
+              {/* Add Clients */}
+              <div className="bg-white p-5 rounded-xl shadow-md">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-2">
+                    <UserPlus className="text-[#0D9488]" size={20} />
+                    <h2 className="text-lg font-semibold text-gray-900">
+                      Add Clients to Program
+                    </h2>
                   </div>
+                  <button
+                    onClick={handleAddClients}
+                    disabled={isAssigning || selectedUserIds.length === 0}
+                    className="bg-[#0D9488] text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-[#0A7A6F] transition-colors disabled:opacity-50"
+                  >
+                    {isAssigning ? (
+                      <Loader2 size={16} className="animate-spin" />
+                    ) : (
+                      "Add to Program"
+                    )}
+                  </button>
                 </div>
-              ))
-            ) : (
-              <p className="text-sm text-gray-500 italic text-center p-4">All clients are already connected.</p>
-            )}
-          </div>
-        </div>
-      </div>
+
+                <div className="max-h-60 overflow-y-auto border rounded-lg p-2 space-y-2">
+                  {usersLoading ? (
+                    <div className="flex justify-center p-4">
+                      <Loader2 className="animate-spin text-teal-600" />
+                    </div>
+                  ) : availableUsers.length > 0 ? (
+                    availableUsers.map((user) => (
+                      <div
+                        key={user.id}
+                        className="flex items-center gap-3 p-2 hover:bg-gray-50 rounded-lg cursor-pointer transition-colors"
+                        onClick={() => toggleUserSelection(user.id)}
+                      >
+                        <Checkbox
+                          id={`user-${user.id}`}
+                          checked={selectedUserIds.includes(user.id)}
+                          onCheckedChange={() => toggleUserSelection(user.id)}
+                        />
+                        <div className="flex items-center gap-3 flex-1">
+                          <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-600 text-xs font-bold">
+                            {user.name.charAt(0)}
+                          </div>
+                          <div>
+                            <p className="text-sm font-medium text-gray-900">
+                              {user.name}
+                            </p>
+                            <p className="text-xs text-gray-500">
+                              {user.email}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    ))
+                  ) : (
+                    <p className="text-sm text-gray-500 italic text-center p-4">
+                      All clients are already connected.
+                    </p>
+                  )}
+                </div>
+              </div>
+            </div>
           </div>
           <div className="flex flex-col gap-6">
             {/* Wellness Macros */}
@@ -344,8 +387,6 @@ export default function ProgramView({ program }: ProgramViewProps) {
           </div>
         </div>
       </div>
-
-      
     </div>
   );
 }

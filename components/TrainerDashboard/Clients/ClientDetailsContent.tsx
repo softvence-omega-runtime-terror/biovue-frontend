@@ -240,11 +240,15 @@ export default function ClientDetailsContent({
                           <div className="flex items-center justify-center p-2">
                             <Loader2 className="animate-spin h-4 w-4" />
                           </div>
-                        ) : programsData?.data?.map((program) => (
-                          <SelectItem key={program.id} value={String(program.id)}>
-                            {program.name}
-                          </SelectItem>
-                        )) || <SelectItem value="none" disabled>No programs found</SelectItem>}
+                        ) : programsData?.data && programsData.data.length > 0 ? (
+                          programsData.data.map((program) => (
+                            <SelectItem key={program.id} value={String(program.id)}>
+                              {program.name}
+                            </SelectItem>
+                          ))
+                        ) : (
+                          <SelectItem value="none" disabled>No programs found</SelectItem>
+                        )}
                       </SelectContent>
                     </Select>
                   </div>
