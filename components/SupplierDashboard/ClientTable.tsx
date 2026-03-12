@@ -5,6 +5,21 @@ import Image from "next/image";
 import { Search, Sparkles, Mail, User as UserIcon, Calendar } from "lucide-react";
 import { User } from "@/redux/features/api/SupplierDashboard/AllUsers";
 import SupplementMatchModal from "./SupplementMatchModal";
+
+const getSafeImageSrc = (src: string | null | undefined) => {
+  if (!src) return null;
+  if (src.startsWith("/") || src.startsWith("http://") || src.startsWith("https://")) {
+    try {
+      if (src.startsWith("http")) {
+        new URL(src);
+      }
+      return src;
+    } catch (e) {
+      return null;
+    }
+  }
+  return null;
+};
 import {
   Table,
   TableBody,
@@ -76,9 +91,9 @@ export default function ClientTable({ users }: ClientTableProps) {
                 <TableRow key={user.id} className="hover:bg-[#F8FBFA]/30 transition-all border-b border-[#F8FBFA]">
                   <TableCell className="px-10 py-6">
                     <div className="w-14 h-14 rounded-2xl bg-linear-to-br from-[#E4F0FF] to-[#D9E6FF] overflow-hidden flex items-center justify-center border-2 border-white shadow-sm">
-                      {user.profile_image ? (
+                      {getSafeImageSrc(user.profile_image) ? (
                         <Image
-                          src={user.profile_image}
+                          src={getSafeImageSrc(user.profile_image)!}
                           alt={user.name}
                           width={56}
                           height={56}

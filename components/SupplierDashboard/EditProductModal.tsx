@@ -9,6 +9,21 @@ import { toast } from "sonner";
 import Image from "next/image";
 import { X } from "lucide-react";
 
+const getSafeImageSrc = (src: string | null | undefined) => {
+  if (!src) return "/images/placeholder-product.png";
+  if (src.startsWith("/") || src.startsWith("http://") || src.startsWith("https://") || src.startsWith("blob:")) {
+    try {
+      if (src.startsWith("http")) {
+        new URL(src);
+      }
+      return src;
+    } catch (e) {
+      return "/images/placeholder-product.png";
+    }
+  }
+  return "/images/placeholder-product.png";
+};
+
 interface EditProductModalProps {
   product: Product;
   onClose: () => void;
@@ -37,9 +52,7 @@ export function EditProductModal({ product, onClose }: EditProductModalProps) {
   });
 
   const [imagePreview, setImagePreview] = useState<string | null>(
-    product.image && product.image.startsWith("http")
-      ? product.image
-      : "/images/placeholder-product.png",
+    getSafeImageSrc(product.image)
   );
 
   useEffect(() => {
@@ -99,7 +112,7 @@ export function EditProductModal({ product, onClose }: EditProductModalProps) {
           <div className="flex items-center gap-6 p-4 bg-[#F8FBFA] rounded-2xl border border-[#D9E6FF]">
             <div className="w-20 h-20 rounded-xl bg-[#E4F0FF] overflow-hidden shrink-0 border border-[#D9E6FF]">
               <Image
-                src={imagePreview || "/images/placeholder-product.png"}
+                src={getSafeImageSrc(imagePreview)}
                 alt="Preview"
                 width={80}
                 height={80}

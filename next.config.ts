@@ -23,6 +23,10 @@ const nextConfig: NextConfig = {
         protocol: "http",
         hostname: "103.174.189.183",
       },
+      {
+        protocol: "http",
+        hostname: "a45b-160-187-108-68.ngrok-free.app",
+      },
     ],
   },
 };
