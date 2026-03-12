@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import {
@@ -12,8 +12,18 @@ import {
   ArrowRight,
   RotateCcw,
   AlertCircle,
+  Upload,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+
+import { useAppSelector } from "@/redux/store/hooks";
+import { selectCurrentUser } from "@/redux/features/slice/authSlice";
+import { toast } from "sonner";
+import { useCreateFutureGoalMutation } from "@/redux/features/api/userDashboard/Projection/FutureGoal";
+import {
+  ProjectionResponse,
+  useCurrentLifestyleProjectionMutation,
+} from "@/redux/features/api/userDashboard/Projection/CurrentProjection";
 
 type Step = "input" | "loading" | "results";
 type TimeHorizon = "6 months" | "1 Years" | "5 Years";
@@ -25,27 +35,120 @@ const ProjectionsPage = () => {
   const [progress, setProgress] = useState(0);
   const [resolution, setResolution] = useState<"2k" | "4k">("2k");
   const [quality, setQuality] = useState<"fast" | "ultra">("fast");
+  const [projectionImage, setProjectionImage] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [projectionData, setProjectionData] =
+    useState<ProjectionResponse | null>(null);
+
+  const [currentLifestyleProjection, { isLoading: isCurrentLoading }] =
+    useCurrentLifestyleProjectionMutation();
+  const [createFutureGoal, { isLoading: isFutureLoading }] =
+    useCreateFutureGoalMutation();
+  const user = useAppSelector(selectCurrentUser);
+
+  const loadingTexts = [
+    "Analyzing habits and routines…",
+    " Evaluating diet, activity, and sleep…",
+    " Calculating health and risk factors…",
+    " Projecting future body and wellness…",
+    " Generating photorealistic outcome…",
+    " Preparing your personalized report….",
+  ];
+  const [loadingTextIndex, setLoadingTextIndex] = useState(0);
+
+  const isMounted = useRef(true);
+
+  useEffect(() => {
+    isMounted.current = true;
+    return () => {
+      isMounted.current = false;
+    };
+  }, []);
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setProjectionImage(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   // Loading simulation
   useEffect(() => {
     let interval: NodeJS.Timeout;
     if (step === "loading") {
       setProgress(0);
+      setLoadingTextIndex(0);
       interval = setInterval(() => {
         setProgress((prev) => {
           if (prev >= 100) {
             clearInterval(interval);
-            setTimeout(() => setStep("results"), 500);
             return 100;
           }
-          return prev + 2;
+          return prev + 1;
         });
-      }, 50);
+      }, 100);
     }
     return () => clearInterval(interval);
   }, [step]);
 
-  const handleGenerate = () => {
+  useEffect(() => {
+    if (step !== "loading") return;
+
+    const textInterval = setInterval(() => {
+      setLoadingTextIndex((prev) => {
+        if (prev < loadingTexts.length - 1) return prev + 1;
+        return prev;
+      });
+    }, 1500);
+
+    return () => clearInterval(textInterval);
+  }, [step]);
+  
+  const handleGenerate = async () => {
+    if (!user?.id) {
+      toast.error("Please login to generate projection");
+      return;
+    }
+
+    if (!projectionImage) {
+      toast.error("Please upload an image");
+      return;
+    }
+
     setStep("loading");
+
+    try {
+      let res;
+
+      if (lifestyle === "current") {
+        res = await currentLifestyleProjection({
+          user_id: user.id,
+        }).unwrap();
+      } else {
+        res = await createFutureGoal({
+          user_id: user.id.toString(),
+          image: projectionImage,
+          duration: timeHorizon,
+          resolution: resolution.toUpperCase(),
+          tier: quality,
+        }).unwrap();
+      }
+
+      setProjectionData(res);
+
+      setTimeout(() => {
+        setStep("results");
+        toast.success("Projection generated successfully!");
+      }, 1000);
+    } catch (err: any) {
+      setStep("input");
+      toast.error(err?.data?.message || "Failed to generate projection.");
+    }
   };
 
   const renderInputStep = () => (
@@ -127,6 +230,29 @@ const ProjectionsPage = () => {
                 <p className="text-xs text-[#5F6F73] mt-1">
                   Projected outcomes based on current habits.
                 </p>
+                {lifestyle === "current" && (
+                  <div className="mt-4 space-y-3 animate-in fade-in slide-in-from-top-2 duration-300">
+                    <p className="text-sm font-bold text-[#041228]">
+                      Upload Current Photo
+                    </p>
+                    <label className="flex items-center gap-3 p-3 border-2 border-dashed border-[#3A86FF]/30 rounded-xl bg-white hover:bg-gray-50 transition-all cursor-pointer group">
+                      <div className="w-8 h-8 rounded-lg bg-[#E4EFFF] flex items-center justify-center group-hover:bg-[#3A86FF]/20 transition-all">
+                        <Upload size={16} className="text-[#3A86FF]" />
+                      </div>
+                      <span className="text-sm font-medium text-gray-500">
+                        {projectionImage
+                          ? projectionImage.name
+                          : "Select an image"}
+                      </span>
+                      <input
+                        type="file"
+                        className="hidden"
+                        onChange={handleImageChange}
+                        accept="image/*"
+                      />
+                    </label>
+                  </div>
+                )}
               </div>
               <div
                 className={cn(
@@ -178,7 +304,6 @@ const ProjectionsPage = () => {
         </div>
 
         {/* Render Settings */}
-        {/* Render Settings */}
         <div className="bg-white rounded-xl p-6 border border-[#3A86FF]/25 shadow-sm space-y-6">
           <h3 className="font-bold text-[#041228]">Render Settings</h3>
 
@@ -186,7 +311,6 @@ const ProjectionsPage = () => {
           <div className="space-y-3">
             <p className="text-sm font-semibold text-[#5F6F73]">Resolution</p>
 
-            {/* 2K */}
             <div
               onClick={() => setResolution("2k")}
               className={cn(
@@ -197,7 +321,6 @@ const ProjectionsPage = () => {
               )}
             >
               <span className="font-semibold text-[#041228]">2K</span>
-
               <div
                 className={cn(
                   "w-5 h-5 rounded-full border-2 flex items-center justify-center",
@@ -212,7 +335,6 @@ const ProjectionsPage = () => {
               </div>
             </div>
 
-            {/* 4K PRO */}
             <div className="flex items-center justify-between p-4 rounded-xl border border-gray-100 bg-gray-50">
               <span className="font-semibold text-gray-400">4K</span>
               <span className="text-xs font-semibold text-gray-400">
@@ -225,7 +347,6 @@ const ProjectionsPage = () => {
           <div className="space-y-3">
             <p className="text-sm font-semibold text-[#5F6F73]">Quality</p>
 
-            {/* Fast */}
             <div
               onClick={() => setQuality("fast")}
               className={cn(
@@ -236,7 +357,6 @@ const ProjectionsPage = () => {
               )}
             >
               <span className="font-semibold text-[#041228]">Fast</span>
-
               <div
                 className={cn(
                   "w-5 h-5 rounded-full border-2 flex items-center justify-center",
@@ -251,7 +371,6 @@ const ProjectionsPage = () => {
               </div>
             </div>
 
-            {/* Ultra PRO */}
             <div className="flex items-center justify-between p-4 rounded-xl border border-gray-100 bg-gray-50">
               <span className="font-semibold text-gray-400">Ultra</span>
               <span className="text-xs font-semibold text-gray-400">
@@ -265,21 +384,29 @@ const ProjectionsPage = () => {
       {/* Right Column */}
       <div className="space-y-6">
         <div className="bg-white rounded-[24px] overflow-hidden border border-[#3A86FF]/20 flex flex-col items-center p-12 text-center shadow-sm">
-          <div className="relative w-64 h-80 rounded-2xl overflow-hidden mb-6 bg-gray-50 border border-gray-100">
+          <div className="relative w-64 h-80 rounded-2xl overflow-hidden mb-6 bg-gray-50 border border-gray-100 shadow-inner">
             <Image
-              src="/images/auth/body1.png"
+              src={imagePreview || "/images/auth/body1.png"}
               alt="Baseline"
               fill
               className="object-cover"
             />
           </div>
           <h3 className="font-bold text-[#041228] uppercase tracking-wider mb-4">
-            VERIFIED BASELINE PHOTO
+            {imagePreview
+              ? "UPLOADED PHOTO PREVIEW"
+              : "VERIFIED BASELINE PHOTO"}
           </h3>
-          <button className="flex items-center gap-2 text-gray-400 font-medium hover:text-gray-600 transition-all cursor-pointer">
+          <label className="flex items-center gap-2 text-[#3A86FF] font-medium hover:text-[#2a6fd9] transition-all cursor-pointer">
             <RotateCcw size={18} />
-            Replace
-          </button>
+            {imagePreview ? "Replace Photo" : "Upload Photo"}
+            <input
+              type="file"
+              className="hidden"
+              onChange={handleImageChange}
+              accept="image/*"
+            />
+          </label>
           <p className="text-[10px] text-gray-400 mt-6 leading-relaxed bg-[#F8FAFF] py-2 px-4 rounded-lg border border-gray-100">
             Note: For more accurate projections, please upload a photo in a swim
             suit.
@@ -288,9 +415,12 @@ const ProjectionsPage = () => {
 
         <button
           onClick={handleGenerate}
-          className="w-full bg-[#0FA4A9] text-white py-5 rounded-xl font-bold flex items-center justify-center gap-3 hover:bg-[#0d8d91] transition-all group cursor-pointer shadow-lg shadow-[#0FA4A9]/20"
+          disabled={isCurrentLoading || isFutureLoading}
+          className="w-full bg-[#0FA4A9] text-white py-5 rounded-xl font-bold flex items-center justify-center gap-3 hover:bg-[#0d8d91] transition-all group cursor-pointer shadow-lg shadow-[#0FA4A9]/20 disabled:opacity-50"
         >
-          Generate Projection
+          {isCurrentLoading || isFutureLoading
+            ? "Generating..."
+            : "Generate Projection"}
           <ArrowRight
             size={20}
             className="group-hover:translate-x-1 transition-transform"
@@ -301,7 +431,7 @@ const ProjectionsPage = () => {
   );
 
   const renderLoadingStep = () => (
-    <div className="fixed inset-0 z-100 bg-white/40 backdrop-blur-md flex items-center justify-center p-6 overflow-hidden">
+    <div className="fixed inset-0 z-[100] bg-white/40 backdrop-blur-md flex items-center justify-center p-6 overflow-hidden">
       <div className="bg-white rounded-[32px] p-12 max-w-md w-full shadow-2xl border border-gray-100 flex flex-col items-center text-center space-y-8 animate-in zoom-in-95 duration-300">
         {/* Circular Progress */}
         <div className="relative w-48 h-48 flex items-center justify-center">
@@ -336,9 +466,11 @@ const ProjectionsPage = () => {
           <h2 className="text-2xl font-bold text-[#041228]">
             Your Future Projection
           </h2>
-          <p className="text-[#5F6F73] text-sm">
-            Analyzing your 12 biometric markers and sleep history.
-          </p>
+          <div className="h-6 flex items-center justify-center">
+            <p className="text-[#5F6F73] text-sm animate-in fade-in slide-in-from-bottom-2 duration-500">
+              {loadingTexts[loadingTextIndex]}
+            </p>
+          </div>
         </div>
 
         {/* Linear Progress */}
@@ -352,210 +484,164 @@ const ProjectionsPage = () => {
     </div>
   );
 
-  const renderResultsStep = () => (
-    <div className="space-y-12 pb-12 animate-in fade-in duration-700">
-      <div className="text-center space-y-2">
-        <h1 className="text-3xl font-bold text-[#3A86FF]">
-          Projection Results
-        </h1>
-        <p className="text-gray-500">
-          Visualizing your trajectory over the next 5 Years.
-        </p>
-      </div>
+  const renderResultsStep = () => {
+    if (!projectionData) return null;
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        {/* Left: Current Lifestyle */}
-        <div className="bg-white rounded-[24px] border border-[#3A86FF]/10 shadow-sm overflow-hidden flex flex-col">
-          <div className="p-8 text-center space-y-6 flex-1">
-            <h3 className="text-[#8B5CF6] font-bold text-lg min-h-14 flex items-center justify-center">
-              If you continue your current lifestyle without changes for 5 years
-            </h3>
-            <div className="relative w-full aspect-[4/3.2] rounded-2xl overflow-hidden bg-gray-50 shadow-inner">
-              <Image
-                src="/images/auth/body1.png"
-                alt="Current Projection"
-                fill
-                className="object-cover"
-              />
-            </div>
+    return (
+      <div className="space-y-12 pb-12 animate-in fade-in duration-700">
+        <div className="text-center space-y-2">
+          <h1 className="text-3xl font-bold text-[#3A86FF]">
+            Projection Results
+          </h1>
+          <p className="text-gray-500">
+            Visualizing your trajectory over the next {timeHorizon}.
+          </p>
+        </div>
 
-            <div className="space-y-4 pt-4">
-              {[
-                {
-                  label: "Timeframe",
-                  value: "5 Years",
-                  icon: Calendar,
-                  color: "text-[#8B5CF6]",
-                  bg: "bg-[#F3E8FF]",
-                },
-                {
-                  label: "East. BMI:",
-                  value: "40.2",
-                  icon: Activity,
-                  color: "text-[#10B981]",
-                  bg: "bg-[#E1F9F0]",
-                },
-                {
-                  label: "Est. Weight:",
-                  value: "264.3 lbs",
-                  icon: Zap,
-                  color: "text-[#3A86FF]",
-                  bg: "bg-[#E4EFFF]",
-                },
-              ].map((item, idx) => (
-                <div key={idx} className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div
-                      className={cn(
-                        "w-8 h-8 rounded-lg flex items-center justify-center shrink-0",
-                        item.bg,
-                      )}
-                    >
-                      <item.icon className={item.color} size={16} />
-                    </div>
-                    <span className="text-sm font-medium text-gray-500">
-                      {item.label}
-                    </span>
-                  </div>
-                  <span className="text-sm font-bold text-[#041228]">
-                    {item.value}
-                  </span>
-                </div>
-              ))}
-            </div>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          {/* Left Side: Projection Visualization */}
+          <div className="bg-white rounded-[24px] border border-[#3A86FF]/10 shadow-sm overflow-hidden flex flex-col">
+            <div className="p-8 text-center space-y-6 flex-1">
+              <h3 className="text-[#8B5CF6] font-bold text-lg min-h-[56px] flex items-center justify-center">
+                {lifestyle === "current"
+                  ? `If you continue your current lifestyle for ${timeHorizon}`
+                  : `Achieving your future goals in ${timeHorizon}`}
+              </h3>
+              <div className="relative w-full aspect-[4/3.2] rounded-2xl overflow-hidden bg-gray-50 shadow-inner">
+                <Image
+                  src={
+                    projectionData.projection_url || "/images/auth/body1.png"
+                  }
+                  alt="Projection Result"
+                  fill
+                  className="object-cover"
+                />
+              </div>
 
-            <div className="text-left py-6 border-t border-gray-50 space-y-4">
-              <h4 className="font-bold text-[#041228]">Expected Changes:</h4>
-              <div className="space-y-3">
+              <div className="space-y-4 pt-4">
                 {[
-                  "Significant weight gain of ~23 kg over 5 years",
-                  "Substantial increase in body fat percentage",
-                  "Major decrease in muscle tone and strength",
-                  "Significantly lower energy levels and chronic fatigue",
-                  "Severe reduced mob and flexibility",
-                ].map((text, idx) => (
-                  <div key={idx} className="flex items-start gap-2">
-                    <div className="w-5 h-5 bg-[#0FA4A9] rounded-full flex items-center justify-center mt-0.5 shrink-0">
-                      <CheckCircle2 size={12} className="text-white" />
+                  {
+                    label: "Timeframe",
+                    value:
+                      timeframeMap[timeHorizon as keyof typeof timeframeMap] ||
+                      timeHorizon,
+                    icon: Calendar,
+                    color: "text-[#8B5CF6]",
+                    bg: "bg-[#F3E8FF]",
+                  },
+                  {
+                    label: "Est. BMI:",
+                    value: projectionData.est_bmi,
+                    icon: Activity,
+                    color: "text-[#10B981]",
+                    bg: "bg-[#E1F9F0]",
+                  },
+                  {
+                    label: "Est. Weight:",
+                    value: `${projectionData.est_weight} lbs`,
+                    icon: Zap,
+                    color: "text-[#3A86FF]",
+                    bg: "bg-[#E4EFFF]",
+                  },
+                ].map((item, idx) => (
+                  <div key={idx} className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div
+                        className={cn(
+                          "w-8 h-8 rounded-lg flex items-center justify-center shrink-0",
+                          item.bg,
+                        )}
+                      >
+                        <item.icon className={item.color} size={16} />
+                      </div>
+                      <span className="text-sm font-medium text-gray-500">
+                        {item.label}
+                      </span>
                     </div>
-                    <span className="text-sm text-[#5F6F73]">{text}</span>
+                    <span className="text-sm font-bold text-[#041228]">
+                      {item.value}
+                    </span>
                   </div>
                 ))}
               </div>
+
+              <div className="text-left py-6 border-t border-gray-50 space-y-4">
+                <h4 className="font-bold text-[#041228]">Expected Changes:</h4>
+                <div className="space-y-3">
+                  {projectionData.expected_changes.map((text, idx) => (
+                    <div key={idx} className="flex items-start gap-2">
+                      <div className="w-5 h-5 bg-[#0FA4A9] rounded-full flex items-center justify-center mt-0.5 shrink-0">
+                        <CheckCircle2 size={12} className="text-white" />
+                      </div>
+                      <span className="text-sm text-[#5F6F73]">{text}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Right Side: Comparison or Goal Highlights */}
+          <div className="bg-white rounded-[24px] border border-[#3A86FF]/10 shadow-sm overflow-hidden flex flex-col grayscale opacity-60">
+            <div className="p-8 text-center space-y-6 flex-1 flex flex-col items-center justify-center">
+              <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+                <Zap size={32} className="text-gray-400" />
+              </div>
+              <h3 className="text-gray-500 font-bold text-lg">
+                Compare with Improved Lifestyle
+              </h3>
+              <p className="text-sm text-gray-400 max-w-xs">
+                Generate another projection with your improved goals to see the
+                dramatic difference your choices make.
+              </p>
+              <button
+                onClick={() => {
+                  setLifestyle(
+                    lifestyle === "current" ? "improved" : "current",
+                  );
+                  setStep("input");
+                }}
+                className="mt-4 px-6 py-2 bg-gray-200 text-gray-600 rounded-lg text-sm font-bold hover:bg-gray-300 transition-all"
+              >
+                Switch Selection
+              </button>
             </div>
           </div>
         </div>
 
-        {/* Right: Goal Projection */}
-        <div className="bg-white rounded-[24px] border border-[#3A86FF]/10 shadow-sm overflow-hidden flex flex-col">
-          <div className="p-8 text-center space-y-6 flex-1">
-            <h3 className="text-[#8B5CF6] font-bold text-lg min-h-14 flex items-center justify-center">
-              Achieving your goal: Lose 40 lbs and reach muscular physique in 5
-              years
-            </h3>
-            <div className="relative w-full aspect-[4/3.2] rounded-2xl overflow-hidden bg-gray-50 shadow-inner">
-              <Image
-                src="/images/auth/body2.png"
-                alt="Goal Projection"
-                fill
-                className="object-cover"
-              />
-            </div>
+        {/* Results Actions */}
+        <div className="bg-[#E4F4F5] rounded-xl p-6 border border-[#0FA4A9]/20 flex items-start gap-4">
+          <AlertCircle className="text-[#1F2D2E] shrink-0" size={20} />
+          <p className="text-xs text-[#1F2D2E] leading-relaxed">
+            <span className="font-bold">Illustrative projection:</span> Visuals
+            show relative change based on statistical modeling, not exact or
+            guaranteed outcomes. This interface is for motivational purposes and
+            does not constitute medical advice.
+          </p>
+        </div>
 
-            <div className="space-y-4 pt-4">
-              {[
-                {
-                  label: "Timeframe",
-                  value: "5 Years",
-                  icon: Calendar,
-                  color: "text-[#8B5CF6]",
-                  bg: "bg-[#F3E8FF]",
-                },
-                {
-                  label: "East. BMI:",
-                  value: "25",
-                  icon: Activity,
-                  color: "text-[#10B981]",
-                  bg: "bg-[#E1F9F0]",
-                },
-                {
-                  label: "Est. Weight:",
-                  value: "164.4 lbs",
-                  icon: Zap,
-                  color: "text-[#3A86FF]",
-                  bg: "bg-[#E4EFFF]",
-                },
-              ].map((item, idx) => (
-                <div key={idx} className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div
-                      className={cn(
-                        "w-8 h-8 rounded-lg flex items-center justify-center shrink-0",
-                        item.bg,
-                      )}
-                    >
-                      <item.icon className={item.color} size={16} />
-                    </div>
-                    <span className="text-sm font-medium text-gray-500">
-                      {item.label}
-                    </span>
-                  </div>
-                  <span className="text-sm font-bold text-[#041228]">
-                    {item.value}
-                  </span>
-                </div>
-              ))}
-            </div>
-
-            <div className="text-left py-6 border-t border-gray-50 space-y-4">
-              <h4 className="font-bold text-[#041228]">Expected Changes:</h4>
-              <div className="space-y-3">
-                {[
-                  "Achieved muscular physique in 5 years",
-                  "Optimal BMI of 25.0",
-                  "Lost 40 lbs (18.1 kg) of body fat",
-                  "Peak fitness level",
-                  "Excellent body composition",
-                ].map((text, idx) => (
-                  <div key={idx} className="flex items-start gap-2">
-                    <div className="w-5 h-5 bg-[#0FA4A9] rounded-full flex items-center justify-center mt-0.5 shrink-0">
-                      <CheckCircle2 size={12} className="text-white" />
-                    </div>
-                    <span className="text-sm text-[#5F6F73]">{text}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
+        <div className="flex flex-col md:flex-row items-center justify-center gap-6">
+          <button className="bg-[#0FA4A9] text-white px-8 py-4 rounded-xl font-bold flex items-center gap-2 hover:bg-[#0d8d91] transition-all cursor-pointer w-full md:w-auto shadow-lg shadow-[#0FA4A9]/20">
+            View insights based on this projection
+            <ArrowRight size={20} />
+          </button>
+          <button
+            onClick={() => setStep("input")}
+            className="bg-white border border-gray-200 text-[#041228] px-8 py-4 rounded-xl font-bold flex items-center gap-2 hover:bg-gray-50 transition-all cursor-pointer w-full md:w-auto"
+          >
+            <ArrowLeft size={20} />
+            Generate New
+          </button>
         </div>
       </div>
+    );
+  };
 
-      {/* Results Actions */}
-      <div className="bg-[#E4F4F5] rounded-xl p-6 border border-[#0FA4A9]/20 flex items-start gap-4">
-        <AlertCircle className="text-[#1F2D2E] shrink-0" size={20} />
-        <p className="text-xs text-[#1F2D2E] leading-relaxed">
-          <span className="font-bold">Illustrative projection:</span> Visuals
-          show relative change based on statistical modeling, not exact or
-          guaranteed outcomes. This interface is for motivational purposes and
-          does not constitute medical advice.
-        </p>
-      </div>
-
-      <div className="flex flex-col md:flex-row items-center justify-center gap-6">
-        <button className="bg-[#0FA4A9] text-white px-8 py-4 rounded-xl font-bold flex items-center gap-2 hover:bg-[#0d8d91] transition-all cursor-pointer w-full md:w-auto">
-          View insights based on this projection
-          <ArrowRight size={20} />
-        </button>
-        <button
-          onClick={() => setStep("input")}
-          className="bg-white border border-gray-200 text-[#041228] px-8 py-4 rounded-xl font-bold flex items-center gap-2 hover:bg-gray-50 transition-all cursor-pointer w-full md:w-auto"
-        >
-          <ArrowLeft size={20} />
-          Return to Dashboard
-        </button>
-      </div>
-    </div>
-  );
+  const timeframeMap = {
+    "6 months": "6 Months",
+    "1 Years": "1 Year",
+    "5 Years": "5 Years",
+  };
 
   return (
     <div className="min-h-screen p-6 md:p-10 container mx-auto">
