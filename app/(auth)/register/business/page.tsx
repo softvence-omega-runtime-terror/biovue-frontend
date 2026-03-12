@@ -237,7 +237,7 @@ const BusinessRegister = () => {
               >
                 <option value="trainer_coach">trainer_coach</option>
                 <option value="nutritionist">nutritionist</option>
-                <option value="wellness_professional">
+                <option value="supplement_supplier">
                   supplement_supplier
                 </option>
               </select>
