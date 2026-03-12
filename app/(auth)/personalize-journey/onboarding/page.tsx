@@ -16,7 +16,7 @@ const OnboardingIntroPage = () => {
 
        <div className="absolute top-4 left-6 md:top-6 md:left-10">
         <Link
-          href="/personalize-journey/future"
+          href="/personalize-journey/onboarding/steps"
           className="w-10 h-10 border border-[rgba(58,134,255,0.2)] rounded-lg flex items-center justify-center hover:bg-white/50 transition-all bg-white shadow-sm"
         >
           <ChevronLeft size={24} className="text-[#041228]" />
@@ -48,9 +48,9 @@ const OnboardingIntroPage = () => {
           </p>
 
           {/* Action Button */}
-          <Link href="/personalize-journey/onboarding/steps" className="w-full">
+          <Link href="/user-dashboard" className="w-full">
             <button className="w-full bg-primary text-white py-4 px-6 rounded-xl font-bold text-lg flex items-center justify-center gap-2 hover:bg-opacity-90 transition-all shadow-lg shadow-primary/20 group cursor-pointer">
-                Start Onboarding
+                Go to Dashboard
                 <ArrowRight size={22} className="group-hover:translate-x-1 transition-transform" />
             </button>
           </Link>

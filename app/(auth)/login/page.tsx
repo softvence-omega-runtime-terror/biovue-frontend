@@ -48,6 +48,13 @@ const LoginPage = () => {
         const userRole = res?.data?.user?.role;
         if (userRole === "admin") {
           router.push("/admin-dashboard/overview");
+        } else if (userRole === "individual") {
+          const isProfileCompleted = res?.data?.user?.is_profile_completed;
+          if (isProfileCompleted) {
+            router.push("/user-dashboard");
+          } else {
+            router.push(`/welcome?email=${formData.email}`);
+          }
         } else {
           router.push("/personalize-journey/onboarding");
         }
