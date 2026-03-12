@@ -1,78 +1,50 @@
 "use client";
 
 import { useState } from "react";
-import { Search, Sparkles, Brain, Image as ImageIcon, MessageSquare, Code, Languages, Mic, Video, Info } from "lucide-react";
+import { Search, Sparkles, Brain, Image as ImageIcon, Info } from "lucide-react";
 import DashboardHeading from "@/components/common/DashboardHeading";
 import { Input } from "@/components/ui/input";
 import ApiServiceCard from "@/components/AdminDashboard/api-service/ApiServiceCard";
 import ApiKeyModal from "@/components/AdminDashboard/api-service/ApiKeyModal";
 
 
-// Mock AI APIs data
+// Mock AI APIs data based on specific routes
 const AI_APIS = [
   {
-    id: "gpt-4",
-    name: "GPT-4 Vision",
-    description: "Multi-modal model that can process both text and images for advanced reasoning and analysis.",
+    id: "current-lifestyle",
+    name: "Project Current Lifestyle",
+    description: "Analyze and project outcomes based on current lifestyle data. Endpoint: /api/v1/projection/current-lifestyle/",
     icon: Brain,
     color: "bg-purple-500",
     status: "Active" as const,
+    route: "/api/v1/projection/current-lifestyle/",
   },
   {
-    id: "dall-e-3",
-    name: "DALL·E 3",
-    description: "State-of-the-art image generation model that converts descriptive text into vivid, high-resolution visuals.",
+    id: "future-goal",
+    name: "Project Future Goal",
+    description: "Forecast future health and performance milestones. Endpoint: /api/v1/projection/future-goal/",
     icon: ImageIcon,
     color: "bg-blue-500",
     status: "Active" as const,
+    route: "/api/v1/projection/future-goal/",
   },
   {
-    id: "whisper",
-    name: "Whisper v3",
-    description: "Automatic speech recognition (ASR) system that enables robust multi-lingual transcription and translation.",
-    icon: Mic,
+    id: "current-insights",
+    name: "Get Current Insights",
+    description: "Retrieve real-time actionable insights from current health metrics. Endpoint: /api/v1/insights/current",
+    icon: Sparkles,
     color: "bg-teal-500",
     status: "Active" as const,
+    route: "/api/v1/insights/current",
   },
   {
-    id: "claude-3",
-    name: "Claude 3 Opus",
-    description: "Advanced LLM optimized for complex coding, creative writing, and nuanced conversation with high precision.",
-    icon: MessageSquare,
+    id: "future-insights",
+    name: "Get Future Insights",
+    description: "Get predictive insights and recommendations for long-term health. Endpoint: /api/v1/insights/future",
+    icon: Brain,
     color: "bg-orange-500",
     status: "Active" as const,
-  },
-  {
-    id: "sora",
-    name: "Sora Video",
-    description: "Experimental text-to-video model capable of creating realistic and imaginative scenes from prompts.",
-    icon: Video,
-    color: "bg-rose-500",
-    status: "Maintenance" as const,
-  },
-  {
-    id: "gemini-pro",
-    name: "Gemini 1.5 Pro",
-    description: "Google's most capable model for a wide range of tasks, featuring an massive context window for deep analysis.",
-    icon: Sparkles,
-    color: "bg-indigo-500",
-    status: "Active" as const,
-  },
-  {
-    id: "translation-api",
-    name: "Neural Translate",
-    description: "Real-time, high-fidelity translation service supporting over 100 languages with context-aware accuracy.",
-    icon: Languages,
-    color: "bg-cyan-500",
-    status: "Active" as const,
-  },
-  {
-    id: "code-llama",
-    name: "Code Llama 70B",
-    description: "Specialized model for code generation and debugging, supporting multiple programming languages.",
-    icon: Code,
-    color: "bg-emerald-500",
-    status: "Active" as const,
+    route: "/api/v1/insights/future",
   },
 ];
 
