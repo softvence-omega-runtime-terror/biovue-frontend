@@ -175,7 +175,7 @@ const LoginPage = () => {
         <div className="mt-6 text-center">
           <p className="text-[#041228] text-sm font-semibold">
             Don't have an account?{" "}
-            <Link href="/register/individual" className="text-[#3A86FF] hover:underline ml-1">
+            <Link href="/register" className="text-[#3A86FF] hover:underline ml-1">
               Sign up
             </Link>
           </p>
