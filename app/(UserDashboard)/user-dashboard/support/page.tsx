@@ -282,6 +282,7 @@ const BrowseCard = ({ item, onView }: { item: any; onView: () => void }) => (
 const SupportPage = () => {
   const user = useSelector(selectCurrentUser);
   const { data: recommendationsData, isLoading } = useGetRecommendedProfessionalsQuery(user?.id, { skip: !user?.id });
+  console.log(recommendationsData,"recaommandation")
 
   const suggestions = recommendationsData?.data?.suggestions || [];
   const recommendedCoaches = suggestions.slice(0, 3).map((item: any) => ({
@@ -817,9 +818,9 @@ const SupportPage = () => {
            <Heart size={32} className="text-white fill-white" />
          </div>
          <div className="flex flex-col gap-2 text-center md:text-left">
-           <h3 className="text-xl font-bold text-[#1F2D2E]">Why professional support matters</h3>
-           <p className="text-[#5F6F73] text-[15px] leading-relaxed max-w-2xl">
-             Working with a coach or clinic can dramatically improve your progress and long-term outcomes. BioVue data shows users with dedicated support hit their 5-year goals faster.
+           <h3 className="text-xl font-bold text-[#1F2D2E]">{recommendationsData?.data?.trend?.topic || "Why professional support matters"}</h3>
+           <p className="text-[#5F6F73] text-[15px] leading-relaxed ">
+             {recommendationsData?.data?.trend?.description || "Working with a coach or clinic can dramatically improve your progress and long-term outcomes. BioVue data shows users with dedicated support hit their 5-year goals faster."}
            </p>
          </div>
       </div>
