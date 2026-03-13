@@ -45,11 +45,31 @@ const LoginPage = () => {
         }));
         
         // Handle role-based redirection
-        const userRole = res?.data?.user?.role;
+        const userData = res?.data?.user;
+        const userRole = userData?.role;
+        const userType = userData?.user_type;
+        const professionType = userData?.profession_type;
+        const isProfileCompleted = userData?.is_profile_completed;
+
         if (userRole === "admin") {
           router.push("/admin-dashboard/overview");
+        } else if (userType === "professional" || userRole === "professional") {
+          if (professionType === "trainer_coach") {
+            if (isProfileCompleted === "Your profile is complete.") {
+              router.push("/trainer-dashboard/overview");
+            } else {
+              router.push("/trainer-profile");
+            }
+          } else if (professionType === "supplement_supplier") {
+            if (isProfileCompleted === "Your profile is complete.") {
+              router.push("/supplier-dashboard");
+            } else {
+              router.push("/register/business/profile-setup");
+            }
+          } else {
+            router.push("/personalize-journey/onboarding");
+          }
         } else if (userRole === "individual") {
-          const isProfileCompleted = res?.data?.user?.is_profile_completed;
           if (isProfileCompleted) {
             router.push("/user-dashboard");
           } else {
