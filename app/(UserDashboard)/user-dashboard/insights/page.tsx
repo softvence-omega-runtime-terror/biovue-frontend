@@ -63,6 +63,18 @@ export default function InsightsPage() {
       {/* Top Navigation */}
       <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-8">
         <div className="flex items-center gap-1 bg-[#E6F6F6] p-1 rounded-lg border border-[#BDE8E8]">
+
+         <button
+            onClick={() => setActiveTab("current")}
+            className={cn(
+              "px-4 py-2 text-sm font-semibold rounded-md transition-all cursor-pointer",
+              activeTab === "current"
+                ? "bg-[#0FA4A9] text-white shadow-sm"
+                : "text-[#5F6F73] hover:text-[#1F2D2E]",
+            )}
+          >
+            Current Projection
+          </button>
           <button
             onClick={() => setActiveTab("5-year")}
             className={cn(
@@ -74,17 +86,7 @@ export default function InsightsPage() {
           >
             5 - Year Projection
           </button>
-          <button
-            onClick={() => setActiveTab("current")}
-            className={cn(
-              "px-4 py-2 text-sm font-semibold rounded-md transition-all cursor-pointer",
-              activeTab === "current"
-                ? "bg-[#0FA4A9] text-white shadow-sm"
-                : "text-[#5F6F73] hover:text-[#1F2D2E]",
-            )}
-          >
-            Current Projection
-          </button>
+         
         </div>
 
         <button

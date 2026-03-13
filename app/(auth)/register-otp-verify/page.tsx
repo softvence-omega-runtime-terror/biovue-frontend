@@ -5,7 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { ChevronLeft, ArrowRight } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useVerifyOtpMutation } from "@/redux/features/api/auth/authApi";
+import { useVerifyOtpMutation, useResendOtpMutation } from "@/redux/features/api/auth/authApi";
 import { toast } from "sonner";
 
 const RegisterOTPVerifyContent = () => {
@@ -15,6 +15,25 @@ const RegisterOTPVerifyContent = () => {
   const searchParams = useSearchParams();
   const email = searchParams.get("email") || "yourmail@gmail.com";
   const [verifyOtp, { isLoading }] = useVerifyOtpMutation();
+  const [resendOtp, { isLoading: isResending }] = useResendOtpMutation();
+  const [resendCooldown, setResendCooldown] = useState(0);
+
+  React.useEffect(() => {
+    if (resendCooldown <= 0) return;
+    const timer = setTimeout(() => setResendCooldown((prev) => prev - 1), 1000);
+    return () => clearTimeout(timer);
+  }, [resendCooldown]);
+
+  const handleResendOtp = async () => {
+    if (resendCooldown > 0 || isResending) return;
+    try {
+      const res = await resendOtp({ email }).unwrap();
+      toast.success(res?.message || "OTP resent successfully!");
+      setResendCooldown(60);
+    } catch (err: any) {
+      toast.error(err?.data?.message || "Failed to resend OTP. Please try again.");
+    }
+  };
 
   const handleChange = (value: string, index: number) => {
     if (!/^[0-9]?$/.test(value)) return;
@@ -165,6 +184,23 @@ const RegisterOTPVerifyContent = () => {
                 />
               )}
             </button>
+
+            {/* Resend OTP */}
+            <p className="text-[#98A2B3] text-sm mt-6">
+              Didn&apos;t receive the code?{" "}
+              <button
+                type="button"
+                onClick={handleResendOtp}
+                disabled={resendCooldown > 0 || isResending}
+                className="text-[#0FA4A9] font-semibold hover:underline disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+              >
+                {isResending
+                  ? "Sending..."
+                  : resendCooldown > 0
+                    ? `Resend in ${resendCooldown}s`
+                    : "Resend OTP"}
+              </button>
+            </p>
           </div>
         </div>
       </div>

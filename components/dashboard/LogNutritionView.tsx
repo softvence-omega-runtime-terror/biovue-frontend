@@ -308,7 +308,9 @@ export default function FoodLogView({ onSave, onBack }: FoodLogViewProps) {
     }
 
     try {
+      const today = new Date().toISOString().split("T")[0]; // YYYY-MM-DD
       const payload = {
+        log_date: today,
         user_id: userId || 3,
         meals: meals.map(meal => ({
           type: meal.type,
