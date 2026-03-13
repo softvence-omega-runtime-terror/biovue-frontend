@@ -13,6 +13,11 @@ import {
   Archive,
   Moon,
   Repeat,
+  Zap,
+  HeartPulse,
+  Dumbbell,
+  Scale,
+  Loader2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import LogTodayModal from "@/components/dashboard/LogTodayModal";
@@ -22,7 +27,7 @@ import NotificationDropdown, {
 } from "@/components/dashboard/NotificationDropdown";
 import ChartsNutrition from "@/components/UserDashboard/Dashboard/ChartsNutrition";
 import { useGetCardDataQuery } from "@/redux/features/api/userDashboard/habit";
-import { Loader2 } from "lucide-react";
+import { useGetInsightsQuery } from "@/redux/features/api/userDashboard/insightsApi";
 
 // --- Main Page ---
 const UserDashboard = () => {
@@ -32,6 +37,7 @@ const UserDashboard = () => {
   const [notifications, setNotifications] = useState(MOCK_NOTIFICATIONS);
   const [dataSource, setDataSource] = useState<"device" | "manual">("device");
   const { data: cardData, isLoading: isCardLoading } = useGetCardDataQuery();
+  const { data: insightsData, isLoading: isInsightsLoading } = useGetInsightsQuery({});
 
   const [habitData, setHabitData] = useState({
     weight: "",
@@ -348,63 +354,113 @@ const UserDashboard = () => {
           <ChartsNutrition />
         </div>
 
-        {/* Today's Focus */}
+        {/* Today's Focus - Dynamic Insights */}
         <div className="mt-8 flex flex-col gap-6">
           <div className="flex items-center justify-between">
             <h2 className="text-xl font-bold text-[#1F2D2E]">
               Today&apos;s focus
             </h2>
-            <button className="flex items-center gap-2 bg-[#0FA4A9] text-white px-4 py-2 rounded-lg font-medium hover:bg-opacity-90 transition-all text-sm group cursor-pointer">
-              View All Insights
-              <ArrowRight
-                size={18}
-                className="group-hover:translate-x-1 transition-transform"
-              />
-            </button>
+            <Link href="/user-dashboard/insights">
+              <button className="flex items-center gap-2 bg-[#0FA4A9] text-white px-4 py-2 rounded-lg font-medium hover:bg-opacity-90 transition-all text-sm group cursor-pointer">
+                View All Insights
+                <ArrowRight
+                  size={18}
+                  className="group-hover:translate-x-1 transition-transform"
+                />
+              </button>
+            </Link>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {[
-              {
-                title: "Improve Diet Quality",
-                desc: '"Based on logged meals and nutrition quality"',
-                icon: <Repeat size={20} className="text-[#3A86FF]" />,
-                badge: "HIGH PRIORITY",
-                iconBg: "bg-[#E4EFFF]",
-              },
-              {
-                title: "Optimize Sleep Duration",
-                desc: '"Better recovery and mental clarity"',
-                icon: <Moon size={20} className="text-[#3A86FF]" />,
-                badge: "HIGH PRIORITY",
-                iconBg: "bg-[#E4EFFF]",
-              },
-            ].map((focus, i) => (
-              <div
-                key={i}
-                className="bg-white rounded-2xl p-6 border border-gray-100 shadow-[0_2px_12px_rgba(0,0,0,0.02)] flex flex-col gap-4 group hover:border-[#0FA4A9] transition-all cursor-pointer"
-              >
-                <div className="flex items-start justify-between">
-                  <div
-                    className={cn(
-                      "w-10 h-10 rounded-xl flex items-center justify-center transition-colors",
-                      focus.iconBg,
-                    )}
-                  >
-                    {focus.icon}
-                  </div>
-                  <span className="text-[10px] font-bold text-red-500 bg-red-50 px-2 py-1 rounded-full uppercase tracking-wider">
-                    {focus.badge}
-                  </span>
-                </div>
-                <div className="flex flex-col gap-1">
-                  <h3 className="text-base font-bold text-[#1F2D2E]">
-                    {focus.title}
-                  </h3>
-                  <p className="text-xs text-[#5F6F73] italic">{focus.desc}</p>
-                </div>
+            {isInsightsLoading ? (
+              <div className="col-span-2 flex items-center justify-center py-12">
+                <Loader2 className="w-6 h-6 animate-spin text-[#0FA4A9]" />
               </div>
-            ))}
+            ) : (insightsData?.data || []).slice(0, 2).map((insight: any, i: number) => {
+              const cat = insight.category?.toLowerCase() || "";
+              const categoryIcon = cat.includes("nutrition") ? <Zap size={20} className="text-[#1F2D2E]" />
+                : cat.includes("cardio") || cat.includes("heart") ? <HeartPulse size={20} className="text-[#1F2D2E]" />
+                : cat.includes("exercise") || cat.includes("muscle") ? <Dumbbell size={20} className="text-[#1F2D2E]" />
+                : cat.includes("sleep") ? <Moon size={20} className="text-[#1F2D2E]" />
+                : <Scale size={20} className="text-[#1F2D2E]" />;
+
+              const priorityColor = insight.priority?.toUpperCase() === "HIGH"
+                ? "text-pink-500 bg-pink-50"
+                : insight.priority?.toUpperCase() === "LOW"
+                  ? "text-green-500 bg-green-50"
+                  : "text-blue-500 bg-blue-50";
+
+              return (
+                <div
+                  key={i}
+                  className="bg-white rounded-2xl p-6 border border-gray-100 shadow-[0_2px_12px_rgba(0,0,0,0.02)] flex flex-col gap-4 group hover:border-[#0FA4A9] transition-all cursor-pointer"
+                >
+                  <div className="flex items-start justify-between">
+                    <div
+                      className="w-10 h-10 rounded-xl flex items-center justify-center bg-[#E4EFFF] transition-colors"
+                    >
+                      {categoryIcon}
+                    </div>
+                    <span className={cn("text-[10px] font-bold px-2 py-1 rounded-full uppercase tracking-wider", priorityColor)}>
+                      {insight.priority?.toUpperCase()} PRIORITY
+                    </span>
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    <h3 className="text-base font-bold text-[#1F2D2E]">
+                      {insight.insight}
+                    </h3>
+                    <p className="text-xs text-[#5F6F73] italic">
+                      {insight.why_this_matters ? `"${insight.why_this_matters}"` : `"${insight.category}"`}
+                    </p>
+                  </div>
+                </div>
+              );
+            })}
+            {!isInsightsLoading && (!insightsData?.data || insightsData.data.length === 0) && (
+              <>
+                {[
+                  {
+                    title: "Improve Diet Quality",
+                    desc: '"Based on logged meals and nutrition quality"',
+                    icon: <Repeat size={20} className="text-[#3A86FF]" />,
+                    badge: "HIGH PRIORITY",
+                    iconBg: "bg-[#E4EFFF]",
+                  },
+                  {
+                    title: "Optimize Sleep Duration",
+                    desc: '"Better recovery and mental clarity"',
+                    icon: <Moon size={20} className="text-[#3A86FF]" />,
+                    badge: "HIGH PRIORITY",
+                    iconBg: "bg-[#E4EFFF]",
+                  },
+                ].map((focus, i) => (
+                  <div
+                    key={i}
+                    className="bg-white rounded-2xl p-6 border border-gray-100 shadow-[0_2px_12px_rgba(0,0,0,0.02)] flex flex-col gap-4 group hover:border-[#0FA4A9] transition-all cursor-pointer"
+                  >
+                    <div className="flex items-start justify-between">
+                      <div
+                        className={cn(
+                          "w-10 h-10 rounded-xl flex items-center justify-center transition-colors",
+                          focus.iconBg,
+                        )}
+                      >
+                        {focus.icon}
+                      </div>
+                      <span className="text-[10px] font-bold text-red-500 bg-red-50 px-2 py-1 rounded-full uppercase tracking-wider">
+                        {focus.badge}
+                      </span>
+                    </div>
+                    <div className="flex flex-col gap-1">
+                      <h3 className="text-base font-bold text-[#1F2D2E]">
+                        {focus.title}
+                      </h3>
+                      <p className="text-xs text-[#5F6F73] italic">{focus.desc}</p>
+                    </div>
+                  </div>
+                ))}
+              </>
+            )}
           </div>
         </div>
       </div>
