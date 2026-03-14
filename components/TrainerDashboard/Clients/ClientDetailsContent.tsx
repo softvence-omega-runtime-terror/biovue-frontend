@@ -284,7 +284,7 @@ export default function ClientDetailsContent({
             clientDetails={clientDetails}
           />
           <CoachActions />
-          <ProgressTrends />
+          <ProgressTrends clientId={clientDetails.id as any} />
           <CoachNotes notes={clientDetails.coachNotes} />
           <VisibilityControls />
         </div>
