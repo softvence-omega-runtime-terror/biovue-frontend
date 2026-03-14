@@ -70,7 +70,7 @@ const LoginPage = () => {
             router.push("/personalize-journey/onboarding");
           }
         } else if (userRole === "individual") {
-          if (isProfileCompleted) {
+          if (isProfileCompleted === "Your profile is complete.") {
             router.push("/user-dashboard");
           } else {
             router.push(`/welcome?email=${formData.email}`);
