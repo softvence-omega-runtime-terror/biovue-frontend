@@ -1,23 +1,32 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { MoreVertical, Send } from "lucide-react";
 
 import ChatArea from "@/components/TrainerDashboard/messages/ChatArea";
 import ClientsListSidebar from "@/components/TrainerDashboard/messages/ClientListSidebar";
 import MotivationModal from "@/components/TrainerDashboard/messages/MotivationModal";
 import PreHireInquiries from "@/components/TrainerDashboard/messages/PreHireInqueries";
-import {
-  mockClients,
-  mockPreHireUsers,
-} from "@/components/TrainerDashboard/messages/MessageData";
+import { mockPreHireUsers } from "@/components/TrainerDashboard/messages/MessageData";
 import PreHireChatArea from "@/components/TrainerDashboard/messages/PreHireChatArea";
+import { useGetConnectedClientsQuery } from "@/redux/features/api/TrainerDashboard/Clients/YourClients";
 
 export default function MessagesPage() {
-  const [selectedClientId, setSelectedClientId] = useState("1");
+  const { data: connectedClientsData } = useGetConnectedClientsQuery();
+  const clients = connectedClientsData?.data || [];
+
+  const [selectedClientId, setSelectedClientId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [openMotivation, setOpenMotivation] = useState(false);
-  const selectedClient = mockClients.find((c) => c.id === selectedClientId);
+
+  useEffect(() => {
+    if (clients.length > 0 && !selectedClientId) {
+      setSelectedClientId(clients[0].id.toString());
+    }
+  }, [clients, selectedClientId]);
+
+  const selectedClient = clients.find((c) => c.id.toString() === selectedClientId);
+
   const [selectedPreHireId, setSelectedPreHireId] = useState<string | null>(
     null,
   );
@@ -101,12 +110,16 @@ export default function MessagesPage() {
 
             {/* Chat */}
             <div className="flex flex-col flex-1 h-full">
-              {selectedClient && (
+              {selectedClient ? (
                 <ChatArea
-                  clientId={selectedClient.id}
+                  clientId={selectedClient.id.toString()}
                   clientName={selectedClient.name}
-                  clientAvatar={selectedClient.avatar}
+                  clientAvatar={selectedClient.image_url || undefined}
                 />
+              ) : (
+                <div className="flex-1 flex items-center justify-center text-gray-500">
+                  Select a client to view chat
+                </div>
               )}
             </div>
           </div>

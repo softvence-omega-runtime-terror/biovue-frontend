@@ -3,11 +3,9 @@
 import { useState } from "react";
 import DashboardHeading from "@/components/common/DashboardHeading";
 import ClientsTable from "@/components/TrainerDashboard/Clients/ClientsTable";
-import {
-  clients as allClients,
-  Client,
-} from "@/components/TrainerDashboard/overview/data";
+import { Client } from "@/components/TrainerDashboard/overview/data";
 import { ArrowDownUp, Funnel, User, UserPlus } from "lucide-react";
+import { useGetTrainerOverviewQuery } from "@/redux/features/api/TrainerDashboard/trainerOverviewApi";
 
 type InviteStep = "email" | "review" | "success" | null;
 
@@ -34,6 +32,26 @@ function Modal({
 }
 
 export default function ClientsPage() {
+  const { data: overviewData, isLoading } = useGetTrainerOverviewQuery();
+  const apiClients = overviewData?.client_table || [];
+  const stats = overviewData?.stats;
+
+  const mappedClients: Client[] = apiClients.map(client => {
+    let mappedStatus: Client["status"] = "on-track";
+    if (client.status === "need-attention" || client.status === "inactive") {
+      mappedStatus = client.status;
+    }
+
+    return {
+      id: client.user_id,
+      name: client.user_name,
+      goal: client.goal || "Not specified",
+      projectionUsed: client.projection_used || "-",
+      status: mappedStatus,
+      activity: client.activity || "Recent",
+    };
+  });
+
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<Client["status"] | "all">(
     "all",
@@ -61,7 +79,7 @@ export default function ClientsPage() {
   ];
 
   // Filter logic
-  const filteredClients = allClients.filter((client) => {
+  const filteredClients = mappedClients.filter((client) => {
     const matchesSearch =
       client.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       client.goal.toLowerCase().includes(searchTerm.toLowerCase());
@@ -70,12 +88,13 @@ export default function ClientsPage() {
     return matchesSearch && matchesStatus;
   });
   // Sort logic
-  const SorteredClients = allClients.sort((a, b) => {
+  const sortedClients = [...filteredClients].sort((a, b) => {
     if (sortOption === "Name (A-Z)") return a.name.localeCompare(b.name);
     if (sortOption === "Name (Z-A)") return b.name.localeCompare(a.name);
     // Activity-based sorting can be extended with real timestamps
     return 0;
   });
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
@@ -96,14 +115,14 @@ export default function ClientsPage() {
       {/* Summary cards */}
       <div className="flex flex-wrap gap-4">
         <div className="px-4 py-3 border rounded-lg bg-white">
-          Total Clients: {allClients.length}
+          Total Clients: {isLoading ? "..." : (stats?.active_clients?.value || mappedClients.length)}
         </div>
         <div className="px-4 py-3 border rounded-lg bg-[#C7343405] text-[#C73434]">
           Needs Attention:{" "}
-          {allClients.filter((c) => c.status === "need-attention").length}
+          {isLoading ? "..." : (stats?.needing_attention?.value || mappedClients.filter((c) => c.status === "need-attention").length)}
         </div>
         <div className="px-4 py-3 border rounded-lg bg-white">
-          Active This Week: 18
+          Active This Week: {isLoading ? "..." : mappedClients.length}
         </div>
       </div>
       <div className="flex flex-wrap gap-3 items-center py-3">
@@ -123,8 +142,6 @@ export default function ClientsPage() {
             className="flex cursor-pointer items-center gap-2 px-4 py-2 border rounded-lg hover:bg-gray-50"
           >
             <span className="flex items-center gap-2">
-              {/* Only show funnel icon before the first option (All Clients) */}
-
               <Funnel size={16} className="text-[#5F6F73]" />
             </span>
             {statusOptions.find((o) => o.value === statusFilter)?.label}
@@ -132,7 +149,7 @@ export default function ClientsPage() {
 
           {showStatusDropdown && (
             <div className="absolute mt-2 w-48 bg-white border border-gray-300 rounded-lg shadow-lg z-10">
-              {statusOptions.map((option, index) => (
+              {statusOptions.map((option) => (
                 <button
                   key={option.value}
                   onClick={() => {
@@ -239,7 +256,6 @@ export default function ClientsPage() {
               <User className="text-[#0D9488]" size={32} />
             </p>
             <div>
-              {/* <p>ekhane email id theke name fetch kora lagbe.</p> */}
               <p className="text-sm text-gray-500">{clientEmail}</p>
             </div>
           </div>
@@ -265,7 +281,6 @@ export default function ClientsPage() {
             <button
               disabled={!agreed}
               onClick={() => {
-                // invitation er API ekhane dite hobe
                 setInviteStep("success");
               }}
               className="flex-1 cursor-pointer bg-[#0FA4A9] text-white py-2 rounded-lg disabled:opacity-50"
@@ -311,7 +326,11 @@ export default function ClientsPage() {
       )}
 
       {/* Table */}
-      <ClientsTable clients={filteredClients} />
+      {isLoading ? (
+        <div className="py-8 text-center text-gray-500">Loading clients...</div>
+      ) : (
+        <ClientsTable clients={sortedClients} />
+      )}
     </div>
   );
 }

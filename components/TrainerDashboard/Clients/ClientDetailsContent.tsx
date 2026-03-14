@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useGetProgramsQuery } from "@/redux/features/api/TrainerDashboard/Program/GetPrograms";
+import { useGetClientProgramContextQuery } from "@/redux/features/api/TrainerDashboard/Clients/ClientOverview";
 import { useAssignProgramUsersMutation } from "@/redux/features/api/TrainerDashboard/Program/AssignProgram";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -42,8 +43,11 @@ export default function ClientDetailsContent({
   };
 
   const { data: programsData, isLoading: programsLoading } = useGetProgramsQuery();
+  const { data: programContextData, isLoading: isProgramContextLoading } = useGetClientProgramContextQuery(clientDetails.id);
   const [assignProgram, { isLoading: isAssigning }] = useAssignProgramUsersMutation();
   const [selectedProgramId, setSelectedProgramId] = useState<string>("");
+  
+  const programContext = programContextData?.data;
 
   const handleAssignProgram = async () => {
     if (!selectedProgramId) {
@@ -110,17 +114,18 @@ export default function ClientDetailsContent({
       {/* Top Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <Card className="border-none shadow-xs bg-white">
-          <CardContent className="p-5 ">
+          <CardContent className="p-5 space-y-4">
             <p className="text-base mb-2 font-bold text-[#5F6F73] tracking-wider uppercase">
               PRIMARY GOAL
             </p>
-            <div className="">
+            <div className="space-y-1">
               <h3 className="text-xl md:text-[28px] mb-2 font-medium text-[#111827]">
-                {clientDetails.primaryGoal.title}
+                {isProgramContextLoading ? (
+                  <Loader2 className="animate-spin h-5 w-5" />
+                ) : (
+                  programContext?.primary_goal || "N/A"
+                )}
               </h3>
-              <p className="text-base text-[#9AAEB2]">
-                {clientDetails.primaryGoal.subtitle}
-              </p>
             </div>
           </CardContent>
         </Card>
@@ -128,15 +133,16 @@ export default function ClientDetailsContent({
         <Card className="border-none shadow-xs bg-white">
           <CardContent className="p-5 space-y-4">
             <p className="text-base mb-2 font-bold text-[#5F6F73] tracking-wider uppercase">
-              CURRENT TREND
+              PROGRAM NAME
             </p>
             <div className="space-y-1">
-              <h3 className="text-xl md:text-[28px] mb-2 font-medium text-[#111827]">
-                {clientDetails.currentTrend.status}
+              <h3 className="text-xl md:text-[28px] mb-2 font-medium text-[#111827] truncate">
+                {isProgramContextLoading ? (
+                  <Loader2 className="animate-spin h-5 w-5" />
+                ) : (
+                  programContext?.program_name || "N/A"
+                )}
               </h3>
-              <p className="text-base text-[#22C55E] font-medium">
-                {clientDetails.currentTrend.description}
-              </p>
             </div>
           </CardContent>
         </Card>
@@ -144,15 +150,16 @@ export default function ClientDetailsContent({
         <Card className="border-none shadow-xs bg-white">
           <CardContent className="p-5 space-y-4">
             <p className="text-base mb-2 font-bold text-[#5F6F73] tracking-wider uppercase">
-              LAST ACTIVITY
+              DURATION
             </p>
             <div className="space-y-1">
               <h3 className="text-xl md:text-[28px] mb-2 font-medium text-[#111827]">
-                {clientDetails.lastActivity.status}
+                {isProgramContextLoading ? (
+                  <Loader2 className="animate-spin h-5 w-5" />
+                ) : (
+                  programContext?.duration || "N/A"
+                )}
               </h3>
-              <p className="text-base text-[#9AAEB2]">
-                {clientDetails.lastActivity.description}
-              </p>
             </div>
           </CardContent>
         </Card>
@@ -160,15 +167,16 @@ export default function ClientDetailsContent({
         <Card className="border-none shadow-xs bg-white">
           <CardContent className="p-5 space-y-4">
             <p className="text-base mb-2 font-bold text-[#5F6F73] tracking-wider uppercase">
-              CONSISTENCY SCORE
+              INTENSITY
             </p>
             <div className="space-y-1">
               <h3 className="text-xl md:text-[28px] mb-2 font-medium text-[#111827]">
-                {clientDetails.consistencyScore.score}%
+                {isProgramContextLoading ? (
+                  <Loader2 className="animate-spin h-5 w-5" />
+                ) : (
+                  programContext?.intensity || "N/A"
+                )}
               </h3>
-              <p className="text-base text-[#D3BB5B] font-medium">
-                {clientDetails.consistencyScore.description}
-              </p>
             </div>
           </CardContent>
         </Card>
@@ -205,63 +213,64 @@ export default function ClientDetailsContent({
               <p className="text-base mb-2 font-bold text-[#5F6F73] tracking-wider uppercase">
                 CONNECTED PROGRAM
               </p>
-              {hasProgram && (
+              {programContext?.program_name && (
                 <Badge className="bg-[#0D94881A] text-[#0D9488] border-none font-medium">
                   ACTIVE
                 </Badge>
               )}
             </div>
 
-            {hasProgram ? (
+            {programContext?.program_name ? (
               <div className="flex items-center gap-4">
                 <div className="p-3 bg-teal-50 rounded-lg text-[#0D9488]">
                   <BookOpen size={24} />
                 </div>
                 <div>
                   <h3 className="text-lg font-semibold text-[#111827]">
-                    {clientDetails.programContext.name}
+                    {programContext.program_name}
                   </h3>
                   <p className="text-sm text-[#5F6F73]">
-                    {clientDetails.programContext.duration} • {clientDetails.programContext.primaryGoal}
+                    {programContext.duration} • {programContext.primary_goal}
                   </p>
                 </div>
               </div>
             ) : (
-              <div className="space-y-3">
-                <p className="text-sm text-[#5F6F73]">No program connected yet. Assign one to help the client reach their goals.</p>
-                <div className="flex gap-2">
-                  <div className="flex-1">
-                    <Select value={selectedProgramId} onValueChange={setSelectedProgramId}>
-                      <SelectTrigger className="w-full">
-                        <SelectValue placeholder="Select a program" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {programsLoading ? (
-                          <div className="flex items-center justify-center p-2">
-                            <Loader2 className="animate-spin h-4 w-4" />
-                          </div>
-                        ) : programsData?.data && programsData.data.length > 0 ? (
-                          programsData.data.map((program) => (
-                            <SelectItem key={program.id} value={String(program.id)}>
-                              {program.name}
-                            </SelectItem>
-                          ))
-                        ) : (
-                          <SelectItem value="none" disabled>No programs found</SelectItem>
-                        )}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <button
-                    onClick={handleAssignProgram}
-                    disabled={isAssigning || !selectedProgramId}
-                    className="bg-[#0D9488] text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-[#0A7A6F] transition-colors disabled:opacity-50"
-                  >
-                    {isAssigning ? <Loader2 size={16} className="animate-spin" /> : "Assign"}
-                  </button>
-                </div>
-              </div>
+              <p className="text-sm text-[#5F6F73]">No program connected yet. Assign one to help the client reach their goals.</p>
             )}
+
+            <div className="space-y-3 pt-2">
+              <div className="flex gap-2">
+                <div className="flex-1">
+                  <Select value={selectedProgramId} onValueChange={setSelectedProgramId}>
+                    <SelectTrigger className="w-full">
+                       <SelectValue placeholder="Select a program" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {programsLoading ? (
+                        <div className="flex items-center justify-center p-2">
+                          <Loader2 className="animate-spin h-4 w-4" />
+                        </div>
+                      ) : programsData?.data && programsData.data.length > 0 ? (
+                        programsData.data.map((program) => (
+                          <SelectItem key={program.id} value={program.id.toString()}>
+                            {program.name}
+                          </SelectItem>
+                        ))
+                      ) : (
+                        <SelectItem value="none" disabled>No programs found</SelectItem>
+                      )}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <button
+                  onClick={handleAssignProgram}
+                  disabled={isAssigning || !selectedProgramId}
+                  className="bg-[#0D9488] text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-[#0A7A6F] transition-colors disabled:opacity-50"
+                >
+                  {isAssigning ? <Loader2 size={16} className="animate-spin" /> : "Assign"}
+                </button>
+              </div>
+            </div>
           </CardContent>
         </Card>
       </div>
@@ -275,7 +284,7 @@ export default function ClientDetailsContent({
             clientDetails={clientDetails}
           />
           <CoachActions />
-          <ProgressTrends />
+          <ProgressTrends clientId={clientDetails.id as any} />
           <CoachNotes notes={clientDetails.coachNotes} />
           <VisibilityControls />
         </div>
