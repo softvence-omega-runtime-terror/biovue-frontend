@@ -10,9 +10,30 @@ const insightsApi = baseApi.injectEndpoints({
       query: () => "/future-insights",
       providesTags: ["Insights"],
     }),
+    fetchInsights: builder.mutation({
+      query: (data) => ({
+        url: "/insights/fetch",
+        method: "POST",
+        body: data,
+      }),
+      invalidatesTags: ["Insights"],
+    }),
+    fetchFutureInsights: builder.mutation({
+      query: (data) => ({
+        url: "/future-insights/fetch",
+        method: "POST",
+        body: data,
+      }),
+      invalidatesTags: ["Insights"],
+    }),
   }),
 });
 
-export const { useGetInsightsQuery, useGetFutureInsightsQuery } = insightsApi;
+export const { 
+  useGetInsightsQuery, 
+  useGetFutureInsightsQuery,
+  useFetchInsightsMutation,
+  useFetchFutureInsightsMutation
+} = insightsApi;
 
 export default insightsApi;
