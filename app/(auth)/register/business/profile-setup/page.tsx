@@ -1,26 +1,92 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowLeft, Camera } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { useCreateUpdateProfileMutation } from "@/redux/features/api/profileApi";
+import { useSelector } from "react-redux";
+import { selectCurrentUser } from "@/redux/features/slice/authSlice";
+import { toast } from "sonner";
 
 const ProfileSetup = () => {
   const router = useRouter();
+  const user = useSelector(selectCurrentUser);
+  const [createUpdateProfile, { isLoading }] = useCreateUpdateProfileMutation();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
   const [formData, setFormData] = useState({
-    supplierName: "",
-    businessName: ""
+    name: "",
+    location: ""
   });
+
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (user?.name) {
+      setFormData(prev => ({ ...prev, name: user.name }));
+    }
+  }, [user]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.size > 2 * 1024 * 1024) {
+        toast.error("Image size should be less than 2MB");
+        return;
+      }
+      setImageFile(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const triggerFileInput = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    router.push("/supplier-dashboard");
+
+    if (!user?.id) {
+      toast.error("User information not found. Please log in again.");
+      return;
+    }
+
+    const data = new FormData();
+    data.append("user_id", user.id.toString());
+    data.append("location", formData.location);
+    data.append("user_type", user.user_type || "professional");
+    data.append("profession_type", user.profession_type || "supplement_supplier");
+    
+    // Adding name if needed, though Postman didn't show it explicitly for /profile
+    // Most /profile endpoints expect name if it's being updated
+    if (formData.name) {
+      data.append("name", formData.name);
+    }
+
+    if (imageFile) {
+      data.append("image", imageFile);
+    }
+    try {
+      const res = await createUpdateProfile(data).unwrap();
+      if (res?.success) {
+        toast.success(res?.message || "Profile updated successfully!");
+        router.push("/supplier-dashboard");
+      }
+    } catch (err: any) {
+      toast.error(err?.data?.message || "Failed to update profile. Please try again.");
+    }
   };
 
   return (
@@ -64,13 +130,32 @@ const ProfileSetup = () => {
                 Profile Image
               </label>
               <div className="flex items-center gap-6">
-                <div className="relative group cursor-pointer">
-                  <div className="w-24 h-24 rounded-full bg-[#60A5FA] flex items-center justify-center text-white text-2xl font-bold shadow-sm group-hover:bg-[#3B82F6] transition-colors">
-                    SP
+                <div 
+                  className="relative group cursor-pointer"
+                  onClick={triggerFileInput}
+                >
+                  <div className="w-24 h-24 rounded-full bg-[#60A5FA] flex items-center justify-center text-white text-2xl font-bold shadow-sm group-hover:bg-[#3B82F6] transition-opacity overflow-hidden">
+                    {imagePreview ? (
+                      <Image 
+                        src={imagePreview} 
+                        alt="Profile Preview" 
+                        fill 
+                        className="object-cover" 
+                      />
+                    ) : (
+                      user?.name?.substring(0, 2).toUpperCase() || "SP"
+                    )}
                   </div>
                   <div className="absolute bottom-0 right-0 w-8 h-8 rounded-full bg-[#60A5FA] border-2 border-white flex items-center justify-center text-white group-hover:bg-[#3B82F6] transition-colors">
                     <Camera size={14} fill="white" />
                   </div>
+                  <input
+                    type="file"
+                    ref={fileInputRef}
+                    className="hidden"
+                    accept="image/*"
+                    onChange={handleImageChange}
+                  />
                 </div>
                 <div className="flex flex-col">
                   <span className="text-[#1F2D2E] font-medium text-[15px]">Upload a new profile image</span>
@@ -79,15 +164,15 @@ const ProfileSetup = () => {
               </div>
             </div>
 
-            {/* Supplier Name */}
+            {/* Supplier Name (renamed to Full Name for clarity) */}
             <div className="space-y-2">
               <label className="text-sm font-bold text-[#1F2D2E] block">
-                Supplier Name
+                Full Name
               </label>
               <input
                 type="text"
-                name="supplierName"
-                value={formData.supplierName}
+                name="name"
+                value={formData.name}
                 onChange={handleChange}
                 placeholder="John Smith"
                 className="w-full bg-white border border-[#E4EFFF] rounded-xl py-3.5 px-4 focus:outline-none focus:ring-2 focus:ring-[#3A86FF]/10 text-[#041228] placeholder:text-[#98A2B3] font-medium transition-all"
@@ -102,17 +187,17 @@ const ProfileSetup = () => {
               <h2 className="text-xl font-bold text-[#041228]">Business Information</h2>
             </div>
 
-            {/* Business Name */}
+            {/* Business Location */}
             <div className="space-y-2">
               <label className="text-sm font-bold text-[#1F2D2E] block">
-                Business Name
+                Business Location
               </label>
               <input
                 type="text"
-                name="businessName"
-                value={formData.businessName}
+                name="location"
+                value={formData.location}
                 onChange={handleChange}
-                placeholder="Premium Supplements Co."
+                placeholder="Cumilla, Bangladesh"
                 className="w-full bg-white border border-[#E4EFFF] rounded-xl py-3.5 px-4 focus:outline-none focus:ring-2 focus:ring-[#3A86FF]/10 text-[#041228] placeholder:text-[#98A2B3] font-medium transition-all"
                 required
               />
@@ -123,9 +208,10 @@ const ProfileSetup = () => {
           <div className="pt-4">
             <button
               type="submit"
-              className="w-full bg-[#0FA4A9] text-white py-4 rounded-xl font-bold text-lg hover:bg-opacity-90 transition-all shadow-lg shadow-[#0FA4A9]/10 cursor-pointer"
+              disabled={isLoading}
+              className="w-full bg-[#0FA4A9] text-white py-4 rounded-xl font-bold text-lg hover:bg-opacity-90 transition-all shadow-lg shadow-[#0FA4A9]/10 cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed"
             >
-              Save & Continue
+              {isLoading ? "Saving..." : "Save & Continue"}
             </button>
           </div>
         </form>
