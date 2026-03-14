@@ -761,191 +761,199 @@ const SupportPage = () => {
     );
   }
 
-  return (
-    <div className="flex flex-col gap-12 container mx-auto pb-24">
-      {/* Header Row: Flex container for Nav/Title and Upload Widget */}
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-10">
-        {/* Column 1: Navigation & Title */}
-        <div className="flex flex-col gap-6">
-          <Link href="/user-dashboard">
-            <button className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-100 rounded-lg text-[#5F6F73] text-xs font-semibold hover:bg-gray-50 transition-all cursor-pointer shadow-sm w-fit">
-              <ArrowLeft size={14} />
-              Back to Dashboard
-            </button>
-          </Link>
+  if (view === "dashboard") {
+    const isPageLoading = isLoadingRecommendations || isLoadingConnected;
 
-          <div className="flex flex-col gap-1">
-            <h1 className="text-3xl font-bold text-[#1F2D2E]">Support</h1>
-            <p className="text-[#5F6F73] text-sm font-medium">Get personalized help based on your health data</p>
-          </div>
-        </div>
-
-        {/* Column 2: Health upload Widget */}
-        <div className="flex flex-col items-center lg:items-end gap-3 min-w-[240px] mt-12">
-           <h2 className="text-sm font-bold text-[#1F2D2E] text-center lg:text-right">Upload your health for better support</h2>
-           
-           <div className="flex flex-col items-center gap-4">
-              {/* Image Preview Container */}
-              <div className="relative w-28 h-28 rounded-2xl overflow-hidden border border-gray-100 shadow-sm bg-gray-50 group/preview transition-transform hover:scale-[1.02]">
-                <Image 
-                  src={healthImage || "https://images.unsplash.com/photo-1576091160550-217359f42f8c?auto=format&fit=crop&q=80&w=200"} 
-                  alt="Health Data" 
-                  fill 
-                  className="object-cover"
-                />
-                <div className="absolute inset-0 bg-black/5 opacity-0 group-hover/preview:opacity-100 transition-opacity flex items-center justify-center">
-                   <div className="bg-white/90 p-1.5 rounded-full shadow-sm">
-                      <LayoutGrid size={12} className="text-[#1F2D2E]" />
-                   </div>
-                </div>
-                {healthImage && (
-                  <div className="absolute top-2 right-2 bg-green-500 text-white p-1 rounded-full shadow-lg">
-                    <Check size={10} strokeWidth={4} />
-                  </div>
-                )}
+    return (
+      <div className="flex flex-col gap-12 container mx-auto pb-24 min-h-[60vh]">
+        {isPageLoading ? (
+          <div className="flex-1 flex flex-col items-center justify-center py-20 gap-4 animate-in fade-in duration-700">
+            <div className="relative">
+              <div className="w-16 h-16 rounded-full border-4 border-[#0FA4A9]/10 border-t-[#0FA4A9] animate-spin" />
+              <div className="absolute inset-0 flex items-center justify-center">
+                <Sparkles size={20} className="text-[#0FA4A9] animate-pulse" />
               </div>
-
-              {/* Upload Controls */}
-              <div className="flex flex-col items-center gap-2">
-                <input 
-                  type="file" 
-                  id="health-upload-v-stack" 
-                  className="hidden" 
-                  accept="image/*" 
-                  onChange={handleImageChange}
-                />
-                <label 
-                  htmlFor="health-upload-v-stack"
-                  className="bg-[#0FA4A9] text-white px-6 py-2.5 rounded-xl text-xs font-bold hover:bg-[#0d8d91] transition-all cursor-pointer shadow-lg shadow-[#0FA4A9]/10 flex items-center gap-2"
-                >
-                  <LayoutGrid size={14} />
-                  {healthImage ? "Change Image" : "Upload Image"}
-                </label>
-              </div>
-           </div>
-        </div>
-      </div>
-
-
-      {/* Recommended Area */}
-      <div className="flex flex-col gap-6">
-        <div className="flex flex-col gap-1.5">
-          <div className="flex items-center gap-2 text-[#3A86FF] font-bold text-[11px] tracking-[0.1em] uppercase">
-            <Sparkles size={16} className="fill-[#3A86FF]" />
-            Other professionals you may explore
-          </div>
-          <p className="text-[#5F6F73] text-xs font-medium">Based on your health data and projections, these professionals can help you most right now.</p>
-        </div>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-           {isLoadingRecommendations ? (
-             <div className="col-span-1 md:col-span-2 lg:col-span-3 text-center text-gray-500 py-12 flex flex-col items-center justify-center gap-4">
-               <Loader2 className="w-8 h-8 text-[#0FA4A9] animate-spin" />
-               <p className="text-sm font-medium">Finding the right professionals for you...</p>
-             </div>
-           ) : displayRecommended.map((coach: any) => (
-             <RecommendationCard key={coach.id} coach={coach} onView={() => handleSelectCoach(coach)} />
-           ))}
-        </div>
-      </div>
-
-      {/* Your Support Team */}
-      <div className="flex flex-col gap-6 ">
-         <div className="flex items-center justify-between">
-           <h2 className="text-xl font-bold text-[#1F2D2E]">Your support team</h2>
-           <div className="flex items-center gap-2">
-             <button 
-               onClick={() => setSupportTeamIndex(prev => Math.max(0, prev - 1))}
-               disabled={supportTeamIndex === 0}
-               className="p-2 rounded-full border border-gray-100 bg-white hover:bg-gray-50 transition-all text-[#1F2D2E] cursor-pointer disabled:opacity-30"
-             >
-               <ChevronLeft size={18} />
-             </button>
-             <button 
-               onClick={() => setSupportTeamIndex(prev => Math.min(Math.max(0, displaySupportTeam.length - 4), prev + 1))}
-               disabled={supportTeamIndex >= displaySupportTeam.length - 4}
-               className="p-2 rounded-full border border-gray-100 bg-white hover:bg-gray-50 transition-all text-[#1F2D2E] cursor-pointer disabled:opacity-30"
-             >
-               <ChevronRight size={18} />
-             </button>
-           </div>
-         </div>
-         
-         <div className="flex gap-6 overflow-x-auto pb-4 scrollbar-hide">
-            {isLoadingConnected ? (
-              <div className="w-full flex justify-center py-8">
-                <Loader2 className="w-8 h-8 animate-spin text-[#0FA4A9]" />
-              </div>
-            ) : displaySupportTeam.length === 0 ? (
-              <div className="w-full text-center py-8 text-gray-400 font-medium">
-                No connected professionals yet.
-              </div>
-            ) : (
-              displaySupportTeam.slice(supportTeamIndex, supportTeamIndex + 4).map((member: any) => (
-                <SupportTeamCard 
-                  key={member.id} 
-                  member={member} 
-                  onMessage={() => {
-                    setSelectedCoach(member);
-                    setView("chat");
-                  }}
-                  onGoals={() => setView("goals")}
-                />
-              ))
-            )}
-         </div>
-      </div>
-
-      {/* Browse All Professionals */}
-      <div className="flex flex-col gap-6">
-         <div className="flex items-center justify-between">
-            <h2 className="text-xl font-bold text-[#1F2D2E]">Browse all professionals</h2>
-            <div className="flex items-center gap-2">
-              <button 
-                onClick={() => setBrowseIndex(prev => Math.max(0, prev - 1))}
-                disabled={browseIndex === 0}
-                className="p-2 rounded-full border border-gray-100 bg-white hover:bg-gray-50 transition-all text-[#1F2D2E] cursor-pointer disabled:opacity-30"
-              >
-                <ChevronLeft size={18} />
-              </button>
-              <button 
-                onClick={() => setBrowseIndex(prev => Math.min(Math.max(0, displayBrowse.length - 3), prev + 1))}
-                disabled={browseIndex >= displayBrowse.length - 3}
-                className="p-2 rounded-full border border-gray-100 bg-white hover:bg-gray-50 transition-all text-[#1F2D2E] cursor-pointer disabled:opacity-30"
-              >
-                <ChevronRight size={18} />
-              </button>
             </div>
-         </div>
-         <p className="text-[#5F6F73] text-[13px] font-medium -mt-4">Discover expert help across the BioVue network.</p>
-         
-         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {isLoadingRecommendations ? (
-               <div className="col-span-1 md:col-span-2 lg:col-span-3 text-center text-gray-500 py-12 flex flex-col items-center justify-center gap-4">
-                 <Loader2 className="w-8 h-8 text-[#0FA4A9] animate-spin" />
-                 <p className="text-sm font-medium">Loading professionals network...</p>
-               </div>
-            ) : displayBrowse.slice(browseIndex, browseIndex + 3).map((item: any) => (
-              <BrowseCard key={item.id} item={item} onView={() => handleSelectCoach(item)} />
-            ))}
-         </div>
-      </div>
+            <div className="flex flex-col items-center gap-1.5">
+              <h3 className="text-lg font-bold text-[#1F2D2E]">Loading Experience</h3>
+              <p className="text-[#5F6F73] text-sm font-medium">Curating your personalized professional network...</p>
+            </div>
+          </div>
+        ) : (
+          <div className="animate-in fade-in slide-in-from-bottom-4 duration-700">
+            {/* Header Row: Flex container for Nav/Title and Upload Widget */}
+            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-10">
+              {/* Column 1: Navigation & Title */}
+              <div className="flex flex-col gap-6">
+                <Link href="/user-dashboard">
+                  <button className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-100 rounded-lg text-[#5F6F73] text-xs font-semibold hover:bg-gray-50 transition-all cursor-pointer shadow-sm w-fit">
+                    <ArrowLeft size={14} />
+                    Back to Dashboard
+                  </button>
+                </Link>
 
-      {/* Footer Banner */}
-      <div className="bg-white rounded-[16px] p-8 md:p-10 flex flex-col md:flex-row items-center gap-8 border border-[#3A86FF]/25 relative overflow-hidden">
-         <div className="w-16 h-16 rounded-[20px] bg-[#0FA4A9] flex items-center justify-center shrink-0 shadow-lg shadow-[#0FA4A920]">
-           <Heart size={32} className="text-white fill-white" />
-         </div>
-         <div className="flex flex-col gap-2 text-center md:text-left">
-           <h3 className="text-xl font-bold text-[#1F2D2E]">{recommendationsData?.data?.trend?.topic || "Why professional support matters"}</h3>
-           <p className="text-[#5F6F73] text-[15px] leading-relaxed ">
-             {recommendationsData?.data?.trend?.description || "Working with a coach or clinic can dramatically improve your progress and long-term outcomes. BioVue data shows users with dedicated support hit their 5-year goals faster."}
-           </p>
-         </div>
+                <div className="flex flex-col gap-1">
+                  <h1 className="text-3xl font-bold text-[#1F2D2E]">Support</h1>
+                  <p className="text-[#5F6F73] text-sm font-medium">Get personalized help based on your health data</p>
+                </div>
+              </div>
+
+              {/* Column 2: Health upload Widget */}
+              <div className="flex flex-col items-center lg:items-end gap-3 min-w-[240px] mt-12">
+                 <h2 className="text-sm font-bold text-[#1F2D2E] text-center lg:text-right">Upload your health for better support</h2>
+                 
+                 <div className="flex flex-col items-center gap-4">
+                    {/* Image Preview Container */}
+                    <div className="relative w-28 h-28 rounded-2xl overflow-hidden border border-gray-100 shadow-sm bg-gray-50 group/preview transition-transform hover:scale-[1.02]">
+                      <Image 
+                        src={healthImage || "https://images.unsplash.com/photo-1576091160550-217359f42f8c?auto=format&fit=crop&q=80&w=200"} 
+                        alt="Health Data" 
+                        fill 
+                        className="object-cover"
+                      />
+                      <div className="absolute inset-0 bg-black/5 opacity-0 group-hover/preview:opacity-100 transition-opacity flex items-center justify-center">
+                         <div className="bg-white/90 p-1.5 rounded-full shadow-sm">
+                            <LayoutGrid size={12} className="text-[#1F2D2E]" />
+                         </div>
+                      </div>
+                      {healthImage && (
+                        <div className="absolute top-2 right-2 bg-green-500 text-white p-1 rounded-full shadow-lg">
+                          <Check size={10} strokeWidth={4} />
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Upload Controls */}
+                    <div className="flex flex-col items-center gap-2">
+                      <input 
+                        type="file" 
+                        id="health-upload-v-stack" 
+                        className="hidden" 
+                        accept="image/*" 
+                        onChange={handleImageChange}
+                      />
+                      <label 
+                        htmlFor="health-upload-v-stack"
+                        className="bg-[#0FA4A9] text-white px-6 py-2.5 rounded-xl text-xs font-bold hover:bg-[#0d8d91] transition-all cursor-pointer shadow-lg shadow-[#0FA4A9]/10 flex items-center gap-2"
+                      >
+                        <LayoutGrid size={14} />
+                        {healthImage ? "Change Image" : "Upload Image"}
+                      </label>
+                    </div>
+                 </div>
+              </div>
+            </div>
+
+
+            {/* Recommended Area */}
+            <div className="flex flex-col gap-6">
+              <div className="flex flex-col gap-1.5">
+                <div className="flex items-center gap-2 text-[#3A86FF] font-bold text-[11px] tracking-[0.1em] uppercase">
+                  <Sparkles size={16} className="fill-[#3A86FF]" />
+                  Other professionals you may explore
+                </div>
+                <p className="text-[#5F6F73] text-xs font-medium">Based on your health data and projections, these professionals can help you most right now.</p>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {displayRecommended.map((coach: any) => (
+                  <RecommendationCard key={coach.id} coach={coach} onView={() => handleSelectCoach(coach)} />
+                ))}
+              </div>
+            </div>
+
+            {/* Your Support Team */}
+            <div className="flex flex-col gap-6 ">
+               <div className="flex items-center justify-between">
+                 <h2 className="text-xl font-bold text-[#1F2D2E]">Your support team</h2>
+                 <div className="flex items-center gap-2">
+                   <button 
+                     onClick={() => setSupportTeamIndex(prev => Math.max(0, prev - 1))}
+                     disabled={supportTeamIndex === 0}
+                     className="p-2 rounded-full border border-gray-100 bg-white hover:bg-gray-50 transition-all text-[#1F2D2E] cursor-pointer disabled:opacity-30"
+                   >
+                     <ChevronLeft size={18} />
+                   </button>
+                   <button 
+                     onClick={() => setSupportTeamIndex(prev => Math.min(Math.max(0, displaySupportTeam.length - 4), prev + 1))}
+                     disabled={supportTeamIndex >= displaySupportTeam.length - 4}
+                     className="p-2 rounded-full border border-gray-100 bg-white hover:bg-gray-50 transition-all text-[#1F2D2E] cursor-pointer disabled:opacity-30"
+                   >
+                     <ChevronRight size={18} />
+                   </button>
+                 </div>
+               </div>
+               
+               <div className="flex gap-6 overflow-x-auto pb-4 scrollbar-hide">
+                  {displaySupportTeam.length === 0 ? (
+                    <div className="w-full text-center py-8 text-gray-400 font-medium">
+                      No connected professionals yet.
+                    </div>
+                  ) : (
+                    displaySupportTeam.slice(supportTeamIndex, supportTeamIndex + 4).map((member: any) => (
+                      <SupportTeamCard 
+                        key={member.id} 
+                        member={member} 
+                        onMessage={() => {
+                          setSelectedCoach(member);
+                          setView("chat");
+                        }}
+                        onGoals={() => setView("goals")}
+                      />
+                    ))
+                  )}
+               </div>
+            </div>
+
+            {/* Browse All Professionals */}
+            <div className="flex flex-col gap-6">
+               <div className="flex items-center justify-between">
+                  <h2 className="text-xl font-bold text-[#1F2D2E]">Browse all professionals</h2>
+                  <div className="flex items-center gap-2">
+                    <button 
+                      onClick={() => setBrowseIndex(prev => Math.max(0, prev - 1))}
+                      disabled={browseIndex === 0}
+                      className="p-2 rounded-full border border-gray-100 bg-white hover:bg-gray-50 transition-all text-[#1F2D2E] cursor-pointer disabled:opacity-30"
+                    >
+                      <ChevronLeft size={18} />
+                    </button>
+                    <button 
+                      onClick={() => setBrowseIndex(prev => Math.min(Math.max(0, displayBrowse.length - 3), prev + 1))}
+                      disabled={browseIndex >= displayBrowse.length - 3}
+                      className="p-2 rounded-full border border-gray-100 bg-white hover:bg-gray-50 transition-all text-[#1F2D2E] cursor-pointer disabled:opacity-30"
+                    >
+                      <ChevronRight size={18} />
+                    </button>
+                  </div>
+               </div>
+               <p className="text-[#5F6F73] text-[13px] font-medium -mt-4">Discover expert help across the BioVue network.</p>
+               
+               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {displayBrowse.slice(browseIndex, browseIndex + 3).map((item: any) => (
+                    <BrowseCard key={item.id} item={item} onView={() => handleSelectCoach(item)} />
+                  ))}
+               </div>
+            </div>
+
+            {/* Footer Banner */}
+            <div className="bg-white rounded-[16px] p-8 md:p-10 flex flex-col md:flex-row items-center gap-8 border border-[#3A86FF]/25 relative overflow-hidden">
+               <div className="w-16 h-16 rounded-[20px] bg-[#0FA4A9] flex items-center justify-center shrink-0 shadow-lg shadow-[#0FA4A920]">
+                 <Heart size={32} className="text-white fill-white" />
+               </div>
+               <div className="flex flex-col gap-2 text-center md:text-left">
+                 <h3 className="text-xl font-bold text-[#1F2D2E]">{recommendationsData?.data?.trend?.topic || "Why professional support matters"}</h3>
+                 <p className="text-[#5F6F73] text-[15px] leading-relaxed ">
+                   {recommendationsData?.data?.trend?.description || "Working with a coach or clinic can dramatically improve your progress and long-term outcomes. BioVue data shows users with dedicated support hit their 5-year goals faster."}
+                 </p>
+               </div>
+            </div>
+          </div>
+        )}
       </div>
-    </div>
-  );
+    );
+  }
+
+  return null;
 };
 
 export default SupportPage;
-
