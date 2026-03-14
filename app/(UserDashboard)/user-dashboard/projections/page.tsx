@@ -57,7 +57,6 @@ const ProjectionsPage = () => {
   const [loadingTextIndex, setLoadingTextIndex] = useState(0);
 
   const isMounted = useRef(true);
-
   useEffect(() => {
     isMounted.current = true;
     return () => {
