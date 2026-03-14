@@ -134,7 +134,7 @@ const ProfileSetup = () => {
                   className="relative group cursor-pointer"
                   onClick={triggerFileInput}
                 >
-                  <div className="w-24 h-24 rounded-full bg-[#60A5FA] flex items-center justify-center text-white text-2xl font-bold shadow-sm group-hover:bg-[#3B82F6] transition-opacity overflow-hidden">
+                  <div className="w-24 h-24 rounded-full bg-[#E4EFFF] flex items-center justify-center text-white text-2xl font-bold shadow-sm group-hover:bg-[#D9E6FF] transition-opacity overflow-hidden">
                     {imagePreview ? (
                       <Image 
                         src={imagePreview} 
@@ -143,7 +143,12 @@ const ProfileSetup = () => {
                         className="object-cover" 
                       />
                     ) : (
-                      user?.name?.substring(0, 2).toUpperCase() || "SP"
+                      <Image 
+                        src="/images/user.png" 
+                        alt="Default Profile" 
+                        fill 
+                        className="object-cover" 
+                      />
                     )}
                   </div>
                   <div className="absolute bottom-0 right-0 w-8 h-8 rounded-full bg-[#60A5FA] border-2 border-white flex items-center justify-center text-white group-hover:bg-[#3B82F6] transition-colors">
