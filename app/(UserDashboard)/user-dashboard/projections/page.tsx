@@ -1,0 +1,672 @@
+"use client";
+
+import React, { useState, useEffect, useRef } from "react";
+import Link from "next/link";
+import Image from "next/image";
+import {
+  ArrowLeft,
+  Calendar,
+  Activity,
+  Zap,
+  CheckCircle2,
+  ArrowRight,
+  RotateCcw,
+  AlertCircle,
+  Upload,
+} from "lucide-react";
+import { cn } from "@/lib/utils";
+
+import { useAppSelector } from "@/redux/store/hooks";
+import { selectCurrentUser } from "@/redux/features/slice/authSlice";
+import { toast } from "sonner";
+import { useCreateFutureGoalMutation } from "@/redux/features/api/userDashboard/Projection/FutureGoal";
+import {
+  ProjectionResponse,
+  useCurrentLifestyleProjectionMutation,
+} from "@/redux/features/api/userDashboard/Projection/CurrentProjection";
+
+type Step = "input" | "loading" | "results";
+type TimeHorizon = "6 months" | "1 Years" | "5 Years";
+
+const ProjectionsPage = () => {
+  const [step, setStep] = useState<Step>("input");
+  const [timeHorizon, setTimeHorizon] = useState<TimeHorizon>("6 months");
+  const [lifestyle, setLifestyle] = useState<"current" | "improved">("current");
+  const [progress, setProgress] = useState(0);
+  const [resolution, setResolution] = useState<"2k" | "4k">("2k");
+  const [quality, setQuality] = useState<"fast" | "ultra">("fast");
+  const [projectionImage, setProjectionImage] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [projectionData, setProjectionData] =
+    useState<ProjectionResponse | null>(null);
+
+  const [currentLifestyleProjection, { isLoading: isCurrentLoading }] =
+    useCurrentLifestyleProjectionMutation();
+  const [createFutureGoal, { isLoading: isFutureLoading }] =
+    useCreateFutureGoalMutation();
+  const user = useAppSelector(selectCurrentUser);
+
+  const loadingTexts = [
+    "Analyzing habits and routines…",
+    " Evaluating diet, activity, and sleep…",
+    " Calculating health and risk factors…",
+    " Projecting future body and wellness…",
+    " Generating photorealistic outcome…",
+    " Preparing your personalized report….",
+  ];
+  const [loadingTextIndex, setLoadingTextIndex] = useState(0);
+
+  const isMounted = useRef(true);
+  useEffect(() => {
+    isMounted.current = true;
+    return () => {
+      isMounted.current = false;
+    };
+  }, []);
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setProjectionImage(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  // Loading simulation
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    if (step === "loading") {
+      setProgress(0);
+      setLoadingTextIndex(0);
+      interval = setInterval(() => {
+        setProgress((prev) => {
+          if (prev >= 100) {
+            clearInterval(interval);
+            return 100;
+          }
+          return prev + 1;
+        });
+      }, 100);
+    }
+    return () => clearInterval(interval);
+  }, [step]);
+
+  useEffect(() => {
+    if (step !== "loading") return;
+
+    const textInterval = setInterval(() => {
+      setLoadingTextIndex((prev) => {
+        if (prev < loadingTexts.length - 1) return prev + 1;
+        return prev;
+      });
+    }, 1500);
+
+    return () => clearInterval(textInterval);
+  }, [step]);
+  
+  const handleGenerate = async () => {
+    if (!user?.id) {
+      toast.error("Please login to generate projection");
+      return;
+    }
+
+    if (!projectionImage) {
+      toast.error("Please upload an image");
+      return;
+    }
+
+    setStep("loading");
+
+    try {
+      let res;
+
+      if (lifestyle === "current") {
+        res = await currentLifestyleProjection({
+          user_id: user.id,
+        }).unwrap();
+      } else {
+        res = await createFutureGoal({
+          user_id: user.id.toString(),
+          image: projectionImage,
+          duration: timeHorizon,
+          resolution: resolution.toUpperCase(),
+          tier: quality,
+        }).unwrap();
+      }
+
+      setProjectionData(res);
+
+      setTimeout(() => {
+        setStep("results");
+        toast.success("Projection generated successfully!");
+      }, 1000);
+    } catch (err: any) {
+      setStep("input");
+      toast.error(err?.data?.message || "Failed to generate projection.");
+    }
+  };
+
+  const renderInputStep = () => (
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
+      {/* Left Column */}
+      <div className="space-y-8">
+        <div className="space-y-4">
+          <Link
+            href="/user-dashboard"
+            className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-lg text-gray-500 text-sm font-medium hover:bg-gray-50 transition-all w-fit cursor-pointer"
+          >
+            <ArrowLeft size={16} />
+            Back to Dashboard
+          </Link>
+
+          <h1 className="text-3xl font-bold text-[#041228]">
+            Your Future Projection
+          </h1>
+          <h2 className="text-xl font-bold text-[#041228]">
+            Explore how your current habits may shape your future health.
+          </h2>
+          <p className="text-[#5F6F73] leading-relaxed max-w-xl">
+            BioVue uses your lifestyle data and uploaded photos to create visual
+            and data-based future projections under different scenarios. These
+            insights help you visualize long-term trends in vitality, body
+            composition, and aging markers.
+          </p>
+        </div>
+
+        {/* Time Horizon Selector */}
+        <div className="bg-white rounded-xl p-6 border border-[#3A86FF]/25 shadow-sm space-y-4">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-[#E4EFFF] rounded-lg flex items-center justify-center">
+              <Calendar className="text-[#3A86FF]" size={20} />
+            </div>
+            <span className="font-bold text-[#041228]">
+              Choose a time horizon
+            </span>
+          </div>
+
+          <div className="flex p-1 bg-[#F8FAFF] border border-gray-200 rounded-xl w-full">
+            {(["6 months", "1 Years", "5 Years"] as TimeHorizon[]).map(
+              (time) => (
+                <button
+                  key={time}
+                  onClick={() => setTimeHorizon(time)}
+                  className={cn(
+                    "flex-1 py-3 rounded-lg text-sm font-bold transition-all cursor-pointer",
+                    timeHorizon === time
+                      ? "bg-[#3A86FF]/20 text-[#3A86FF]"
+                      : "text-gray-500 hover:text-[#041228]",
+                  )}
+                >
+                  {time}
+                </button>
+              ),
+            )}
+          </div>
+        </div>
+
+        {/* Lifestyle Options */}
+        <div className="bg-white rounded-xl p-6 border border-[#3A86FF]/25 shadow-sm space-y-4">
+          <div className="space-y-3">
+            {/* Current Lifestyle */}
+            <div
+              onClick={() => setLifestyle("current")}
+              className={cn(
+                "flex items-start gap-4 p-4 rounded-xl border-2 transition-all cursor-pointer",
+                lifestyle === "current"
+                  ? "border-[#3A86FF] bg-[#F8FAFF]"
+                  : "border-gray-50 hover:border-gray-100",
+              )}
+            >
+              <div className="w-10 h-10 bg-[#E4EFFF] rounded-lg flex items-center justify-center shrink-0">
+                <Activity className="text-[#3A86FF]" size={20} />
+              </div>
+              <div className="flex-1">
+                <h4 className="font-bold text-[#041228]">Current Lifestyle</h4>
+                <p className="text-xs text-[#5F6F73] mt-1">
+                  Projected outcomes based on current habits.
+                </p>
+                {lifestyle === "current" && (
+                  <div className="mt-4 space-y-3 animate-in fade-in slide-in-from-top-2 duration-300">
+                    <p className="text-sm font-bold text-[#041228]">
+                      Upload Current Photo
+                    </p>
+                    <label className="flex items-center gap-3 p-3 border-2 border-dashed border-[#3A86FF]/30 rounded-xl bg-white hover:bg-gray-50 transition-all cursor-pointer group">
+                      <div className="w-8 h-8 rounded-lg bg-[#E4EFFF] flex items-center justify-center group-hover:bg-[#3A86FF]/20 transition-all">
+                        <Upload size={16} className="text-[#3A86FF]" />
+                      </div>
+                      <span className="text-sm font-medium text-gray-500">
+                        {projectionImage
+                          ? projectionImage.name
+                          : "Select an image"}
+                      </span>
+                      <input
+                        type="file"
+                        className="hidden"
+                        onChange={handleImageChange}
+                        accept="image/*"
+                      />
+                    </label>
+                  </div>
+                )}
+              </div>
+              <div
+                className={cn(
+                  "w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 mt-1",
+                  lifestyle === "current"
+                    ? "border-[#3A86FF] bg-[#3A86FF]"
+                    : "border-gray-300",
+                )}
+              >
+                {lifestyle === "current" && (
+                  <CheckCircle2 size={12} className="text-white" />
+                )}
+              </div>
+            </div>
+
+            {/* Improved Lifestyle */}
+            <div
+              onClick={() => setLifestyle("improved")}
+              className={cn(
+                "flex items-start gap-4 p-4 rounded-xl border-2 transition-all cursor-pointer",
+                lifestyle === "improved"
+                  ? "border-[#3A86FF] bg-[#F8FAFF]"
+                  : "border-gray-50 hover:border-gray-100",
+              )}
+            >
+              <div className="w-10 h-10 bg-[#E4EFFF] rounded-lg flex items-center justify-center shrink-0">
+                <Zap className="text-[#3A86FF]" size={20} />
+              </div>
+              <div className="flex-1">
+                <h4 className="font-bold text-[#041228]">Improved Lifestyle</h4>
+                <p className="text-xs text-[#5F6F73] mt-1">
+                  change goal alignment to &quot;your current goals&quot;
+                </p>
+              </div>
+              <div
+                className={cn(
+                  "w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 mt-1",
+                  lifestyle === "improved"
+                    ? "border-[#3A86FF] bg-[#3A86FF]"
+                    : "border-gray-300",
+                )}
+              >
+                {lifestyle === "improved" && (
+                  <CheckCircle2 size={12} className="text-white" />
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Render Settings */}
+        <div className="bg-white rounded-xl p-6 border border-[#3A86FF]/25 shadow-sm space-y-6">
+          <h3 className="font-bold text-[#041228]">Render Settings</h3>
+
+          {/* Resolution */}
+          <div className="space-y-3">
+            <p className="text-sm font-semibold text-[#5F6F73]">Resolution</p>
+
+            <div
+              onClick={() => setResolution("2k")}
+              className={cn(
+                "flex items-center justify-between p-4 rounded-xl border-2 cursor-pointer transition-all",
+                resolution === "2k"
+                  ? "border-[#3A86FF] bg-[#F8FAFF]"
+                  : "border-gray-100 hover:border-gray-200",
+              )}
+            >
+              <span className="font-semibold text-[#041228]">2K</span>
+              <div
+                className={cn(
+                  "w-5 h-5 rounded-full border-2 flex items-center justify-center",
+                  resolution === "2k"
+                    ? "border-[#3A86FF] bg-[#3A86FF]"
+                    : "border-gray-300",
+                )}
+              >
+                {resolution === "2k" && (
+                  <div className="w-2 h-2 bg-white rounded-full" />
+                )}
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between p-4 rounded-xl border border-gray-100 bg-gray-50">
+              <span className="font-semibold text-gray-400">4K</span>
+              <span className="text-xs font-semibold text-gray-400">
+                Pro user
+              </span>
+            </div>
+          </div>
+
+          {/* Quality */}
+          <div className="space-y-3">
+            <p className="text-sm font-semibold text-[#5F6F73]">Quality</p>
+
+            <div
+              onClick={() => setQuality("fast")}
+              className={cn(
+                "flex items-center justify-between p-4 rounded-xl border-2 cursor-pointer transition-all",
+                quality === "fast"
+                  ? "border-[#3A86FF] bg-[#F8FAFF]"
+                  : "border-gray-100 hover:border-gray-200",
+              )}
+            >
+              <span className="font-semibold text-[#041228]">Fast</span>
+              <div
+                className={cn(
+                  "w-5 h-5 rounded-full border-2 flex items-center justify-center",
+                  quality === "fast"
+                    ? "border-[#3A86FF] bg-[#3A86FF]"
+                    : "border-gray-300",
+                )}
+              >
+                {quality === "fast" && (
+                  <div className="w-2 h-2 bg-white rounded-full" />
+                )}
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between p-4 rounded-xl border border-gray-100 bg-gray-50">
+              <span className="font-semibold text-gray-400">Ultra</span>
+              <span className="text-xs font-semibold text-gray-400">
+                Pro user
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Right Column */}
+      <div className="space-y-6">
+        <div className="bg-white rounded-[24px] overflow-hidden border border-[#3A86FF]/20 flex flex-col items-center p-12 text-center shadow-sm">
+          <div className="relative w-64 h-80 rounded-2xl overflow-hidden mb-6 bg-gray-50 border border-gray-100 shadow-inner">
+            <Image
+              src={imagePreview || "/images/auth/body1.png"}
+              alt="Baseline"
+              fill
+              className="object-cover"
+            />
+          </div>
+          <h3 className="font-bold text-[#041228] uppercase tracking-wider mb-4">
+            {imagePreview
+              ? "UPLOADED PHOTO PREVIEW"
+              : "VERIFIED BASELINE PHOTO"}
+          </h3>
+          <label className="flex items-center gap-2 text-[#3A86FF] font-medium hover:text-[#2a6fd9] transition-all cursor-pointer">
+            <RotateCcw size={18} />
+            {imagePreview ? "Replace Photo" : "Upload Photo"}
+            <input
+              type="file"
+              className="hidden"
+              onChange={handleImageChange}
+              accept="image/*"
+            />
+          </label>
+          <p className="text-[10px] text-gray-400 mt-6 leading-relaxed bg-[#F8FAFF] py-2 px-4 rounded-lg border border-gray-100">
+            Note: For more accurate projections, please upload a photo in a swim
+            suit.
+          </p>
+        </div>
+
+        <button
+          onClick={handleGenerate}
+          disabled={isCurrentLoading || isFutureLoading}
+          className="w-full bg-[#0FA4A9] text-white py-5 rounded-xl font-bold flex items-center justify-center gap-3 hover:bg-[#0d8d91] transition-all group cursor-pointer shadow-lg shadow-[#0FA4A9]/20 disabled:opacity-50"
+        >
+          {isCurrentLoading || isFutureLoading
+            ? "Generating..."
+            : "Generate Projection"}
+          <ArrowRight
+            size={20}
+            className="group-hover:translate-x-1 transition-transform"
+          />
+        </button>
+      </div>
+    </div>
+  );
+
+  const renderLoadingStep = () => (
+    <div className="fixed inset-0 z-[100] bg-white/40 backdrop-blur-md flex items-center justify-center p-6 overflow-hidden">
+      <div className="bg-white rounded-[32px] p-12 max-w-md w-full shadow-2xl border border-gray-100 flex flex-col items-center text-center space-y-8 animate-in zoom-in-95 duration-300">
+        {/* Circular Progress */}
+        <div className="relative w-48 h-48 flex items-center justify-center">
+          <svg className="w-full h-full -rotate-90">
+            <circle
+              cx="96"
+              cy="96"
+              r="80"
+              stroke="#F3F4F6"
+              strokeWidth="12"
+              fill="transparent"
+            />
+            <circle
+              cx="96"
+              cy="96"
+              r="80"
+              stroke="#3A86FF"
+              strokeWidth="12"
+              fill="transparent"
+              strokeDasharray={2 * Math.PI * 80}
+              strokeDashoffset={2 * Math.PI * 80 * (1 - progress / 100)}
+              strokeLinecap="round"
+              className="transition-all duration-300 ease-out"
+            />
+          </svg>
+          <span className="absolute text-4xl font-extrabold text-[#3A86FF]">
+            {progress}%
+          </span>
+        </div>
+
+        <div className="space-y-4">
+          <h2 className="text-2xl font-bold text-[#041228]">
+            Your Future Projection
+          </h2>
+          <div className="h-6 flex items-center justify-center">
+            <p className="text-[#5F6F73] text-sm animate-in fade-in slide-in-from-bottom-2 duration-500">
+              {loadingTexts[loadingTextIndex]}
+            </p>
+          </div>
+        </div>
+
+        {/* Linear Progress */}
+        <div className="w-full h-1.5 bg-gray-100 rounded-full overflow-hidden">
+          <div
+            className="h-full bg-[#3A86FF] transition-all duration-300 ease-out"
+            style={{ width: `${progress}%` }}
+          />
+        </div>
+      </div>
+    </div>
+  );
+
+  const renderResultsStep = () => {
+    if (!projectionData) return null;
+
+    return (
+      <div className="space-y-12 pb-12 animate-in fade-in duration-700">
+        <div className="text-center space-y-2">
+          <h1 className="text-3xl font-bold text-[#3A86FF]">
+            Projection Results
+          </h1>
+          <p className="text-gray-500">
+            Visualizing your trajectory over the next {timeHorizon}.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          {/* Left Side: Projection Visualization */}
+          <div className="bg-white rounded-[24px] border border-[#3A86FF]/10 shadow-sm overflow-hidden flex flex-col">
+            <div className="p-8 text-center space-y-6 flex-1">
+              <h3 className="text-[#8B5CF6] font-bold text-lg min-h-[56px] flex items-center justify-center">
+                {lifestyle === "current"
+                  ? `If you continue your current lifestyle for ${timeHorizon}`
+                  : `Achieving your future goals in ${timeHorizon}`}
+              </h3>
+              <div className="relative w-full aspect-[4/3.2] rounded-2xl overflow-hidden bg-gray-50 shadow-inner">
+                <Image
+                  src={
+                    projectionData.projection_url || "/images/auth/body1.png"
+                  }
+                  alt="Projection Result"
+                  fill
+                  className="object-cover"
+                />
+              </div>
+
+              <div className="space-y-4 pt-4">
+                {[
+                  {
+                    label: "Timeframe",
+                    value:
+                      timeframeMap[timeHorizon as keyof typeof timeframeMap] ||
+                      timeHorizon,
+                    icon: Calendar,
+                    color: "text-[#8B5CF6]",
+                    bg: "bg-[#F3E8FF]",
+                  },
+                  {
+                    label: "Est. BMI:",
+                    value: projectionData.est_bmi,
+                    icon: Activity,
+                    color: "text-[#10B981]",
+                    bg: "bg-[#E1F9F0]",
+                  },
+                  {
+                    label: "Est. Weight:",
+                    value: `${projectionData.est_weight} lbs`,
+                    icon: Zap,
+                    color: "text-[#3A86FF]",
+                    bg: "bg-[#E4EFFF]",
+                  },
+                ].map((item, idx) => (
+                  <div key={idx} className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div
+                        className={cn(
+                          "w-8 h-8 rounded-lg flex items-center justify-center shrink-0",
+                          item.bg,
+                        )}
+                      >
+                        <item.icon className={item.color} size={16} />
+                      </div>
+                      <span className="text-sm font-medium text-gray-500">
+                        {item.label}
+                      </span>
+                    </div>
+                    <span className="text-sm font-bold text-[#041228]">
+                      {item.value}
+                    </span>
+                  </div>
+                ))}
+              </div>
+
+              <div className="text-left py-6 border-t border-gray-50 space-y-4">
+                <h4 className="font-bold text-[#041228]">Expected Changes:</h4>
+                <div className="space-y-3">
+                  {projectionData.expected_changes.map((text, idx) => (
+                    <div key={idx} className="flex items-start gap-2">
+                      <div className="w-5 h-5 bg-[#0FA4A9] rounded-full flex items-center justify-center mt-0.5 shrink-0">
+                        <CheckCircle2 size={12} className="text-white" />
+                      </div>
+                      <span className="text-sm text-[#5F6F73]">{text}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Right Side: Comparison or Goal Highlights */}
+          <div className="bg-white rounded-[24px] border border-[#3A86FF]/10 shadow-sm overflow-hidden flex flex-col grayscale opacity-60">
+            <div className="p-8 text-center space-y-6 flex-1 flex flex-col items-center justify-center">
+              <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+                <Zap size={32} className="text-gray-400" />
+              </div>
+              <h3 className="text-gray-500 font-bold text-lg">
+                Compare with Improved Lifestyle
+              </h3>
+              <p className="text-sm text-gray-400 max-w-xs">
+                Generate another projection with your improved goals to see the
+                dramatic difference your choices make.
+              </p>
+              <button
+                onClick={() => {
+                  setLifestyle(
+                    lifestyle === "current" ? "improved" : "current",
+                  );
+                  setStep("input");
+                }}
+                className="mt-4 px-6 py-2 bg-gray-200 text-gray-600 rounded-lg text-sm font-bold hover:bg-gray-300 transition-all"
+              >
+                Switch Selection
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Results Actions */}
+        <div className="bg-[#E4F4F5] rounded-xl p-6 border border-[#0FA4A9]/20 flex items-start gap-4">
+          <AlertCircle className="text-[#1F2D2E] shrink-0" size={20} />
+          <p className="text-xs text-[#1F2D2E] leading-relaxed">
+            <span className="font-bold">Illustrative projection:</span> Visuals
+            show relative change based on statistical modeling, not exact or
+            guaranteed outcomes. This interface is for motivational purposes and
+            does not constitute medical advice.
+          </p>
+        </div>
+
+        <div className="flex flex-col md:flex-row items-center justify-center gap-6">
+          <button className="bg-[#0FA4A9] text-white px-8 py-4 rounded-xl font-bold flex items-center gap-2 hover:bg-[#0d8d91] transition-all cursor-pointer w-full md:w-auto shadow-lg shadow-[#0FA4A9]/20">
+            View insights based on this projection
+            <ArrowRight size={20} />
+          </button>
+          <button
+            onClick={() => setStep("input")}
+            className="bg-white border border-gray-200 text-[#041228] px-8 py-4 rounded-xl font-bold flex items-center gap-2 hover:bg-gray-50 transition-all cursor-pointer w-full md:w-auto"
+          >
+            <ArrowLeft size={20} />
+            Generate New
+          </button>
+        </div>
+      </div>
+    );
+  };
+
+  const timeframeMap = {
+    "6 months": "6 Months",
+    "1 Years": "1 Year",
+    "5 Years": "5 Years",
+  };
+
+  return (
+    <div className="min-h-screen p-6 md:p-10 container mx-auto">
+      {step === "loading" && renderLoadingStep()}
+      {step === "input" && renderInputStep()}
+      {step === "results" && renderResultsStep()}
+
+      {/* Footer Disclaimer for Input Page */}
+      {step === "input" && (
+        <div className="mt-12 bg-[#E4F4F5] rounded-xl p-6 border border-[#0FA4A9]/20 flex items-start gap-4">
+          <AlertCircle className="text-[#1F2D2E] shrink-0" size={20} />
+          <p className="text-[10px] text-[#1F2D2E] leading-relaxed">
+            <span className="font-bold uppercase tracking-wider">
+              Disclaimer:
+            </span>{" "}
+            Information and projections provided by BioVue Digital Wellness are
+            for informational and illustrative purposes only, reflect relative
+            changes rather than exact outcomes, and do not constitute medical
+            advice. BioVue Digital Wellness is not liable for decisions or
+            outcomes based on this information; users should consult a qualified
+            medical professional for medical guidance.
+          </p>
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default ProjectionsPage;
