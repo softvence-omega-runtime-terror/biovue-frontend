@@ -8,6 +8,10 @@ import { useCreateUpdateProfileMutation } from "@/redux/features/api/profileApi"
 import { useSelector } from "react-redux";
 import { selectCurrentUser } from "@/redux/features/slice/authSlice";
 import { toast } from "sonner";
+import { 
+  useFetchInsightsMutation, 
+  useFetchFutureInsightsMutation 
+} from "@/redux/features/api/userDashboard/insightsApi";
 import { Loader2, 
   ChevronLeft, 
   ArrowRight, 
@@ -65,6 +69,8 @@ const OnboardingStepsPage = () => {
   });
 
   const [createUpdateProfile, { isLoading: isSubmitting }] = useCreateUpdateProfileMutation();
+  const [fetchInsights] = useFetchInsightsMutation();
+  const [fetchFutureInsights] = useFetchFutureInsightsMutation();
   const router = useRouter();
   const user = useSelector(selectCurrentUser);
 
@@ -122,6 +128,23 @@ const OnboardingStepsPage = () => {
       const res = await createUpdateProfile(apiData).unwrap();
       if (res.success) {
         toast.success("Profile updated successfully!");
+        
+        // Automated Insights Fetching
+        try {
+          // POST {{url}}/insights/fetch { "user_id": 3 }
+          fetchInsights({ user_id: user?.id }).unwrap();
+          
+          // POST {{url}}/future-insights/fetch { "user_id": "3", "timeframe": "5 years" }
+          fetchFutureInsights({ 
+            user_id: user?.id?.toString(), 
+            timeframe: "5 years" 
+          }).unwrap();
+          
+          console.log("Triggered automated insights fetching");
+        } catch (error) {
+          console.error("Failed to trigger automated insights:", error);
+        }
+
         router.push("/personalize-journey/onboarding?completed=true");
       }
     } catch (error: any) {
