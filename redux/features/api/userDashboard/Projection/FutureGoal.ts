@@ -1,6 +1,6 @@
 "use client";
 
-import { projectionApi } from "./projectionApi";
+import { baseApi } from "../../baseApi";
 
 interface FutureGoalResponse {
   user_id: string;
@@ -25,14 +25,14 @@ interface FutureGoalRequest {
   goal_description?: string;
 }
 
-export const futureGoalApi = projectionApi.injectEndpoints({
+export const futureGoalApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     createFutureGoal: builder.mutation<FutureGoalResponse, FutureGoalRequest>({
       query: (data) => {
         const formData = new FormData();
 
         formData.append("user_id", data.user_id);
-        formData.append("image", data.image);
+        formData.append("image", data.image, data.image.name);
         formData.append("duration", data.duration);
 
         if (data.resolution) formData.append("resolution", data.resolution);
@@ -48,7 +48,7 @@ export const futureGoalApi = projectionApi.injectEndpoints({
           formData.append("goal_description", data.goal_description);
 
         return {
-          url: "/future-goal",
+          url: "/projection/future-goal/",
           method: "POST",
           body: formData,
         };
