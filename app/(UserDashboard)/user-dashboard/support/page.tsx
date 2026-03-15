@@ -15,7 +15,6 @@ import {
   MessageSquare,
   ChevronLeft,
   ChevronRight,
-  Paperclip,
   Moon,
   Target,
   Clock,
@@ -23,7 +22,6 @@ import {
   LayoutGrid,
   TrendingUp,
   Info,
-  Calendar,
   Loader2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -210,7 +208,7 @@ const RecommendationCard = ({
   coach: any;
   onView: () => void;
 }) => (
-  <div className="bg-white rounded-[16px] p-6 border border-[#3A86FF]/25 shadow-[0_4px_20px_rgba(0,0,0,0.03)] flex flex-col gap-4">
+  <div className="bg-white rounded-3xl p-6 border border-[#3A86FF]/25 shadow-[0_4px_20px_rgba(0,0,0,0.03)] flex flex-col gap-4">
     <div className="flex items-start justify-between">
       <div className="w-16 h-16 rounded-xl overflow-hidden">
         <Image
@@ -236,7 +234,7 @@ const RecommendationCard = ({
       </span>
       <h3 className="text-lg font-bold text-[#1F2D2E]">{coach.name}</h3>
     </div>
-    <div className="bg-[#F3F4F6] rounded-xl p-4 min-h-[84px] flex items-center">
+    <div className="bg-[#F3F4F6] rounded-xl p-4 min-h-21 flex items-center">
       <p className="text-[#5F6F73] text-[11px] italic leading-relaxed">
         &quot;{coach.description}&quot;
       </p>
@@ -263,7 +261,7 @@ const SupportTeamCard = ({
   onMessage: () => void;
   onGoals: () => void;
 }) => (
-  <div className="bg-white rounded-[16px] p-6 border border-[#3A86FF]/25 shadow-[0_4px_20px_rgba(0,0,0,0.03)] flex flex-col gap-5 min-w-[320px]">
+  <div className="bg-white rounded-3xl p-6 border border-[#3A86FF]/25 shadow-[0_4px_20px_rgba(0,0,0,0.03)] flex flex-col gap-5 min-w-[320px]">
     <div className="flex items-start justify-between">
       <div className="flex items-center gap-4">
         <div className="w-14 h-14 rounded-xl overflow-hidden">
@@ -301,7 +299,7 @@ const SupportTeamCard = ({
       </button>
       <button
         onClick={onGoals}
-        className="flex-1 border border-gray-200 text-[#1F2D2E] py-3 rounded-xl text-xs font-bold flex items-center justify-center gap-2 hover:bg-gray-50 transition-all font-bold cursor-pointer"
+        className="flex-1 border border-gray-200 text-[#1F2D2E] py-3 rounded-xl text-xs flex items-center justify-center gap-2 hover:bg-gray-50 transition-all font-bold cursor-pointer"
       >
         Shared Goal
         <TrendingUp size={14} />
@@ -311,7 +309,7 @@ const SupportTeamCard = ({
 );
 
 const BrowseCard = ({ item, onView }: { item: any; onView: () => void }) => (
-  <div className="bg-white rounded-[16px] p-6 border border-[#3A86FF]/25 shadow-[0_4px_20px_rgba(0,0,0,0.03)] flex flex-col items-center text-center gap-4">
+  <div className="bg-white rounded-3xl p-6 border border-[#3A86FF]/25 shadow-[0_4px_20px_rgba(0,0,0,0.03)] flex flex-col items-center text-center gap-4">
     <div className="w-16 h-16 rounded-xl overflow-hidden">
       <Image
         src={item.avatar}
@@ -446,7 +444,7 @@ const SupportPage = () => {
         <div className="flex items-center justify-between mb-8">
           <div className="flex flex-col gap-1">
             <h1 className="text-[32px] font-bold text-[#1F2D2E]">Messages</h1>
-            <p className="text-[#5F6F73] text-[15px] font-medium font-bold">
+            <p className="text-[#5F6F73] text-[15px] font-medium">
               Communicate with your Trainer
             </p>
           </div>
@@ -458,7 +456,7 @@ const SupportPage = () => {
           </button>
         </div>
 
-        <div className="flex-1 bg-white rounded-[16px] border border-[#3A86FF]/25 shadow-sm flex flex-col overflow-hidden relative">
+        <div className="flex-1 bg-white rounded-3xl border border-[#3A86FF]/25 shadow-sm flex flex-col overflow-hidden relative">
           {/* Coach Meta Bar */}
           <div className="px-6 py-4 border-b border-gray-100 flex items-center bg-white/80 backdrop-blur-sm sticky top-0 z-10">
             <div className="flex items-center gap-4">
@@ -565,7 +563,7 @@ const SupportPage = () => {
           {SHARED_GOALS.map((goal, idx) => (
             <div
               key={idx}
-              className="bg-white rounded-[16px] p-8 border border-[#3A86FF]/25 shadow-[0_4px_30px_rgba(0,0,0,0.02)] flex flex-col gap-8 relative overflow-hidden"
+              className="bg-white rounded-3xl p-8 border border-[#3A86FF]/25 shadow-[0_4px_30px_rgba(0,0,0,0.02)] flex flex-col gap-8 relative overflow-hidden"
             >
               <div className="flex flex-col md:flex-row md:items-start justify-between gap-6">
                 <div className="flex gap-5">
@@ -614,7 +612,7 @@ const SupportPage = () => {
                   </div>
                 </div>
 
-                <div className="flex flex-col gap-4 min-w-[280px]">
+                <div className="flex flex-col gap-4 min-w-70">
                   <div
                     className={cn(
                       "px-4 py-1.5 rounded-full text-[10px] font-bold tracking-wider self-end",
@@ -655,10 +653,10 @@ const SupportPage = () => {
               </div>
 
               <div className="flex items-center gap-4">
-                <button className="bg-[#0FA4A9] text-white px-6 py-3.5 rounded-xl text-xs font-bold hover:bg-[#0d8d91] transition-all shadow-lg shadow-[#0FA4A9]/10 font-bold cursor-pointer">
+                <button className="bg-[#0FA4A9] text-white px-6 py-3.5 rounded-xl text-xs hover:bg-[#0d8d91] transition-all shadow-lg shadow-[#0FA4A9]/10 font-bold cursor-pointer">
                   View Habit Progress
                 </button>
-                <button className="border border-gray-200 text-[#1F2D2E] px-6 py-3.5 rounded-xl text-xs font-bold hover:bg-gray-50 transition-all bg-white font-bold cursor-pointer">
+                <button className="border border-gray-200 text-[#1F2D2E] px-6 py-3.5 rounded-xl text-xs font-bold hover:bg-gray-50 transition-all bg-white cursor-pointer">
                   Log Today&apos;s Habit
                 </button>
               </div>
@@ -666,7 +664,7 @@ const SupportPage = () => {
           ))}
         </div>
 
-        <div className="bg-[#F4FAFB] rounded-[16px] p-6 flex gap-5 border border-[#3A86FF]/25 bg-white">
+        <div className="bg-[#F4FAFB] rounded-3xl p-6 flex gap-5 border border-[#3A86FF]/25 ">
           <div className="w-12 h-12 rounded-xl bg-[#EFF6FF] flex items-center justify-center shrink-0">
             <Info size={24} className="text-[#3A86FF]" />
           </div>
@@ -697,7 +695,7 @@ const SupportPage = () => {
           Back to Support
         </button>
 
-        <div className="bg-white rounded-[16px] p-8 md:p-12 border border-[#3A86FF]/25 shadow-[0_4px_30px_rgba(0,0,0,0.02)] flex flex-col items-center text-center gap-8 relative overflow-hidden">
+        <div className="bg-white rounded-3xl p-8 md:p-12 border border-[#3A86FF]/25 shadow-[0_4px_30px_rgba(0,0,0,0.02)] flex flex-col items-center text-center gap-8 relative overflow-hidden">
           <div className="relative">
             <div className="w-40 h-40 rounded-[32px] overflow-hidden border-8 border-[#3A86FF]/5">
               <Image
@@ -738,7 +736,7 @@ const SupportPage = () => {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           {/* Specialties */}
-          <div className="bg-white rounded-[16px] p-8 md:p-10 border border-[#3A86FF]/25 shadow-sm flex flex-col gap-8">
+          <div className="bg-white rounded-3xl p-8 md:p-10 border border-[#3A86FF]/25 shadow-sm flex flex-col gap-8">
             <div className="flex items-center gap-4">
               <div className="w-12 h-12 rounded-2xl bg-orange-50 flex items-center justify-center shadow-inner">
                 <Sparkles size={24} className="text-orange-400" />
@@ -771,7 +769,7 @@ const SupportPage = () => {
           </div>
 
           {/* What this coach will do for you */}
-          <div className="bg-white rounded-[16px] p-8 md:p-10 border border-[#3A86FF]/25 shadow-sm flex flex-col gap-8">
+          <div className="bg-white rounded-3xl p-8 md:p-10 border border-[#3A86FF]/25 shadow-sm flex flex-col gap-8">
             <div className="flex items-center gap-4">
               <div className="w-12 h-12 rounded-2xl bg-blue-50 flex items-center justify-center shadow-inner">
                 <Check size={24} className="text-blue-400" />
@@ -807,11 +805,11 @@ const SupportPage = () => {
         </div>
 
         {/* Footer Actions */}
-        <div className="bg-[#F4FBFA] rounded-[16px] p-10 flex flex-col md:flex-row items-center justify-center gap-8 border border-[#3A86FF]/25 bg-white">
+        <div className="bg-[#F4FBFA] rounded-3xl p-10 flex flex-col md:flex-row items-center justify-center gap-8 border border-[#3A86FF]/25 ">
           <div className="flex flex-col items-stretch gap-5 w-full max-w-2xl">
             <button
               onClick={() => setView("chat")}
-              className="flex-1 bg-[#0FA4A9] text-white py-5 rounded-2xl font-bold text-lg hover:bg-[#0d8d91] transition-all cursor-pointer shadow-xl shadow-[#0FA4A9]/20 font-bold"
+              className="flex-1 bg-[#0FA4A9] text-white py-5 rounded-2xl  text-lg hover:bg-[#0d8d91] transition-all cursor-pointer shadow-xl shadow-[#0FA4A9]/20 font-bold"
             >
               Connect With This Coach
             </button>
@@ -837,7 +835,7 @@ const SupportPage = () => {
   if (view === "success") {
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#F4FBFA]/80 backdrop-blur-sm p-4">
-        <div className="bg-white rounded-[16px] p-10 md:p-14 max-w-xl w-full shadow-[0_20px_50px_rgba(0,0,0,0.1)] border border-[#3A86FF]/25 flex flex-col items-center text-center gap-8 relative">
+        <div className="bg-white rounded-3xl p-10 md:p-14 max-w-xl w-full shadow-[0_20px_50px_rgba(0,0,0,0.1)] border border-[#3A86FF]/25 flex flex-col items-center text-center gap-8 relative">
           <button
             onClick={() => setView("dashboard")}
             className="absolute top-6 right-6 text-[#1F2D2E] hover:bg-gray-50 p-2 rounded-full transition-all cursor-pointer outline-none"
@@ -947,7 +945,7 @@ const SupportPage = () => {
       {/* Recommended Area */}
       <div className="flex flex-col gap-6">
         <div className="flex flex-col gap-1.5">
-          <div className="flex items-center gap-2 text-[#3A86FF] font-bold text-[11px] tracking-[0.1em] uppercase">
+          <div className="flex items-center gap-2 text-[#3A86FF] font-bold text-[11px] tracking-widest uppercase">
             <Sparkles size={16} className="fill-[#3A86FF]" />
             Other professionals you may explore
           </div>
@@ -1045,8 +1043,8 @@ const SupportPage = () => {
       </div>
 
       {/* Footer Banner */}
-      <div className="bg-white rounded-[16px] p-8 md:p-10 flex flex-col md:flex-row items-center gap-8 border border-[#3A86FF]/25 relative overflow-hidden">
-        <div className="w-16 h-16 rounded-[20px] bg-[#0FA4A9] flex items-center justify-center shrink-0 shadow-lg shadow-[#0FA4A920]">
+      <div className="bg-white rounded-3xl p-8 md:p-10 flex flex-col md:flex-row items-center gap-8 border border-[#3A86FF]/25 relative overflow-hidden">
+        <div className="w-16 h-16 rounded-3xl bg-[#0FA4A9] flex items-center justify-center shrink-0 shadow-lg shadow-[#0FA4A920]">
           <Heart size={32} className="text-white fill-white" />
         </div>
         <div className="flex flex-col gap-2 text-center md:text-left">
