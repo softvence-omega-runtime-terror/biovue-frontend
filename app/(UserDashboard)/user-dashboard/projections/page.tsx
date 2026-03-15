@@ -126,13 +126,17 @@ const ProjectionsPage = () => {
 
       if (lifestyle === "current") {
         res = await currentLifestyleProjection({
-          user_id: user.id,
+          user_id: user.id.toString(),
+          image: projectionImage,
+          duration: timeHorizon.toLowerCase().replace("years", "year"),
+          resolution: resolution.toUpperCase(),
+          tier: quality,
         }).unwrap();
       } else {
         res = await createFutureGoal({
           user_id: user.id.toString(),
           image: projectionImage,
-          duration: timeHorizon,
+          duration: timeHorizon.toLowerCase().replace("years", "year"),
           resolution: resolution.toUpperCase(),
           tier: quality,
         }).unwrap();
@@ -389,6 +393,7 @@ const ProjectionsPage = () => {
               alt="Baseline"
               fill
               className="object-cover"
+              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
             />
           </div>
           <h3 className="font-bold text-[#041228] uppercase tracking-wider mb-4">
@@ -509,11 +514,16 @@ const ProjectionsPage = () => {
               <div className="relative w-full aspect-[4/3.2] rounded-2xl overflow-hidden bg-gray-50 shadow-inner">
                 <Image
                   src={
-                    projectionData.projection_url || "/images/auth/body1.png"
+                    projectionData.projection_url 
+                      ? (projectionData.projection_url.startsWith('http') 
+                          ? projectionData.projection_url 
+                          : `https://biovue-ai.onrender.com${projectionData.projection_url}`)
+                      : "/images/auth/body1.png"
                   }
                   alt="Projection Result"
                   fill
                   className="object-cover"
+                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                 />
               </div>
 
@@ -537,7 +547,9 @@ const ProjectionsPage = () => {
                   },
                   {
                     label: "Est. Weight:",
-                    value: `${projectionData.est_weight} lbs`,
+                    value: projectionData.est_weight.toLowerCase().includes("lbs") 
+                      ? projectionData.est_weight 
+                      : `${projectionData.est_weight} lbs`,
                     icon: Zap,
                     color: "text-[#3A86FF]",
                     bg: "bg-[#E4EFFF]",
