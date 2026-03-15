@@ -779,10 +779,10 @@ const SupportPage = () => {
             </div>
           </div>
         ) : (
-          <div className="animate-in fade-in slide-in-from-bottom-4 duration-700">
-            {/* Header Row: Flex container for Nav/Title and Upload Widget */}
-            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-10">
-              {/* Column 1: Navigation & Title */}
+          <div className="animate-in fade-in slide-in-from-bottom-4 duration-700 mt-12">
+            {/* Header and Upload Area */}
+            <div className="flex flex-col gap-8">
+              {/* Navigation & Title */}
               <div className="flex flex-col gap-6">
                 <Link href="/user-dashboard">
                   <button className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-100 rounded-lg text-[#5F6F73] text-xs font-semibold hover:bg-gray-50 transition-all cursor-pointer shadow-sm w-fit">
@@ -792,54 +792,61 @@ const SupportPage = () => {
                 </Link>
 
                 <div className="flex flex-col gap-1">
-                  <h1 className="text-3xl font-bold text-[#1F2D2E]">Support</h1>
+                  <h1 className="text-3xl font-bold text-[#1F2D2E] mb-2">Support</h1>
                   <p className="text-[#5F6F73] text-sm font-medium">Get personalized help based on your health data</p>
                 </div>
               </div>
 
-              {/* Column 2: Health upload Widget */}
-              <div className="flex flex-col items-center lg:items-end gap-3 min-w-[240px] mt-12">
-                 <h2 className="text-sm font-bold text-[#1F2D2E] text-center lg:text-right">Upload your health for better support</h2>
-                 
-                 <div className="flex flex-col items-center gap-4">
-                    {/* Image Preview Container */}
-                    <div className="relative w-28 h-28 rounded-2xl overflow-hidden border border-gray-100 shadow-sm bg-gray-50 group/preview transition-transform hover:scale-[1.02]">
-                      <Image 
-                        src={healthImage || "https://images.unsplash.com/photo-1576091160550-217359f42f8c?auto=format&fit=crop&q=80&w=200"} 
-                        alt="Health Data" 
-                        fill 
-                        className="object-cover"
-                      />
-                      <div className="absolute inset-0 bg-black/5 opacity-0 group-hover/preview:opacity-100 transition-opacity flex items-center justify-center">
-                         <div className="bg-white/90 p-1.5 rounded-full shadow-sm">
-                            <LayoutGrid size={12} className="text-[#1F2D2E]" />
-                         </div>
-                      </div>
-                      {healthImage && (
-                        <div className="absolute top-2 right-2 bg-green-500 text-white p-1 rounded-full shadow-lg">
-                          <Check size={10} strokeWidth={4} />
-                        </div>
-                      )}
-                    </div>
+              {/* Health upload Widget with Padding */}
+              <div className="mb-10 w-full flex justify-start">
+                <div className="w-full max-w-md bg-white rounded-2xl shadow-md border border-gray-100 p-6 flex flex-col items-center gap-4">
+                  <h2 className="text-lg font-semibold text-center text-[#1F2D2E]">
+                    Upload your latest health update
+                  </h2>
+                  {/* <p className="text-sm text-gray-500 text-center">
+                    Helps us provide better insights and recommendations.
+                  </p> */}
 
-                    {/* Upload Controls */}
-                    <div className="flex flex-col items-center gap-2">
-                      <input 
-                        type="file" 
-                        id="health-upload-v-stack" 
-                        className="hidden" 
-                        accept="image/*" 
-                        onChange={handleImageChange}
-                      />
-                      <label 
-                        htmlFor="health-upload-v-stack"
-                        className="bg-[#0FA4A9] text-white px-6 py-2.5 rounded-xl text-xs font-bold hover:bg-[#0d8d91] transition-all cursor-pointer shadow-lg shadow-[#0FA4A9]/10 flex items-center gap-2"
-                      >
-                        <LayoutGrid size={14} />
-                        {healthImage ? "Change Image" : "Upload Image"}
-                      </label>
+                  {/* Image Preview / Dropzone */}
+                  <div className="relative w-32 h-32 rounded-2xl overflow-hidden border-2 border-dashed border-gray-200 shadow-sm bg-gray-50 group transition-transform hover:scale-105">
+                    <Image
+                      src={
+                        healthImage ||
+                        "https://images.unsplash.com/photo-1576091160550-217359f42f8c?auto=format&fit=crop&q=80&w=200"
+                      }
+                      alt="Health Data"
+                      fill
+                      className="object-cover"
+                    />
+                    <div className="absolute inset-0 bg-black/10 opacity-0 group-hover:opacity-50 transition-opacity flex flex-col items-center justify-center rounded-2xl">
+                      <LayoutGrid size={16} className="text-[#1F2D2E]" />
+                      <span className="text-xs text-gray-600 mt-1">
+                        Drag & drop or click
+                      </span>
                     </div>
-                 </div>
+                    {healthImage && (
+                      <div className="absolute top-2 right-2 bg-green-500 text-white p-1.5 rounded-full shadow-md">
+                        <Check size={12} strokeWidth={3} />
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Upload Button */}
+                  <input
+                    type="file"
+                    id="health-upload-banner"
+                    className="hidden"
+                    accept="image/*"
+                    onChange={handleImageChange}
+                  />
+                  <label
+                    htmlFor="health-upload-banner"
+                    className="bg-[#0FA4A9] text-white px-6 py-3 rounded-2xl text-sm font-bold hover:bg-[#0d8d91] transition-all cursor-pointer flex items-center gap-2"
+                  >
+                    <LayoutGrid size={16} />
+                    {healthImage ? "Change Image" : "Upload Image"}
+                  </label>
+                </div>
               </div>
             </div>
 
