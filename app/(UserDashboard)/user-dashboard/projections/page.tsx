@@ -26,7 +26,7 @@ import {
 } from "@/redux/features/api/userDashboard/Projection/CurrentProjection";
 
 type Step = "input" | "loading" | "results";
-type TimeHorizon = "6 months" | "1 Years" | "5 Years";
+type TimeHorizon = "6 months" | "1 year" | "5 years";
 
 const ProjectionsPage = () => {
   const [step, setStep] = useState<Step>("input");
@@ -127,26 +127,27 @@ const ProjectionsPage = () => {
       if (lifestyle === "current") {
         res = await currentLifestyleProjection({
           user_id: user.id.toString(),
-          image: projectionImage,
-          duration: timeHorizon.toLowerCase().replace("years", "year"),
+          image: projectionImage as File,
+          duration: timeHorizon,
           resolution: resolution.toUpperCase(),
           tier: quality,
         }).unwrap();
       } else {
         res = await createFutureGoal({
           user_id: user.id.toString(),
-          image: projectionImage,
-          duration: timeHorizon.toLowerCase().replace("years", "year"),
+          image: projectionImage as File,
+          duration: timeHorizon,
           resolution: resolution.toUpperCase(),
           tier: quality,
+          use_default_goal: true,
         }).unwrap();
       }
 
       setProjectionData(res);
+      toast.success("Projection generated successfully!");
 
       setTimeout(() => {
         setStep("results");
-        toast.success("Projection generated successfully!");
       }, 1000);
     } catch (err: any) {
       setStep("input");
@@ -193,7 +194,7 @@ const ProjectionsPage = () => {
           </div>
 
           <div className="flex p-1 bg-[#F8FAFF] border border-gray-200 rounded-xl w-full">
-            {(["6 months", "1 Years", "5 Years"] as TimeHorizon[]).map(
+            {(["6 months", "1 year", "5 years"] as TimeHorizon[]).map(
               (time) => (
                 <button
                   key={time}
@@ -650,8 +651,8 @@ const ProjectionsPage = () => {
 
   const timeframeMap = {
     "6 months": "6 Months",
-    "1 Years": "1 Year",
-    "5 Years": "5 Years",
+    "1 year": "1 Year",
+    "5 years": "5 Years",
   };
 
   return (

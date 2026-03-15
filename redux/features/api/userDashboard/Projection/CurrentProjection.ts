@@ -1,5 +1,3 @@
-"use client";
-
 import { projectionApi } from "./projectionApi";
 
 export interface ProjectionResponse {
@@ -30,15 +28,17 @@ export const projectionApiEndpoints = projectionApi.injectEndpoints({
     >({
       query: (data) => {
         const formData = new FormData();
-        formData.append("user_id", data.user_id);
-        formData.append("image", data.image);
-        formData.append("duration", data.duration);
-
-        if (data.resolution) formData.append("resolution", data.resolution);
-        if (data.tier) formData.append("tier", data.tier);
-
+        Object.entries(data).forEach(([key, value]) => {
+          if (value !== undefined && value !== null) {
+            if (key === "image" && value instanceof File) {
+              formData.append(key, value, value.name);
+            } else {
+              formData.append(key, value as string | Blob);
+            }
+          }
+        });
         return {
-          url: "current-lifestyle/",
+          url: "/projection/current-lifestyle",
           method: "POST",
           body: formData,
         };

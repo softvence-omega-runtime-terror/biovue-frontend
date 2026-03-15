@@ -79,7 +79,7 @@ export default function ChartsNutrition({ data = [], isLoading }: ChartsNutritio
 
   // Calculate total progress (weight diff) if data exists
   const weightProgress = useMemo(() => {
-    const validWeights = data.filter(d => d.weight !== null && d.weight !== undefined);
+    const validWeights = data?.filter(d => d.weight !== null && d.weight !== undefined) || [];
     if (validWeights.length < 2) return null;
     const diff = validWeights[validWeights.length - 1].weight - validWeights[0].weight;
     return `${diff > 0 ? "+" : ""}${diff.toFixed(1)} lbs`;
