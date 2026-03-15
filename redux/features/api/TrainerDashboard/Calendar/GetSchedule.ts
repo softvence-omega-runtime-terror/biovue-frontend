@@ -39,10 +39,10 @@ export interface GetSchedulesResponse {
 export const getSchedulesApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     getSchedules: builder.query<GetSchedulesResponse, string>({
-      query: () => ({
+      query: (date) => ({
         url: `/calendar-schedules`,
         method: "GET",
-        // params: { date },
+        params: { date },
       }),
       providesTags: (result) =>
         result?.data && Array.isArray(result.data)
