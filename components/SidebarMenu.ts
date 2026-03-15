@@ -12,6 +12,7 @@ import {
   FileText,
   Image,
   CreditCard,
+  HelpCircle,
 } from "lucide-react";
 
 export interface MenuItem {
@@ -83,6 +84,7 @@ export const SIDEBAR_MENU: SidebarMenu = {
       href: "/admin-dashboard/banner-management",
     },
     { label: "Settings", icon: Settings, href: "/admin-dashboard/settings" },
+    { label: "FAQ Management", icon: HelpCircle, href: "/admin-dashboard/faqs" },
     { label: "API Service", icon: Cable, href: "/admin-dashboard/api-service" },
   ],
 };
