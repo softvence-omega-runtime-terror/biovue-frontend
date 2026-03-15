@@ -18,6 +18,10 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
+import { useLogoutMutation } from "@/redux/features/api/auth/authApi";
+import { logout } from "@/redux/features/slice/authSlice";
+import { useAppDispatch } from "@/redux/store/hooks";
 
 const MENU_ITEMS = [
   { icon: LayoutGrid, label: "Dashboard", href: "/supplier-dashboard" },
@@ -39,6 +43,9 @@ export default function SupplierDashboardLayout({
   const [mounted, setMounted] = React.useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const pathname = usePathname();
+  const router = useRouter();
+  const dispatch = useAppDispatch();
+  const [logoutMutation] = useLogoutMutation();
 
   React.useEffect(() => {
     setMounted(true);
@@ -53,6 +60,17 @@ export default function SupplierDashboardLayout({
     if (path === "/supplier-dashboard/client") return "Client";
     if (path === "/supplier-dashboard/settings") return "Settings";
     return "Dashboard";
+  };
+
+  const handleSignOut = async () => {
+    try {
+      await logoutMutation({}).unwrap();
+    } catch (error) {
+      console.error("Logout failed:", error);
+    } finally {
+      dispatch(logout());
+      router.push("/login");
+    }
   };
 
   return (
@@ -107,6 +125,7 @@ export default function SupplierDashboardLayout({
         <div className="p-8">
           <div className="h-px bg-gray-100 w-full mb-10" />
           <button
+            onClick={handleSignOut}
             className={cn(
               "flex items-center gap-5 w-full px-6 py-4 text-[#041228] hover:bg-gray-50 rounded-xl transition-all group cursor-pointer",
             )}
