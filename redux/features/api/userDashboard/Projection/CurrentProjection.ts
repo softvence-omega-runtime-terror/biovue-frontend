@@ -15,7 +15,11 @@ export interface ProjectionResponse {
 }
 
 export interface ProjectionRequest {
-  user_id: number;
+  user_id: string;
+  image: File;
+  duration: string;
+  resolution?: string;
+  tier?: string;
 }
 
 export const projectionApiEndpoints = projectionApi.injectEndpoints({
@@ -24,11 +28,21 @@ export const projectionApiEndpoints = projectionApi.injectEndpoints({
       ProjectionResponse,
       ProjectionRequest
     >({
-      query: (body) => ({
-        url: "/current-lifestyle",
-        method: "POST",
-        body,
-      }),
+      query: (data) => {
+        const formData = new FormData();
+        formData.append("user_id", data.user_id);
+        formData.append("image", data.image);
+        formData.append("duration", data.duration);
+
+        if (data.resolution) formData.append("resolution", data.resolution);
+        if (data.tier) formData.append("tier", data.tier);
+
+        return {
+          url: "current-lifestyle/",
+          method: "POST",
+          body: formData,
+        };
+      },
       invalidatesTags: ["Projection"],
     }),
   }),

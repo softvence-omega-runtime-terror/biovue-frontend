@@ -77,6 +77,14 @@ export default function ChartsNutrition({ data = [], isLoading }: ChartsNutritio
     }));
   }, [data]);
 
+  // Calculate total progress (weight diff) if data exists
+  const weightProgress = useMemo(() => {
+    const validWeights = data.filter(d => d.weight !== null && d.weight !== undefined);
+    if (validWeights.length < 2) return null;
+    const diff = validWeights[validWeights.length - 1].weight - validWeights[0].weight;
+    return `${diff > 0 ? "+" : ""}${diff.toFixed(1)} lbs`;
+  }, [data]);
+
   if (isLoading) {
     return (
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 opacity-50">
@@ -88,14 +96,6 @@ export default function ChartsNutrition({ data = [], isLoading }: ChartsNutritio
       </div>
     );
   }
-
-  // Calculate total progress (weight diff) if data exists
-  const weightProgress = useMemo(() => {
-    const validWeights = data.filter(d => d.weight !== null && d.weight !== undefined);
-    if (validWeights.length < 2) return null;
-    const diff = validWeights[validWeights.length - 1].weight - validWeights[0].weight;
-    return `${diff > 0 ? "+" : ""}${diff.toFixed(1)} lbs`;
-  }, [data]);
 
   return (
     <div>
