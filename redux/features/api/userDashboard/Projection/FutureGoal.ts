@@ -1,6 +1,6 @@
 "use client";
 
-import { baseApi } from "../../baseApi";
+import { projectionApi } from "./projectionApi";
 
 interface FutureGoalResponse {
   user_id: string;
@@ -25,7 +25,7 @@ interface FutureGoalRequest {
   goal_description?: string;
 }
 
-export const futureGoalApi = baseApi.injectEndpoints({
+export const futureGoalApi = projectionApi.injectEndpoints({
   endpoints: (builder) => ({
     createFutureGoal: builder.mutation<FutureGoalResponse, FutureGoalRequest>({
       query: (data) => {
