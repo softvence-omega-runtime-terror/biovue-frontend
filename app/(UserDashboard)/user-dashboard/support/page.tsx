@@ -15,7 +15,6 @@ import {
   MessageSquare,
   ChevronLeft,
   ChevronRight,
-  Paperclip,
   Moon,
   Target,
   Clock,
@@ -182,7 +181,7 @@ const RecommendationCard = ({ coach, onView }: { coach: any; onView: () => void 
       <span className="text-[#3A86FF] text-[10px] font-bold uppercase tracking-widest leading-none">{coach.role}</span>
       <h3 className="text-lg font-bold text-[#1F2D2E]">{coach.name}</h3>
     </div>
-    <div className="bg-[#F3F4F6] rounded-xl p-4 min-h-[84px] flex items-center">
+    <div className="bg-[#F3F4F6] rounded-xl p-4 min-h-21 flex items-center">
       <p className="text-[#5F6F73] text-[11px] italic leading-relaxed">
         &quot;{coach.description}&quot;
       </p>
@@ -233,7 +232,7 @@ const SupportTeamCard = ({ member, onMessage, onGoals }: { member: any; onMessag
       {/* 
       <button 
         onClick={onGoals}
-        className="flex-1 border border-gray-200 text-[#1F2D2E] py-3 rounded-xl text-xs font-bold flex items-center justify-center gap-2 hover:bg-gray-50 transition-all font-bold cursor-pointer"
+        className="flex-1 border border-gray-200 text-[#1F2D2E] py-3 rounded-xl text-xs flex items-center justify-center gap-2 hover:bg-gray-50 transition-all font-bold cursor-pointer"
       >
         Shared Goal
         <TrendingUp size={14} />
@@ -400,7 +399,7 @@ const SupportPage = () => {
           </button>
         </div>
 
-        <div className="flex-1 bg-white rounded-[16px] border border-[#3A86FF]/25 shadow-sm flex flex-col overflow-hidden relative">
+        <div className="flex-1 bg-white rounded-3xl border border-[#3A86FF]/25 shadow-sm flex flex-col overflow-hidden relative">
           {/* Coach Meta Bar */}
           <div className="px-6 py-4 border-b border-gray-100 flex items-center bg-white/80 backdrop-blur-sm sticky top-0 z-10">
              <div className="flex items-center gap-4">
@@ -576,10 +575,10 @@ const SupportPage = () => {
               </div>
 
               <div className="flex items-center gap-4">
-                <button className="bg-[#0FA4A9] text-white px-6 py-3.5 rounded-xl text-xs font-bold hover:bg-[#0d8d91] transition-all shadow-lg shadow-[#0FA4A9]/10 font-bold cursor-pointer">
+                <button className="bg-[#0FA4A9] text-white px-6 py-3.5 rounded-xl text-xs hover:bg-[#0d8d91] transition-all shadow-lg shadow-[#0FA4A9]/10 font-bold cursor-pointer">
                   View Habit Progress
                 </button>
-                <button className="border border-gray-200 text-[#1F2D2E] px-6 py-3.5 rounded-xl text-xs font-bold hover:bg-gray-50 transition-all bg-white font-bold cursor-pointer">
+                <button className="border border-gray-200 text-[#1F2D2E] px-6 py-3.5 rounded-xl text-xs font-bold hover:bg-gray-50 transition-all bg-white cursor-pointer">
                   Log Today&apos;s Habit
                 </button>
               </div>
@@ -587,7 +586,7 @@ const SupportPage = () => {
           ))}
         </div>
 
-        <div className="bg-[#F4FAFB] rounded-[16px] p-6 flex gap-5 border border-[#3A86FF]/25 bg-white">
+        <div className="bg-[#F4FAFB] rounded-3xl p-6 flex gap-5 border border-[#3A86FF]/25 ">
           <div className="w-12 h-12 rounded-xl bg-[#EFF6FF] flex items-center justify-center shrink-0">
              <Info size={24} className="text-[#3A86FF]" />
           </div>
@@ -613,7 +612,7 @@ const SupportPage = () => {
           Back to Support
         </button>
 
-        <div className="bg-white rounded-[16px] p-8 md:p-12 border border-[#3A86FF]/25 shadow-[0_4px_30px_rgba(0,0,0,0.02)] flex flex-col items-center text-center gap-8 relative overflow-hidden">
+        <div className="bg-white rounded-3xl p-8 md:p-12 border border-[#3A86FF]/25 shadow-[0_4px_30px_rgba(0,0,0,0.02)] flex flex-col items-center text-center gap-8 relative overflow-hidden">
           <div className="relative">
              <div className="w-40 h-40 rounded-[32px] overflow-hidden border-8 border-[#3A86FF]/5">
                <Image src={selectedCoach.avatar} alt={selectedCoach.name} width={160} height={160} className="object-cover w-full h-full" />
