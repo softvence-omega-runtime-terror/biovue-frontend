@@ -1,6 +1,6 @@
 "use client";
 
-import { baseApi } from "../../baseApi";
+import { projectionApi } from "./projectionApi";
 
 export interface ProjectionResponse {
   user_id: string;
@@ -18,14 +18,14 @@ export interface ProjectionRequest {
   user_id: number;
 }
 
-export const projectionApi = baseApi.injectEndpoints({
+export const projectionApiEndpoints = projectionApi.injectEndpoints({
   endpoints: (builder) => ({
     currentLifestyleProjection: builder.mutation<
       ProjectionResponse,
       ProjectionRequest
     >({
       query: (body) => ({
-        url: "/projection/current-lifestyle",
+        url: "/current-lifestyle",
         method: "POST",
         body,
       }),
@@ -34,4 +34,4 @@ export const projectionApi = baseApi.injectEndpoints({
   }),
 });
 
-export const { useCurrentLifestyleProjectionMutation } = projectionApi;
+export const { useCurrentLifestyleProjectionMutation } = projectionApiEndpoints;
