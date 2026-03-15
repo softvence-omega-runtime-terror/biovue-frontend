@@ -1,34 +1,12 @@
 "use client";
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useGetFaqsQuery } from "@/redux/features/api/adminDashboard/faqApi";
 
 interface FAQItem {
   question: string;
   answer: string;
 }
-
-const faqs: FAQItem[] = [
-  {
-    question: "What is BioVue Digital Wellness?",
-    answer: "BioVue Digital Wellness is an AI-powered platform designed to provide personalized health insights, body projections, and wellness recommendations based on your unique health profile and goals.",
-  },
-  {
-    question: "Is BioVue Digital Wellness free to use?",
-    answer: "We offer both free and premium plans. You can get started with our basic features for free, while advanced AI analysis and projections are available on our Pro plan.",
-  },
-  {
-    question: "What's included in the Pro Plan?",
-    answer: "The Pro Plan includes unlimited AI photo analysis, high-fidelity body projections, personalized metabolic insights, priority support, and detailed health tracking metrics.",
-  },
-  {
-    question: "Can I cancel my subscription anytime?",
-    answer: "Yes, you can cancel your subscription at any time from your account settings. You will continue to have access to Pro features until the end of your current billing period.",
-  },
-  {
-    question: "Is BioVue Digital Wellness suitable for teams or businesses?",
-    answer: "Absolutely! We have specialized plans for fitness professionals, nutritionists, and health clinics to manage multiple clients and provide data-backed insights.",
-  },
-];
 
 const FAQItemComponent = ({ faq, isOpen, toggle }: { faq: FAQItem; isOpen: boolean; toggle: () => void }) => {
   return (
@@ -96,7 +74,10 @@ const FAQItemComponent = ({ faq, isOpen, toggle }: { faq: FAQItem; isOpen: boole
 };
 
 const FAQSection = () => {
+  const { data, isLoading } = useGetFaqsQuery();
   const [openIndex, setOpenIndex] = useState<number | null>(0);
+
+  const faqs = data?.data || [];
 
   return (
     <section className="py-24 bg-white relative overflow-hidden">
@@ -136,14 +117,24 @@ const FAQSection = () => {
           {/* Right Column - FAQ List */}
           <div className="lg:col-span-7">
             <div className="flex flex-col">
-              {faqs.map((faq, index) => (
-                <FAQItemComponent 
-                  key={index} 
-                  faq={faq} 
-                  isOpen={openIndex === index}
-                  toggle={() => setOpenIndex(openIndex === index ? null : index)}
-                />
-              ))}
+              {isLoading ? (
+                <div className="flex items-center justify-center py-12">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#0FA4A9]"></div>
+                </div>
+              ) : faqs.length > 0 ? (
+                faqs.map((faq: any, index: number) => (
+                  <FAQItemComponent 
+                    key={index} 
+                    faq={faq} 
+                    isOpen={openIndex === index}
+                    toggle={() => setOpenIndex(openIndex === index ? null : index)}
+                  />
+                ))
+              ) : (
+                <div className="py-12 text-center text-gray-500 italic">
+                  More FAQs are on the way!
+                </div>
+              )}
             </div>
           </div>
         </div>
