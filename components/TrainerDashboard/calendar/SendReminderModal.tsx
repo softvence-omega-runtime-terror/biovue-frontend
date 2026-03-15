@@ -1,8 +1,9 @@
 "use client";
 
 import { useCreateReminderMutation } from "@/redux/features/api/TrainerDashboard/Calendar/CreateReminder";
+import { useGetTrainerOverviewQuery } from "@/redux/features/api/TrainerDashboard/trainerOverviewApi";
 import { X, ChevronDown } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { toast } from "sonner";
 
 interface Props {
@@ -11,6 +12,9 @@ interface Props {
 }
 
 export default function SendReminderModal({ isOpen, onClose }: Props) {
+  const { data: overviewData, isLoading: isClientsLoading } = useGetTrainerOverviewQuery();
+  const clients = overviewData?.client_table || [];
+
   const [reminderType, setReminderType] = useState<
     "motivation" | "habit" | "missed"
   >("motivation");
@@ -19,11 +23,22 @@ export default function SendReminderModal({ isOpen, onClose }: Props) {
     push: false,
   });
   const [message, setMessage] = useState("");
-  const [clientId, setClientId] = useState(1);
+  const [clientId, setClientId] = useState<number | null>(null);
+
+  // Set default client ID when data loads or modal opens
+  useEffect(() => {
+    if (isOpen && clients.length > 0 && clientId === null) {
+      setClientId(clients[0].user_id);
+    }
+  }, [isOpen, clients, clientId]);
 
   const [createReminder, { isLoading }] = useCreateReminderMutation();
 
   const handleSendReminder = async () => {
+    if (!clientId) {
+      toast.error("Please select a client");
+      return;
+    }
     try {
       const response = await createReminder({
         client_id: clientId,
@@ -71,13 +86,18 @@ export default function SendReminderModal({ isOpen, onClose }: Props) {
             </label>
             <div className="relative group">
               <select
-                value={clientId}
+                value={clientId ?? ""}
                 onChange={(e) => setClientId(Number(e.target.value))}
                 className="w-full appearance-none bg-[#F0FDFD] border border-[#CCFBF1] text-[#0D9488] px-5 py-4 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-[#0D9488]/20 transition-all cursor-pointer"
               >
-                <option value={1}>Alex Johnson</option>
-                <option value={2}>Sarah Miller</option>
-                <option value={3}>Marcus Chen</option>
+                <option value="" disabled>
+                  {isClientsLoading ? "Loading clients..." : "Select Client"}
+                </option>
+                {clients.map((client) => (
+                  <option key={client.user_id} value={client.user_id}>
+                    {client.user_name}
+                  </option>
+                ))}
               </select>
               <ChevronDown
                 className="absolute right-4 top-1/2 -translate-y-1/2 text-[#0D9488] pointer-events-none group-hover:scale-110 transition-transform"

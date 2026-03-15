@@ -72,10 +72,10 @@ export default function ClientDetailsContent({
   };
 
   // Determine if assigned
-  const hasProgram = clientDetails.programContext && 
-                     clientDetails.programContext.name && 
-                     clientDetails.programContext.name !== "Standard Training" &&
-                     clientDetails.programContext.name !== "Not Assigned";
+  // const hasProgram = clientDetails.programContext && 
+  //                    clientDetails.programContext.name && 
+  //                    clientDetails.programContext.name !== "Standard Training" &&
+  //                    clientDetails.programContext.name !== "Not Assigned";
 
   return (
     <div className="min-h-screen space-y-8">
@@ -207,7 +207,7 @@ export default function ClientDetailsContent({
         </Card>
 
         {/* Program Assignment */}
-        <Card className="flex-1 min-w-[300px] border-none shadow-xs bg-white">
+        <Card className="flex-1 min-w-75 border-none shadow-xs bg-white">
           <CardContent className="p-5 space-y-4">
             <div className="flex items-center justify-between">
               <p className="text-base mb-2 font-bold text-[#5F6F73] tracking-wider uppercase">

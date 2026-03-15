@@ -2,13 +2,15 @@
 
 import DashboardHeading from "@/components/common/DashboardHeading";
 import ClientsTable from "@/components/TrainerDashboard/Clients/ClientsTable";
-import { clients } from "@/components/TrainerDashboard/overview/data";
+import { useGetTrainerOverviewQuery } from "@/redux/features/api/TrainerDashboard/trainerOverviewApi";
 import { ChevronLeft } from "lucide-react";
 import Link from "next/link";
 
 export default function ActiveClientsPage() {
-  const activeClients = clients.filter(
-    (client) => client.status === "on-track",
+  const { data, isLoading } = useGetTrainerOverviewQuery();
+  
+  const activeClients = (data?.client_table || []).filter(
+    (client) => client.status.toLowerCase().includes("on track") || client.status.toLowerCase() === "on-track"
   );
 
   return (
@@ -29,7 +31,11 @@ export default function ActiveClientsPage() {
         subheading="Clients currently on track"
       />
 
-      <ClientsTable clients={activeClients} />
+      {isLoading ? (
+        <div className="py-8 text-center text-gray-500">Loading active clients...</div>
+      ) : (
+        <ClientsTable clients={activeClients} />
+      )}
     </div>
   );
 }

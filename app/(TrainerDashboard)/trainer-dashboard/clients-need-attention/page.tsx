@@ -4,31 +4,37 @@ import { useState } from "react";
 import { ChevronLeft } from "lucide-react";
 import Link from "next/link";
 import ClientDetailModal from "@/components/TrainerDashboard/overview/ClientNeedAttentionModal";
-import {
-  ClientNeedingAttention,
-  clientsNeedingAttention,
-} from "./ClientsAttentiondata";
+import { useGetTrainerOverviewQuery } from "@/redux/features/api/TrainerDashboard/trainerOverviewApi";
 
-const getStatusColor = (status: "need-attention" | "on-track" | "inactive") => {
-  switch (status) {
+const getStatusColor = (status: string) => {
+  const normalizedStatus = status.toLowerCase().replace(" ", "-");
+  switch (normalizedStatus) {
     case "need-attention":
       return "bg-[#D3BB5B1A] text-[#D3BB5B]";
     case "on-track":
       return "bg-[#22C55E1A] text-[#22C55E]";
     case "inactive":
       return "bg-[#9AAEB24D] text-[#5F6F73]";
+    default:
+      return "bg-gray-100 text-gray-600";
   }
 };
 
-const getTurningRateColor = (rate: number) => {
-  if (rate < 30) return "text-green-600";
-  if (rate < 60) return "text-yellow-600";
-  return "text-red-600";
-};
-
 export default function ClientsNeedingAttentionPage() {
-  const [selectedClient, setSelectedClient] =
-    useState<ClientNeedingAttention | null>(null);
+  const { data: overviewData, isLoading } = useGetTrainerOverviewQuery();
+  const [selectedClient, setSelectedClient] = useState<any>(null);
+
+  const clientsNeedingAttention = overviewData?.client_table?.filter(
+    (client) => client.status.toLowerCase().replace(" ", "-") === "need-attention"
+  ) || [];
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#0FA4A9]"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen ">
@@ -68,9 +74,6 @@ export default function ClientsNeedingAttentionPage() {
                     STATUS
                   </th>
                   <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">
-                    TURNING POSSIBILITY
-                  </th>
-                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">
                     LAST ACTIVITY
                   </th>
                   <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">
@@ -81,11 +84,11 @@ export default function ClientsNeedingAttentionPage() {
               <tbody>
                 {clientsNeedingAttention.map((client) => (
                   <tr
-                    key={client.id}
+                    key={client.user_id}
                     className="border-b border-gray-200 hover:bg-gray-50 transition-colors"
                   >
                     <td className="px-6 py-4 text-sm font-medium text-gray-900">
-                      {client.name}
+                      {client.user_name}
                     </td>
                     <td className="px-6 py-4 text-sm text-gray-600">
                       {client.goal}
@@ -96,34 +99,11 @@ export default function ClientsNeedingAttentionPage() {
                           client.status,
                         )}`}
                       >
-                        Need Attention
+                        {client.status}
                       </span>
                     </td>
-                    <td className="px-6 py-4 text-sm">
-                      <div className="flex items-center gap-2">
-                        <div className="w-24 h-2 bg-gray-200 rounded-full overflow-hidden">
-                          <div
-                            className={`h-full transition-all ${
-                              client.turningRate < 30
-                                ? "bg-green-500"
-                                : client.turningRate < 60
-                                  ? "bg-yellow-500"
-                                  : "bg-red-500"
-                            }`}
-                            style={{ width: `${client.turningRate}%` }}
-                          />
-                        </div>
-                        <span
-                          className={`font-semibold text-sm ${getTurningRateColor(
-                            client.turningRate,
-                          )}`}
-                        >
-                          {client.turningRate}%
-                        </span>
-                      </div>
-                    </td>
                     <td className="px-6 py-4 text-sm text-gray-600">
-                      {client.lastActivity}
+                      {client.activity}
                     </td>
                     <td className="px-6 py-4">
                       <button
