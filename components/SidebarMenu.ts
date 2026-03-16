@@ -29,6 +29,7 @@ interface SidebarMenu {
   user: MenuItem[];
   trainer: MenuItem[];
   admin: MenuItem[];
+  nutritionist: MenuItem[];
 }
 
 export const SIDEBAR_MENU: SidebarMenu = {
@@ -57,6 +58,16 @@ export const SIDEBAR_MENU: SidebarMenu = {
     { label: "Messages", icon: Mail, href: "/trainer-dashboard/messages" },
     { label: "Calendar", icon: Calendar, href: "/trainer-dashboard/calendar" },
     { label: "Settings", icon: Settings, href: "/trainer-dashboard/settings" },
+  ],
+
+  nutritionist: [
+    {
+      label: "Overview",
+      icon: LayoutGrid,
+      href: "/nutritionist-dashboard/overview",
+    },
+    { label: "Clients", icon: Users, href: "/nutritionist-dashboard/clients" },
+    { label: "Messages", icon: Mail, href: "/nutritionist-dashboard/messages" },
   ],
 
   admin: [
