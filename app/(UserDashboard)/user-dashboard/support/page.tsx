@@ -23,11 +23,11 @@ import {
   TrendingUp,
   Info,
   Calendar,
-  Loader2
+  Loader2,
+  CloudCog
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { 
-  useGetRecommendedProfessionalsQuery,
   useConnectProfessionMutation,
   useGetConnectedProfessionsQuery
 } from "@/redux/features/api/userDashboard/support";
@@ -188,7 +188,7 @@ const RecommendationCard = ({ coach, onView }: { coach: any; onView: () => void 
     </div>
     <button 
       onClick={onView}
-      className="w-full py-3.5 rounded-xl font-bold flex items-center justify-center gap-2 transition-all group bg-[#6C91C2] text-white hover:bg-[#5a7da9] text-sm cursor-pointer"
+      className="w-full mt-auto py-3.5 rounded-xl font-bold flex items-center justify-center gap-2 transition-all group bg-[#6C91C2] text-white hover:bg-[#5a7da9] text-sm cursor-pointer"
     >
       View Profile
       <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
@@ -269,7 +269,41 @@ const BrowseCard = ({ item, onView }: { item: any; onView: () => void }) => (
 
 const SupportPage = () => {
   const user = useSelector(selectCurrentUser);
-  const { data: recommendationsData, isLoading: isLoadingRecommendations } = useGetRecommendedProfessionalsQuery(user?.id, { skip: !user?.id });
+  const [recommendationsData, setRecommendationsData] = useState<any>(null);
+  const [isLoadingRecommendations, setIsLoadingRecommendations] = useState(true);
+
+
+  // const { data: recommendationsData, isLoading: isLoadingRecommendations } = useGetRecommendedProfessionalsQuery(user?.id, { skip: !user?.id });
+
+  useEffect(() => {
+    if (!user?.id) {
+      setIsLoadingRecommendations(false);
+      return;
+    }
+
+    const fetchRecommendations = async () => {
+      setIsLoadingRecommendations(true);
+      try {
+        const response = await fetch(`https://biovue-ai.onrender.com/api/v1/recommend/professionals/${user.id}`, {
+          method: 'GET',
+          headers: {
+            'accept': 'application/json'
+          }
+        });
+        const data = await response.json();
+        // Since the component expects recommendationsData?.data?.suggestions
+        setRecommendationsData({ data });
+      } catch (error) {
+        console.error("Failed to fetch recommendations:", error);
+      } finally {
+        setIsLoadingRecommendations(false);
+      }
+    };
+
+    fetchRecommendations();
+  }, [user?.id]);
+
+    console.log(recommendationsData,"recommendationsData");
   const { data: connectedData, isLoading: isLoadingConnected } = useGetConnectedProfessionsQuery();
   
   const [supportTeamIndex, setSupportTeamIndex] = useState(0);
