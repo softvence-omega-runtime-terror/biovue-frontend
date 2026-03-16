@@ -13,6 +13,7 @@ import {
   RotateCcw,
   AlertCircle,
   Upload,
+  Sparkles,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -25,6 +26,7 @@ import {
   useCurrentLifestyleProjectionMutation,
 } from "@/redux/features/api/userDashboard/Projection/CurrentProjection";
 import { useGetLatestProjectionQuery } from "@/redux/features/api/userDashboard/Projection/GetCurrentProjection";
+import { useSaveCurrentProjectionMutation } from "@/redux/features/api/userDashboard/Projection/SaveCurrentProjection";
 
 type Step = "input" | "loading" | "results";
 type TimeHorizon = "6 months" | "1 year" | "5 years";
@@ -33,7 +35,6 @@ const ProjectionsPage = () => {
   const [step, setStep] = useState<Step>("input");
   const [timeHorizon, setTimeHorizon] = useState<TimeHorizon>("6 months");
   const [lifestyle, setLifestyle] = useState<"current" | "improved">("current");
-  const [progress, setProgress] = useState(0);
   const [resolution, setResolution] = useState<"2k" | "4k">("2k");
   const [quality, setQuality] = useState<"fast" | "ultra">("fast");
   const [projectionImage, setProjectionImage] = useState<File | null>(null);
@@ -46,6 +47,8 @@ const ProjectionsPage = () => {
     useCurrentLifestyleProjectionMutation();
   const [createFutureGoal, { isLoading: isFutureLoading }] =
     useCreateFutureGoalMutation();
+  const [saveCurrentProjection, { isLoading: isSaveLoading }] =
+    useSaveCurrentProjectionMutation();
 
   const { data: latestProjection } = useGetLatestProjectionQuery(
     user?.id ?? "",
@@ -89,34 +92,18 @@ const ProjectionsPage = () => {
     }
   };
 
-  // Loading simulation
-  useEffect(() => {
-    let interval: NodeJS.Timeout;
-    if (step === "loading") {
-      setProgress(0);
-      setLoadingTextIndex(0);
-      interval = setInterval(() => {
-        setProgress((prev) => {
-          if (prev >= 100) {
-            clearInterval(interval);
-            return 100;
-          }
-          return prev + 1;
-        });
-      }, 100);
-    }
-    return () => clearInterval(interval);
-  }, [step]);
-
+  // Loading text rotation
   useEffect(() => {
     if (step !== "loading") return;
+
+    setLoadingTextIndex(0);
 
     const textInterval = setInterval(() => {
       setLoadingTextIndex((prev) => {
         if (prev < loadingTexts.length - 1) return prev + 1;
         return prev;
       });
-    }, 1500);
+    }, 4000);
 
     return () => clearInterval(textInterval);
   }, [step]);
@@ -138,6 +125,7 @@ const ProjectionsPage = () => {
       let res;
 
       if (lifestyle === "current") {
+        // Step 1: POST to external AI API to generate projection
         res = await currentLifestyleProjection({
           user_id: user.id.toString(),
           image: projectionImage as File,
@@ -157,11 +145,30 @@ const ProjectionsPage = () => {
       }
 
       setProjectionData(res);
-      toast.success("Projection generated successfully!");
+
+      // Step 2: Save the AI response to the backend
+      await saveCurrentProjection({
+        user_id: user.id,
+        image: projectionImage,
+        projection_id: res.projection_id,
+        projection_url: res.projection_url,
+        route: res.route,
+        timeframe: res.timeframe,
+        est_bmi: res.est_bmi,
+        est_weight: res.est_weight,
+        expected_changes: res.expected_changes,
+        confidence_score: res.confidence_score,
+        duration: timeHorizon,
+        resolution: resolution.toUpperCase(),
+        tier: quality,
+      }).unwrap();
+
+      // Step 3: GET auto-refetches via invalidatesTags on baseApi
+      toast.success("Projection generated and saved successfully!");
 
       setTimeout(() => {
         setStep("results");
-      }, 1000);
+      }, 3000);
     } catch (err: any) {
       setStep("input");
       toast.error(err?.data?.message || "Failed to generate projection.");
@@ -433,10 +440,10 @@ const ProjectionsPage = () => {
 
         <button
           onClick={handleGenerate}
-          disabled={isCurrentLoading || isFutureLoading}
+          disabled={isCurrentLoading || isFutureLoading || isSaveLoading}
           className="w-full bg-[#0FA4A9] text-white py-5 rounded-xl font-bold flex items-center justify-center gap-3 hover:bg-[#0d8d91] transition-all group cursor-pointer shadow-lg shadow-[#0FA4A9]/20 disabled:opacity-50"
         >
-          {isCurrentLoading || isFutureLoading
+          {isCurrentLoading || isFutureLoading || isSaveLoading
             ? "Generating..."
             : "Generate Projection"}
           <ArrowRight
@@ -450,53 +457,20 @@ const ProjectionsPage = () => {
 
   const renderLoadingStep = () => (
     <div className="fixed inset-0 z-[100] bg-white/40 backdrop-blur-md flex items-center justify-center p-6 overflow-hidden">
-      <div className="bg-white rounded-[32px] p-12 max-w-md w-full shadow-2xl border border-gray-100 flex flex-col items-center text-center space-y-8 animate-in zoom-in-95 duration-300">
-        {/* Circular Progress */}
-        <div className="relative w-48 h-48 flex items-center justify-center">
-          <svg className="w-full h-full -rotate-90">
-            <circle
-              cx="96"
-              cy="96"
-              r="80"
-              stroke="#F3F4F6"
-              strokeWidth="12"
-              fill="transparent"
-            />
-            <circle
-              cx="96"
-              cy="96"
-              r="80"
-              stroke="#3A86FF"
-              strokeWidth="12"
-              fill="transparent"
-              strokeDasharray={2 * Math.PI * 80}
-              strokeDashoffset={2 * Math.PI * 80 * (1 - progress / 100)}
-              strokeLinecap="round"
-              className="transition-all duration-300 ease-out"
-            />
-          </svg>
-          <span className="absolute text-4xl font-extrabold text-[#3A86FF]">
-            {progress}%
-          </span>
+      <div className="flex flex-col items-center justify-center py-20 gap-4 animate-in fade-in duration-700">
+        <div className="relative">
+          <div className="w-16 h-16 rounded-full border-4 border-[#0FA4A9]/10 border-t-[#0FA4A9] animate-spin" />
+          <div className="absolute inset-0 flex items-center justify-center">
+            <Sparkles size={20} className="text-[#0FA4A9] animate-pulse" />
+          </div>
         </div>
-
-        <div className="space-y-4">
-          <h2 className="text-2xl font-bold text-[#041228]">
-            Your Future Projection
-          </h2>
+        <div className="flex flex-col items-center gap-1.5">
+          <h3 className="text-lg font-bold text-[#1F2D2E]">Generating Your Projection</h3>
           <div className="h-6 flex items-center justify-center">
-            <p className="text-[#5F6F73] text-sm animate-in fade-in slide-in-from-bottom-2 duration-500">
+            <p className="text-[#5F6F73] text-sm font-medium animate-in fade-in slide-in-from-bottom-2 duration-500">
               {loadingTexts[loadingTextIndex]}
             </p>
           </div>
-        </div>
-
-        {/* Linear Progress */}
-        <div className="w-full h-1.5 bg-gray-100 rounded-full overflow-hidden">
-          <div
-            className="h-full bg-[#3A86FF] transition-all duration-300 ease-out"
-            style={{ width: `${progress}%` }}
-          />
         </div>
       </div>
     </div>
@@ -589,7 +563,7 @@ const ProjectionsPage = () => {
               <div className="text-left py-6 border-t border-gray-50 space-y-4">
                 <h4 className="font-bold text-[#041228]">Expected Changes:</h4>
                 <div className="space-y-3">
-                  {projectionData.expected_changes.map((text, idx) => (
+                  {expectedChanges.map((text, idx) => (
                     <div key={idx} className="flex items-start gap-2">
                       <div className="w-5 h-5 bg-[#0FA4A9] rounded-full flex items-center justify-center mt-0.5 shrink-0">
                         <CheckCircle2 size={12} className="text-white" />
