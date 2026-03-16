@@ -28,11 +28,31 @@ export interface ProjectionResponse {
 
 export const projectionApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
+    // getLatestProjection: builder.query<ProjectionResponse, number | string>({
+    //   query: (userId) => ({
+    //     url: `/projection-lifestyle/latest/${userId}`,
+    //     method: "GET",
+    //   }),
+    //   providesTags: ["Projection"],
+    // }),
+
     getLatestProjection: builder.query<ProjectionResponse, number | string>({
       query: (userId) => ({
         url: `/projection-lifestyle/latest/${userId}`,
         method: "GET",
       }),
+      transformResponse: (response: ProjectionResponse) => {
+        const base = "https://biovue-ai.onrender.com";
+
+        if (
+          response.data?.projection_url &&
+          !response.data.projection_url.startsWith("http")
+        ) {
+          response.data.projection_url = base + response.data.projection_url;
+        }
+
+        return response;
+      },
       providesTags: ["Projection"],
     }),
   }),

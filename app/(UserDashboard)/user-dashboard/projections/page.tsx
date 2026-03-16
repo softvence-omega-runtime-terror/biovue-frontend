@@ -526,6 +526,8 @@ const ProjectionsPage = () => {
                   : `Achieving your future goals in ${timeHorizon}`}
               </h3>
               <div className="relative w-full aspect-[4/3.2] rounded-2xl overflow-hidden bg-gray-50 shadow-inner">
+                
+                
                 <Image
                   src={projection?.projection_url || "/images/auth/body1.png"}
                   alt="Projection Result"
