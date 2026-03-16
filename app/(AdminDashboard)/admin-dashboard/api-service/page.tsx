@@ -13,11 +13,11 @@ const AI_APIS = [
   {
     id: "current-lifestyle",
     name: "Project Current Lifestyle",
-    description: "Analyze and project outcomes based on current lifestyle data. Endpoint: /api/v1/projection/current-lifestyle/",
+    description: "Analyze and project outcomes based on current lifestyle data. Endpoint: /api/v1/projection-lifestyle",
     icon: Brain,
     color: "bg-purple-500",
     status: "Active" as const,
-    route: "/api/v1/projection/current-lifestyle/",
+    route: "/projection-lifestyle",
   },
   {
     id: "future-goal",

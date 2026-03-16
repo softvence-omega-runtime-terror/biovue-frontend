@@ -17,6 +17,7 @@ import { useGetUsersQuery } from "@/redux/features/api/TrainerDashboard/Program/
 import { useState } from "react";
 import { toast } from "sonner";
 import { Checkbox } from "@/components/ui/checkbox";
+import { cn } from "@/lib/utils";
 
 interface ProgramViewProps {
   program: {
@@ -63,11 +64,8 @@ export default function ProgramView({ program }: ProgramViewProps) {
     "Magnesium",
   ];
 
-  // const connectedUserIds = program.users.map((u) => u.id);
-  // const availableUsers = usersData?.data?.filter((u) => !connectedUserIds.includes(u.id)) || [];
   const connectedUserIds = program.users.map((u) => u.id);
-  const availableUsers =
-    usersData?.data?.filter((u) => !connectedUserIds.includes(u.id)) || [];
+  const allUsers = usersData?.data || [];
   const handleAddClients = async () => {
     if (selectedUserIds.length === 0) {
       toast.error("Please select at least one client");
@@ -81,7 +79,7 @@ export default function ProgramView({ program }: ProgramViewProps) {
       // }).unwrap();
       const response = await assignUsers({
         program_set_id: Number(program.id),
-        user_ids: selectedUserIds,
+        user_ids: [...connectedUserIds, ...selectedUserIds],
       }).unwrap();
       if (response.status) {
         toast.success(
@@ -217,7 +215,7 @@ export default function ProgramView({ program }: ProgramViewProps) {
                     Connected Clients
                   </h2>
                 </div>
-                <div className="space-y-3">
+                <div className="space-y-3 max-h-70 overflow-y-auto">
                   {program.users.length > 0 ? (
                     program.users.map((user) => (
                       <div
@@ -270,36 +268,46 @@ export default function ProgramView({ program }: ProgramViewProps) {
                     <div className="flex justify-center p-4">
                       <Loader2 className="animate-spin text-teal-600" />
                     </div>
-                  ) : availableUsers.length > 0 ? (
-                    availableUsers.map((user) => (
-                      <div
-                        key={user.id}
-                        className="flex items-center gap-3 p-2 hover:bg-gray-50 rounded-lg cursor-pointer transition-colors"
-                        onClick={() => toggleUserSelection(user.id)}
-                      >
-                        <Checkbox
-                          id={`user-${user.id}`}
-                          checked={selectedUserIds.includes(user.id)}
-                          onCheckedChange={() => toggleUserSelection(user.id)}
-                        />
-                        <div className="flex items-center gap-3 flex-1">
-                          <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-600 text-xs font-bold">
-                            {user.name.charAt(0)}
-                          </div>
-                          <div>
-                            <p className="text-sm font-medium text-gray-900">
-                              {user.name}
-                            </p>
-                            <p className="text-xs text-gray-500">
-                              {user.email}
-                            </p>
+                  ) : allUsers.length > 0 ? (
+                    allUsers.map((user) => {
+                      const isAlreadyAssigned = connectedUserIds.includes(user.id);
+                      return (
+                        <div
+                          key={user.id}
+                          className={cn(
+                            "flex items-center gap-3 p-2 hover:bg-gray-50 rounded-lg cursor-pointer transition-colors",
+                            isAlreadyAssigned && "opacity-60 cursor-not-allowed"
+                          )}
+                          onClick={() => !isAlreadyAssigned && toggleUserSelection(user.id)}
+                        >
+                          <Checkbox
+                            id={`user-${user.id}`}
+                            checked={isAlreadyAssigned || selectedUserIds.includes(user.id)}
+                            disabled={isAlreadyAssigned}
+                            onCheckedChange={() => !isAlreadyAssigned && toggleUserSelection(user.id)}
+                          />
+                          <div className="flex items-center gap-3 flex-1">
+                            <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-600 text-xs font-bold">
+                              {user.name.charAt(0)}
+                            </div>
+                            <div>
+                              <p className="text-sm font-medium text-gray-900">
+                                {user.name}
+                              </p>
+                              <p className="text-xs text-gray-500">
+                                {user.email}
+                              </p>
+                              {isAlreadyAssigned && (
+                                <p className="text-[10px] text-teal-600 font-semibold uppercase">Already Assigned</p>
+                              )}
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    ))
+                      );
+                    })
                   ) : (
                     <p className="text-sm text-gray-500 italic text-center p-4">
-                      All clients are already connected.
+                      No clients available.
                     </p>
                   )}
                 </div>

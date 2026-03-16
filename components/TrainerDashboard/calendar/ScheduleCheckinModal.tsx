@@ -1,6 +1,7 @@
 "use client";
 
 import { useCreateScheduleMutation } from "@/redux/features/api/TrainerDashboard/Calendar/CreateSchedule";
+import { useGetConnectedClientsQuery } from "@/redux/features/api/TrainerDashboard/Clients/YourClients";
 import { X, ChevronDown } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -17,7 +18,8 @@ export default function ScheduleCheckinModal({ isOpen, onClose }: Props) {
   const [checkinType, setCheckinType] = useState("");
   const [privateNote, setPrivateNote] = useState("");
   const [createSchedule, { isLoading }] = useCreateScheduleMutation();
-
+  const { data: clientsData, isLoading: clientsLoading } =
+    useGetConnectedClientsQuery();
   if (!isOpen) return null;
 
   const handleSubmit = async () => {
@@ -76,7 +78,7 @@ export default function ScheduleCheckinModal({ isOpen, onClose }: Props) {
               Clients
             </label>
             <div className="relative group">
-              <select
+              {/* <select
                 value={clientId ?? ""}
                 onChange={(e) => setClientId(Number(e.target.value))}
                 className="w-full appearance-none bg-[#F0FDFD] border border-[#CCFBF1] text-[#0D9488] px-5 py-4 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-[#0D9488]/20 cursor-pointer transition-all"
@@ -84,6 +86,21 @@ export default function ScheduleCheckinModal({ isOpen, onClose }: Props) {
                 <option value="">Select Client</option>
                 <option value="3">Alex Johnson</option>
                 <option value="4">John Doe</option>
+              </select> */}
+              <select
+                value={clientId ?? ""}
+                onChange={(e) => setClientId(Number(e.target.value))}
+                className="w-full appearance-none bg-[#F0FDFD] border border-[#CCFBF1] text-[#0D9488] px-5 py-4 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-[#0D9488]/20 cursor-pointer transition-all"
+              >
+                <option value="">
+                  {clientsLoading ? "Loading clients..." : "Select Client"}
+                </option>
+
+                {clientsData?.data?.map((client) => (
+                  <option key={client.id} value={client.id}>
+                    {client.name}
+                  </option>
+                ))}
               </select>
               <ChevronDown
                 className="absolute right-4 top-1/2 -translate-y-1/2 text-[#0D9488] pointer-events-none group-hover:scale-110 transition-transform"
