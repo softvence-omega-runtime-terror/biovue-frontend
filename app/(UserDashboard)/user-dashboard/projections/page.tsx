@@ -24,6 +24,7 @@ import {
   ProjectionResponse,
   useCurrentLifestyleProjectionMutation,
 } from "@/redux/features/api/userDashboard/Projection/CurrentProjection";
+import { useGetLatestProjectionQuery } from "@/redux/features/api/userDashboard/Projection/GetCurrentProjection";
 
 type Step = "input" | "loading" | "results";
 type TimeHorizon = "6 months" | "1 year" | "5 years";
@@ -40,12 +41,24 @@ const ProjectionsPage = () => {
   const [projectionData, setProjectionData] =
     useState<ProjectionResponse | null>(null);
 
+  const user = useAppSelector(selectCurrentUser);
   const [currentLifestyleProjection, { isLoading: isCurrentLoading }] =
     useCurrentLifestyleProjectionMutation();
   const [createFutureGoal, { isLoading: isFutureLoading }] =
     useCreateFutureGoalMutation();
-  const user = useAppSelector(selectCurrentUser);
 
+  const { data: latestProjection } = useGetLatestProjectionQuery(
+    user?.id ?? "",
+    {
+      skip: !user?.id,
+    },
+  );
+
+  const projection = latestProjection?.data;
+
+  const expectedChanges: string[] = projection?.expected_changes
+    ? JSON.parse(projection.expected_changes)
+    : [];
   const loadingTexts = [
     "Analyzing habits and routines…",
     " Evaluating diet, activity, and sleep…",
@@ -107,7 +120,7 @@ const ProjectionsPage = () => {
 
     return () => clearInterval(textInterval);
   }, [step]);
-  
+
   const handleGenerate = async () => {
     if (!user?.id) {
       toast.error("Please login to generate projection");
@@ -490,7 +503,7 @@ const ProjectionsPage = () => {
   );
 
   const renderResultsStep = () => {
-    if (!projectionData) return null;
+    if (!projection) return null;
 
     return (
       <div className="space-y-12 pb-12 animate-in fade-in duration-700">
@@ -503,7 +516,7 @@ const ProjectionsPage = () => {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div className="max-w-4xl mx-auto">
           {/* Left Side: Projection Visualization */}
           <div className="bg-white rounded-[24px] border border-[#3A86FF]/10 shadow-sm overflow-hidden flex flex-col">
             <div className="p-8 text-center space-y-6 flex-1">
@@ -513,14 +526,10 @@ const ProjectionsPage = () => {
                   : `Achieving your future goals in ${timeHorizon}`}
               </h3>
               <div className="relative w-full aspect-[4/3.2] rounded-2xl overflow-hidden bg-gray-50 shadow-inner">
+                
+                
                 <Image
-                  src={
-                    projectionData.projection_url 
-                      ? (projectionData.projection_url.startsWith('http') 
-                          ? projectionData.projection_url 
-                          : `https://biovue-ai.onrender.com${projectionData.projection_url}`)
-                      : "/images/auth/body1.png"
-                  }
+                  src={projection?.projection_url || "/images/auth/body1.png"}
                   alt="Projection Result"
                   fill
                   className="object-cover"
@@ -541,16 +550,16 @@ const ProjectionsPage = () => {
                   },
                   {
                     label: "Est. BMI:",
-                    value: projectionData.est_bmi,
+                    value: projection?.est_bmi,
                     icon: Activity,
                     color: "text-[#10B981]",
                     bg: "bg-[#E1F9F0]",
                   },
                   {
                     label: "Est. Weight:",
-                    value: projectionData.est_weight.toLowerCase().includes("lbs") 
-                      ? projectionData.est_weight 
-                      : `${projectionData.est_weight} lbs`,
+                    value: projection?.est_weight.toLowerCase().includes("lbs")
+                      ? projection.est_weight
+                      : `${projection?.est_weight} lbs`,
                     icon: Zap,
                     color: "text-[#3A86FF]",
                     bg: "bg-[#E4EFFF]",
@@ -594,7 +603,7 @@ const ProjectionsPage = () => {
           </div>
 
           {/* Right Side: Comparison or Goal Highlights */}
-          <div className="bg-white rounded-[24px] border border-[#3A86FF]/10 shadow-sm overflow-hidden flex flex-col grayscale opacity-60">
+          {/* <div className="bg-white rounded-[24px] border border-[#3A86FF]/10 shadow-sm overflow-hidden flex flex-col grayscale opacity-60">
             <div className="p-8 text-center space-y-6 flex-1 flex flex-col items-center justify-center">
               <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mb-4">
                 <Zap size={32} className="text-gray-400" />
@@ -618,7 +627,7 @@ const ProjectionsPage = () => {
                 Switch Selection
               </button>
             </div>
-          </div>
+          </div> */}
         </div>
 
         {/* Results Actions */}

@@ -56,6 +56,7 @@ export const futureGoalApi = projectionApi.injectEndpoints({
       invalidatesTags: ["Projection"],
     }),
   }),
+  overrideExisting: true,
 });
 
 export const { useCreateFutureGoalMutation } = futureGoalApi;
