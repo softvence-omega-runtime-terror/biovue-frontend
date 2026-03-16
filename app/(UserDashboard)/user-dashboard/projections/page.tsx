@@ -27,6 +27,8 @@ import {
 } from "@/redux/features/api/userDashboard/Projection/CurrentProjection";
 import { useGetLatestProjectionQuery } from "@/redux/features/api/userDashboard/Projection/GetCurrentProjection";
 import { useSaveCurrentProjectionMutation } from "@/redux/features/api/userDashboard/Projection/SaveCurrentProjection";
+import { useSaveFutureGoalMutation } from "@/redux/features/api/userDashboard/Projection/SaveFutureGoal";
+import { useGetFutureGoalProjectionQuery } from "@/redux/features/api/userDashboard/Projection/GetFutureGoal";
 
 type Step = "input" | "loading" | "results";
 type TimeHorizon = "6 months" | "1 year" | "5 years";
@@ -35,7 +37,7 @@ const ProjectionsPage = () => {
   const [step, setStep] = useState<Step>("input");
   const [timeHorizon, setTimeHorizon] = useState<TimeHorizon>("6 months");
   const [lifestyle, setLifestyle] = useState<"current" | "improved">("current");
-  const [resolution, setResolution] = useState<"2k" | "4k">("2k");
+  const [resolution, setResolution] = useState<"1k" | "2k" | "4k">("1k");
   const [quality, setQuality] = useState<"fast" | "ultra">("fast");
   const [projectionImage, setProjectionImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
@@ -49,6 +51,8 @@ const ProjectionsPage = () => {
     useCreateFutureGoalMutation();
   const [saveCurrentProjection, { isLoading: isSaveLoading }] =
     useSaveCurrentProjectionMutation();
+  const [saveFutureGoal, { isLoading: isSaveFutureLoading }] =
+    useSaveFutureGoalMutation();
 
   const { data: latestProjection } = useGetLatestProjectionQuery(
     user?.id ?? "",
@@ -57,11 +61,28 @@ const ProjectionsPage = () => {
     },
   );
 
-  const projection = latestProjection?.data;
+  const { data: futureGoalProjection } = useGetFutureGoalProjectionQuery(
+    user?.id ?? "",
+    {
+      skip: !user?.id,
+    },
+  );
 
-  const expectedChanges: string[] = projection?.expected_changes
-    ? JSON.parse(projection.expected_changes)
-    : [];
+  const projection =
+    lifestyle === "current" ? latestProjection?.data : futureGoalProjection?.data;
+
+  const expectedChanges: string[] = (() => {
+    if (!projection?.expected_changes) return [];
+    if (Array.isArray(projection.expected_changes))
+      return projection.expected_changes;
+    try {
+      const parsed = JSON.parse(projection.expected_changes);
+      return Array.isArray(parsed) ? parsed : [];
+    } catch (e) {
+      console.error("Failed to parse expected_changes:", e);
+      return [];
+    }
+  })();
   const loadingTexts = [
     "Analyzing habits and routines…",
     " Evaluating diet, activity, and sleep…",
@@ -103,7 +124,7 @@ const ProjectionsPage = () => {
         if (prev < loadingTexts.length - 1) return prev + 1;
         return prev;
       });
-    }, 4000);
+    }, 10000);
 
     return () => clearInterval(textInterval);
   }, [step]);
@@ -133,7 +154,25 @@ const ProjectionsPage = () => {
           resolution: resolution.toUpperCase(),
           tier: quality,
         }).unwrap();
-      } else {
+
+        // Step 2: Save the AI response to the backend (Current Projection)
+        await saveCurrentProjection({
+          user_id: user.id,
+          image: projectionImage,
+          projection_id: res.projection_id,
+          projection_url: res.projection_url,
+          route: res.route,
+          timeframe: res.timeframe,
+          est_bmi: res.est_bmi,
+          est_weight: res.est_weight,
+          expected_changes: res.expected_changes,
+          confidence_score: res.confidence_score,
+          duration: timeHorizon,
+          resolution: resolution.toUpperCase(),
+          tier: quality,
+        }).unwrap();
+      } else { // lifestyle === "improved"
+        // Step 1: POST to external AI API to generate Future Goal projection
         res = await createFutureGoal({
           user_id: user.id.toString(),
           image: projectionImage as File,
@@ -142,26 +181,27 @@ const ProjectionsPage = () => {
           tier: quality,
           use_default_goal: true,
         }).unwrap();
+
+        // Step 2: Save the AI response to the backend (Future Goal)
+        await saveFutureGoal({
+          user_id: user.id,
+          image: projectionImage,
+          projection_id: res.projection_id,
+          projection_url: res.projection_url,
+          route: res.route,
+          timeframe: res.timeframe,
+          est_bmi: res.est_bmi,
+          est_weight: res.est_weight,
+          expected_changes: res.expected_changes,
+          confidence_score: res.confidence_score,
+          duration: timeHorizon,
+          resolution: resolution.toUpperCase(),
+          tier: quality,
+          use_default_goal: true,
+        }).unwrap();
       }
 
       setProjectionData(res);
-
-      // Step 2: Save the AI response to the backend
-      await saveCurrentProjection({
-        user_id: user.id,
-        image: projectionImage,
-        projection_id: res.projection_id,
-        projection_url: res.projection_url,
-        route: res.route,
-        timeframe: res.timeframe,
-        est_bmi: res.est_bmi,
-        est_weight: res.est_weight,
-        expected_changes: res.expected_changes,
-        confidence_score: res.confidence_score,
-        duration: timeHorizon,
-        resolution: resolution.toUpperCase(),
-        tier: quality,
-      }).unwrap();
 
       // Step 3: GET auto-refetches via invalidatesTags on baseApi
       toast.success("Projection generated and saved successfully!");
@@ -308,8 +348,31 @@ const ProjectionsPage = () => {
               <div className="flex-1">
                 <h4 className="font-bold text-[#041228]">Improved Lifestyle</h4>
                 <p className="text-xs text-[#5F6F73] mt-1">
-                  change goal alignment to &quot;your current goals&quot;
+                  Projected outcomes based on future goals.
                 </p>
+                {lifestyle === "improved" && (
+                  <div className="mt-4 space-y-3 animate-in fade-in slide-in-from-top-2 duration-300">
+                    <p className="text-sm font-bold text-[#041228]">
+                      Upload Reference Photo
+                    </p>
+                    <label className="flex items-center gap-3 p-3 border-2 border-dashed border-[#3A86FF]/30 rounded-xl bg-white hover:bg-gray-50 transition-all cursor-pointer group">
+                      <div className="w-8 h-8 rounded-lg bg-[#E4EFFF] flex items-center justify-center group-hover:bg-[#3A86FF]/20 transition-all">
+                        <Upload size={16} className="text-[#3A86FF]" />
+                      </div>
+                      <span className="text-sm font-medium text-gray-500">
+                        {projectionImage
+                          ? projectionImage.name
+                          : "Select an image"}
+                      </span>
+                      <input
+                        type="file"
+                        className="hidden"
+                        onChange={handleImageChange}
+                        accept="image/*"
+                      />
+                    </label>
+                  </div>
+                )}
               </div>
               <div
                 className={cn(
@@ -334,7 +397,29 @@ const ProjectionsPage = () => {
           {/* Resolution */}
           <div className="space-y-3">
             <p className="text-sm font-semibold text-[#5F6F73]">Resolution</p>
-
+            <div
+              onClick={() => setResolution("1k")}
+              className={cn(
+                "flex items-center justify-between p-4 rounded-xl border-2 cursor-pointer transition-all",
+                resolution === "1k"
+                  ? "border-[#3A86FF] bg-[#F8FAFF]"
+                  : "border-gray-100 hover:border-gray-200",
+              )}
+            >
+              <span className="font-semibold text-[#041228]">1K</span>
+              <div
+                className={cn(
+                  "w-5 h-5 rounded-full border-2 flex items-center justify-center",
+                  resolution === "1k"
+                    ? "border-[#3A86FF] bg-[#3A86FF]"
+                    : "border-gray-300",
+                )}
+              >
+                {resolution === "1k" && (
+                  <div className="w-2 h-2 bg-white rounded-full" />
+                )}
+              </div>
+            </div>
             <div
               onClick={() => setResolution("2k")}
               className={cn(
@@ -368,7 +453,7 @@ const ProjectionsPage = () => {
           </div>
 
           {/* Quality */}
-          <div className="space-y-3">
+          {/* <div className="space-y-3">
             <p className="text-sm font-semibold text-[#5F6F73]">Quality</p>
 
             <div
@@ -401,7 +486,7 @@ const ProjectionsPage = () => {
                 Pro user
               </span>
             </div>
-          </div>
+          </div> */}
         </div>
       </div>
 
@@ -440,10 +525,10 @@ const ProjectionsPage = () => {
 
         <button
           onClick={handleGenerate}
-          disabled={isCurrentLoading || isFutureLoading || isSaveLoading}
+          disabled={isCurrentLoading || isFutureLoading || isSaveLoading || isSaveFutureLoading}
           className="w-full bg-[#0FA4A9] text-white py-5 rounded-xl font-bold flex items-center justify-center gap-3 hover:bg-[#0d8d91] transition-all group cursor-pointer shadow-lg shadow-[#0FA4A9]/20 disabled:opacity-50"
         >
-          {isCurrentLoading || isFutureLoading || isSaveLoading
+          {isCurrentLoading || isFutureLoading || isSaveLoading || isSaveFutureLoading
             ? "Generating..."
             : "Generate Projection"}
           <ArrowRight
@@ -465,7 +550,9 @@ const ProjectionsPage = () => {
           </div>
         </div>
         <div className="flex flex-col items-center gap-1.5">
-          <h3 className="text-lg font-bold text-[#1F2D2E]">Generating Your Projection</h3>
+          <h3 className="text-lg font-bold text-[#1F2D2E]">
+            Generating Your Projection
+          </h3>
           <div className="h-6 flex items-center justify-center">
             <p className="text-[#5F6F73] text-sm font-medium animate-in fade-in slide-in-from-bottom-2 duration-500">
               {loadingTexts[loadingTextIndex]}
@@ -486,7 +573,7 @@ const ProjectionsPage = () => {
             Projection Results
           </h1>
           <p className="text-gray-500">
-            Visualizing your trajectory over the next {timeHorizon}.
+            Visualizing your trajectory over the next {projection.timeframe}.
           </p>
         </div>
 
@@ -496,12 +583,10 @@ const ProjectionsPage = () => {
             <div className="p-8 text-center space-y-6 flex-1">
               <h3 className="text-[#8B5CF6] font-bold text-lg min-h-[56px] flex items-center justify-center">
                 {lifestyle === "current"
-                  ? `If you continue your current lifestyle for ${timeHorizon}`
-                  : `Achieving your future goals in ${timeHorizon}`}
+                  ? `If you continue your current lifestyle for ${projection.timeframe}`
+                  : `Achieving your future goals in ${projection.timeframe}`}
               </h3>
               <div className="relative w-full aspect-[4/3.2] rounded-2xl overflow-hidden bg-gray-50 shadow-inner">
-                
-                
                 <Image
                   src={projection?.projection_url || "/images/auth/body1.png"}
                   alt="Projection Result"
@@ -515,9 +600,7 @@ const ProjectionsPage = () => {
                 {[
                   {
                     label: "Timeframe",
-                    value:
-                      timeframeMap[timeHorizon as keyof typeof timeframeMap] ||
-                      timeHorizon,
+                    value: projection?.timeframe,
                     icon: Calendar,
                     color: "text-[#8B5CF6]",
                     bg: "bg-[#F3E8FF]",
@@ -531,9 +614,11 @@ const ProjectionsPage = () => {
                   },
                   {
                     label: "Est. Weight:",
-                    value: projection?.est_weight.toLowerCase().includes("lbs")
-                      ? projection.est_weight
-                      : `${projection?.est_weight} lbs`,
+                    value: projection?.est_weight
+                      ? projection.est_weight.toLowerCase().includes("lbs")
+                        ? projection.est_weight
+                        : `${projection.est_weight} lbs`
+                      : "N/A",
                     icon: Zap,
                     color: "text-[#3A86FF]",
                     bg: "bg-[#E4EFFF]",
