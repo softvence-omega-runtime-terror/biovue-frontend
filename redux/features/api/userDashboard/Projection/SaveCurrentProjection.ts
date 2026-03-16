@@ -4,7 +4,6 @@ import { baseApi } from "../../baseApi";
 
 export interface SaveProjectionRequest {
   user_id: number | string;
-  image?: File | null;
   projection_id?: string;
   projection_url?: string;
   route?: string;
@@ -45,57 +44,11 @@ export const saveProjectionApi = baseApi.injectEndpoints({
       SaveProjectionResponse,
       SaveProjectionRequest
     >({
-      query: (body) => {
-        const formData = new FormData();
-
-        formData.append("user_id", String(body.user_id));
-
-        if (body.image) {
-          formData.append("image", body.image);
-        }
-        if (body.projection_id) {
-          formData.append("projection_id", body.projection_id);
-        }
-        if (body.projection_url) {
-          formData.append("projection_url", body.projection_url);
-        }
-        if (body.route) {
-          formData.append("route", body.route);
-        }
-        if (body.timeframe) {
-          formData.append("timeframe", body.timeframe);
-        }
-        if (body.est_bmi) {
-          formData.append("est_bmi", body.est_bmi);
-        }
-        if (body.est_weight) {
-          formData.append("est_weight", body.est_weight);
-        }
-        if (body.expected_changes) {
-          formData.append(
-            "expected_changes",
-            JSON.stringify(body.expected_changes)
-          );
-        }
-        if (body.confidence_score) {
-          formData.append("confidence_score", body.confidence_score);
-        }
-        if (body.duration) {
-          formData.append("duration", body.duration);
-        }
-        if (body.resolution) {
-          formData.append("resolution", body.resolution);
-        }
-        if (body.tier) {
-          formData.append("tier", body.tier);
-        }
-
-        return {
-          url: "/projection-lifestyle",
-          method: "POST",
-          body: formData,
-        };
-      },
+      query: (body) => ({
+        url: "/projection-lifestyle",
+        method: "POST",
+        body,
+      }),
 
       invalidatesTags: ["Projection"],
     }),
