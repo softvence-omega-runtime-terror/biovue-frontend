@@ -10,7 +10,7 @@ import { SIDEBAR_MENU, MenuItem } from "./SidebarMenu";
 import { useDispatch } from "react-redux";
 import { logout } from "@/redux/features/slice/authSlice";
 
-type Role = "user" | "trainer" | "admin";
+type Role = "user" | "trainer" | "admin" | "nutritionist";
 
 interface SidebarProps {
   role: Role;
