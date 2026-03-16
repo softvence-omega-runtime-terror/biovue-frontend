@@ -31,6 +31,10 @@ const nextConfig: NextConfig = {
         protocol: "https",
         hostname: "biovue-ai.onrender.com",
       },
+      {
+        protocol: "https",
+        hostname: "api.biovuedigitalwellness.com",
+      },
     ],
   },
 };

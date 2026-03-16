@@ -43,9 +43,9 @@ export const projectionApiEndpoints = projectionApi.injectEndpoints({
           body: formData,
         };
       },
-      invalidatesTags: ["Projection"],
     }),
   }),
+  overrideExisting: true,
 });
 
 export const { useCurrentLifestyleProjectionMutation } = projectionApiEndpoints;
