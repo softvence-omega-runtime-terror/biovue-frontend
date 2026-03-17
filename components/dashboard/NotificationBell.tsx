@@ -5,6 +5,7 @@ import { Bell } from "lucide-react";
 import { useGetNotificationsQuery, useMarkAsReadMutation } from "@/redux/features/api/userDashboard/notificationApi";
 import NotificationDropdown from "./NotificationDropdown";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 
 interface NotificationBellProps {
   className?: string;
@@ -25,9 +26,13 @@ export default function NotificationBell({ className, iconSize = 20 }: Notificat
 
   const handleMarkAllAsRead = async () => {
     try {
-      await markAsRead({ all: true }).unwrap();
+      const res = await markAsRead({ all: true }).unwrap();
+      if (res.success) {
+        toast.success("All notifications marked as read");
+      }
     } catch (err) {
       console.error("Failed to mark all as read", err);
+      toast.error("Failed to mark all as read");
     }
   };
 

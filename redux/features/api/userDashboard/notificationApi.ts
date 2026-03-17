@@ -23,9 +23,9 @@ export const notificationApi = baseApi.injectEndpoints({
       providesTags: ["Notifications"],
     }),
     markAsRead: builder.mutation<any, { notification_id?: string; all?: boolean }>({
-      query: (body) => ({
-        url: body.all ? "/all-notification-mark-as-read" : `/notification/mark-read/${body.notification_id}`,
-        method: "POST",
+      query: () => ({
+        url: "/all-notification-mark-as-read",
+        method: "GET",
       }),
       invalidatesTags: ["Notifications"],
     }),
