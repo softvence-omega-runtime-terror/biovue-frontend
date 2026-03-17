@@ -35,7 +35,11 @@ export default function WeeklyCalendar({
   // Group schedules by day of the week (0-6)
   const schedulesByDay = dates.map((date) => {
     const dateString = formatDateLocal(date);
-    return schedules.filter((s) => s.schedule_date && s.schedule_date.startsWith(dateString));
+    return schedules.filter((s) => {
+      if (!s.schedule_date) return false;
+      // Handle both "2024-03-15" and "2024-03-15T..." formats
+      return s.schedule_date.startsWith(dateString);
+    });
   });
 
   // Find the maximum number of events in any single day to determine how many rows we need
@@ -70,10 +74,10 @@ export default function WeeklyCalendar({
                   <div key={schedule.id} className="bg-white p-4 min-h-55">
                     <CalendarCard
                       title={schedule.check_in_type || "Check-in"}
-                      name={schedule.client.name}
+                      name={schedule.client?.name || "Unknown Client"}
                       date={schedule.schedule_date}
-                      time={schedule.schedule_time.slice(0, 5)}
-                      privateNote={schedule.private_note}
+                      time={(schedule.schedule_time || "00:00").slice(0, 5)}
+                      privateNote={schedule.private_note || ""}
                       status={
                         (schedule.status.toLowerCase() as
                           | "missed"
@@ -87,19 +91,19 @@ export default function WeeklyCalendar({
                       }
                       onClick={() =>
                         onEventClick({
-                          name: schedule.client.name,
+                          name: schedule.client?.name || "Unknown Client",
                           title: schedule.check_in_type || "Check-in",
-                          time: schedule.schedule_time.slice(0, 5),
+                          time: (schedule.schedule_time || "00:00").slice(0, 5),
                           date: schedule.schedule_date,
-                          privateNote: schedule.private_note,
+                          privateNote: schedule.private_note || "",
                           status:
-                            (schedule.status.toLowerCase() as
+                            ((schedule.status || "scheduled").toLowerCase() as
                               | "missed"
                               | "scheduled"
                               | "completed") || "scheduled",
                           avatar:
-                            schedule.client.image_url ||
-                            schedule.client.profile?.image ||
+                            schedule.client?.image_url ||
+                            schedule.client?.profile?.image ||
                             undefined,
                         })
                       }

@@ -28,6 +28,7 @@ import NotificationDropdown, {
 import ChartsNutrition from "@/components/UserDashboard/Dashboard/ChartsNutrition";
 import { useGetCardDataQuery } from "@/redux/features/api/userDashboard/habit";
 import { useGetInsightsQuery } from "@/redux/features/api/userDashboard/insightsApi";
+import { useGetUserOverviewChartQuery } from "@/redux/features/api/userDashboard/dashboardApi";
 
 // --- Main Page ---
 const UserDashboard = () => {
@@ -36,8 +37,11 @@ const UserDashboard = () => {
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
   const [notifications, setNotifications] = useState(MOCK_NOTIFICATIONS);
   const [dataSource, setDataSource] = useState<"device" | "manual">("device");
+  const [days, setDays] = useState(7);
+  
   const { data: cardData, isLoading: isCardLoading } = useGetCardDataQuery();
   const { data: insightsData, isLoading: isInsightsLoading } = useGetInsightsQuery({});
+  const { data: chartResponse, isLoading: isChartLoading } = useGetUserOverviewChartQuery(days);
 
   const [habitData, setHabitData] = useState({
     weight: "",
@@ -65,6 +69,7 @@ const UserDashboard = () => {
   const rawData = cardData?.data;
   const summary = rawData?.summary;
   const healthOverview = rawData?.health_overview;
+  const chartData = chartResponse?.charts;
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -91,7 +96,7 @@ const UserDashboard = () => {
                   prev.map((n) => ({ ...n, isRead: true })),
                 )
               }
-              notifications={notifications.filter((n) => !n.isRead)} // Show only unread or all based on preference, Image 2 seems to show unread, but let's just show all recent or unread. I'll pass all for now since there's only 5. Let's pass all.
+              notifications={notifications.filter((n) => !n.isRead)}
             />
           </div>
           <div className="flex items-center gap-3 pr-2">
@@ -334,24 +339,29 @@ const UserDashboard = () => {
             <h2 className="text-xl font-bold text-[#1F2D2E]">
               Your Progress & Trends
             </h2>
-            <div className="flex p-1 bg-white border border-gray-100 rounded-lg">
-              {["Weekly", "Monthly", "Last 3 months"].map((t) => (
+            <div className="flex p-1 bg-white border border-gray-100 rounded-lg shadow-sm">
+              {[
+                { label: "Weekly", value: 7 },
+                { label: "Monthly", value: 30 },
+                { label: "Last 3 months", value: 90 }
+              ].map((t) => (
                 <button
-                  key={t}
+                  key={t.value}
+                  onClick={() => setDays(t.value)}
                   className={cn(
                     "px-4 py-1.5 text-xs font-semibold rounded-md transition-all cursor-pointer",
-                    t === "Weekly"
+                    days === t.value
                       ? "bg-[#E4EFFF] text-[#3A86FF]"
                       : "text-[#5F6F73] hover:text-[#1F2D2E]",
                   )}
                 >
-                  {t}
+                  {t.label}
                 </button>
               ))}
             </div>
           </div>
 
-          <ChartsNutrition />
+          <ChartsNutrition data={chartData} isLoading={isChartLoading} />
         </div>
 
         {/* Today's Focus - Dynamic Insights */}

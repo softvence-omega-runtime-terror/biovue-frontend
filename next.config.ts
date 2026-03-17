@@ -27,6 +27,30 @@ const nextConfig: NextConfig = {
         protocol: "http",
         hostname: "a45b-160-187-108-68.ngrok-free.app",
       },
+      {
+        protocol: "https",
+        hostname: "biovue-ai.onrender.com",
+      },
+      {
+        protocol: "https",
+        hostname: "api.biovuedigitalwellness.com",
+      },
+     {
+  protocol: "https",
+  hostname: "e767-160-187-108-66.ngrok-free.app",
+},
+      {
+        protocol: "http",
+        hostname: "**.ngrok-free.app",
+      },
+      {
+        protocol: "https",
+        hostname: "**.ngrok-free.dev",
+      },
+      {
+        protocol: "http",
+        hostname: "**.ngrok-free.dev",
+      },
     ],
   },
 };

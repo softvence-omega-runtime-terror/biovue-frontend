@@ -1,6 +1,4 @@
-"use client";
-
-import { baseApi } from "../../baseApi";
+import { projectionApi } from "./projectionApi";
 
 export interface ProjectionResponse {
   user_id: string;
@@ -15,23 +13,39 @@ export interface ProjectionResponse {
 }
 
 export interface ProjectionRequest {
-  user_id: number;
+  user_id: string;
+  image: File;
+  duration: string;
+  resolution?: string;
+  tier?: string;
 }
 
-export const projectionApi = baseApi.injectEndpoints({
+export const projectionApiEndpoints = projectionApi.injectEndpoints({
   endpoints: (builder) => ({
     currentLifestyleProjection: builder.mutation<
       ProjectionResponse,
       ProjectionRequest
     >({
-      query: (body) => ({
-        url: "/projection/current-lifestyle",
-        method: "POST",
-        body,
-      }),
-      invalidatesTags: ["Projection"],
+      query: (data) => {
+        const formData = new FormData();
+        Object.entries(data).forEach(([key, value]) => {
+          if (value !== undefined && value !== null) {
+            if (key === "image" && value instanceof File) {
+              formData.append(key, value, value.name);
+            } else {
+              formData.append(key, value as string | Blob);
+            }
+          }
+        });
+        return {
+          url: "/projection/current-lifestyle",
+          method: "POST",
+          body: formData,
+        };
+      },
     }),
   }),
+  overrideExisting: true,
 });
 
-export const { useCurrentLifestyleProjectionMutation } = projectionApi;
+export const { useCurrentLifestyleProjectionMutation } = projectionApiEndpoints;

@@ -12,6 +12,7 @@ import {
   FileText,
   Image,
   CreditCard,
+  HelpCircle,
 } from "lucide-react";
 
 export interface MenuItem {
@@ -28,6 +29,7 @@ interface SidebarMenu {
   user: MenuItem[];
   trainer: MenuItem[];
   admin: MenuItem[];
+  nutritionist: MenuItem[];
 }
 
 export const SIDEBAR_MENU: SidebarMenu = {
@@ -58,6 +60,16 @@ export const SIDEBAR_MENU: SidebarMenu = {
     { label: "Settings", icon: Settings, href: "/trainer-dashboard/settings" },
   ],
 
+  nutritionist: [
+    {
+      label: "Overview",
+      icon: LayoutGrid,
+      href: "/nutritionist-dashboard/overview",
+    },
+    { label: "Clients", icon: Users, href: "/nutritionist-dashboard/clients" },
+    { label: "Messages", icon: Mail, href: "/nutritionist-dashboard/messages" },
+  ],
+
   admin: [
     { label: "Overview", icon: LayoutGrid, href: "/admin-dashboard/overview" },
     { label: "Users", icon: Users, href: "/admin-dashboard/users" },
@@ -83,6 +95,7 @@ export const SIDEBAR_MENU: SidebarMenu = {
       href: "/admin-dashboard/banner-management",
     },
     { label: "Settings", icon: Settings, href: "/admin-dashboard/settings" },
+    { label: "FAQ Management", icon: HelpCircle, href: "/admin-dashboard/faqs" },
     { label: "API Service", icon: Cable, href: "/admin-dashboard/api-service" },
   ],
 };

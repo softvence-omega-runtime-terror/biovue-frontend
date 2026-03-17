@@ -12,18 +12,8 @@ interface ClientsProps {
 }
 
 export default function Clients({ clients: apiClients, isLoading }: ClientsProps) {
-  // Transform API data to Client interface
-  const mappedClients: Client[] = (apiClients || []).map((item) => ({
-    id: item.user_id,
-    name: item.user_name,
-    goal: item.goal,
-    projectionUsed: item.projection_used,
-    status: item.status.toLowerCase().replace(/\s+/g, "-") as any,
-    activity: item.activity,
-  }));
-
-  // Use mapped API data if available, otherwise fallback to static data
-  const displayClients = mappedClients.length > 0 ? mappedClients : allClients;
+  // Use API data if available, otherwise default to empty array
+  const displayClients = apiClients || [];
 
   return (
     <div className="bg-white">

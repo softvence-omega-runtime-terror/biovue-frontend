@@ -48,6 +48,8 @@ export const baseApi = createApi({
     "ChangePassword",
     "Projection",
     "SupportTeam",
+    "FAQ",
+    "Notifications",
   ],
 
   endpoints: () => ({}),

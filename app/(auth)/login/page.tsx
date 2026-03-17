@@ -66,6 +66,8 @@ const LoginPage = () => {
             } else {
               router.push("/register/business/profile-setup");
             }
+          } else if (professionType === "nutritionist") {
+            router.push("/nutritionist-dashboard/overview");
           } else {
             router.push("/personalize-journey/onboarding");
           }

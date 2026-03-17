@@ -1,7 +1,6 @@
 "use client";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { MessageCircle, CheckCircle2, Clock, FileText } from "lucide-react";
 
 export default function CoachClientRelationship() {

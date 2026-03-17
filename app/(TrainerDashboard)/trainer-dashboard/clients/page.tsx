@@ -36,26 +36,8 @@ export default function ClientsPage() {
   const apiClients = overviewData?.client_table || [];
   const stats = overviewData?.stats;
 
-  const mappedClients: Client[] = apiClients.map(client => {
-    let mappedStatus: Client["status"] = "on-track";
-    if (client.status === "need-attention" || client.status === "inactive") {
-      mappedStatus = client.status;
-    }
-
-    return {
-      id: client.user_id,
-      name: client.user_name,
-      goal: client.goal || "Not specified",
-      projectionUsed: client.projection_used || "-",
-      status: mappedStatus,
-      activity: client.activity || "Recent",
-    };
-  });
-
   const [searchTerm, setSearchTerm] = useState("");
-  const [statusFilter, setStatusFilter] = useState<Client["status"] | "all">(
-    "all",
-  );
+  const [statusFilter, setStatusFilter] = useState<string>("all");
   const [sortOption, setSortOption] = useState("Most Recent Activity");
   const [showStatusDropdown, setShowStatusDropdown] = useState(false);
 
@@ -79,18 +61,21 @@ export default function ClientsPage() {
   ];
 
   // Filter logic
-  const filteredClients = mappedClients.filter((client) => {
+  const filteredClients = apiClients.filter((client) => {
     const matchesSearch =
-      client.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      client.goal.toLowerCase().includes(searchTerm.toLowerCase());
+      client.user_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (client.goal || "").toLowerCase().includes(searchTerm.toLowerCase());
+      
     const matchesStatus =
-      statusFilter === "all" || client.status === statusFilter;
+      statusFilter === "all" || 
+      client.status.toLowerCase().replace(/\s+/g, "-").includes(statusFilter);
+      
     return matchesSearch && matchesStatus;
   });
   // Sort logic
   const sortedClients = [...filteredClients].sort((a, b) => {
-    if (sortOption === "Name (A-Z)") return a.name.localeCompare(b.name);
-    if (sortOption === "Name (Z-A)") return b.name.localeCompare(a.name);
+    if (sortOption === "Name (A-Z)") return a.user_name.localeCompare(b.user_name);
+    if (sortOption === "Name (Z-A)") return b.user_name.localeCompare(a.user_name);
     // Activity-based sorting can be extended with real timestamps
     return 0;
   });
@@ -115,14 +100,14 @@ export default function ClientsPage() {
       {/* Summary cards */}
       <div className="flex flex-wrap gap-4">
         <div className="px-4 py-3 border rounded-lg bg-white">
-          Total Clients: {isLoading ? "..." : (stats?.active_clients?.value || mappedClients.length)}
+          Total Clients: {isLoading ? "..." : (stats?.active_clients?.value || apiClients.length)}
         </div>
         <div className="px-4 py-3 border rounded-lg bg-[#C7343405] text-[#C73434]">
           Needs Attention:{" "}
-          {isLoading ? "..." : (stats?.needing_attention?.value || mappedClients.filter((c) => c.status === "need-attention").length)}
+          {isLoading ? "..." : (stats?.needing_attention?.value || apiClients.filter((c) => c.status.toLowerCase().includes("attention")).length)}
         </div>
         <div className="px-4 py-3 border rounded-lg bg-white">
-          Active This Week: {isLoading ? "..." : mappedClients.length}
+          Active This Week: {isLoading ? "..." : apiClients.length}
         </div>
       </div>
       <div className="flex flex-wrap gap-3 items-center py-3">
@@ -153,7 +138,7 @@ export default function ClientsPage() {
                 <button
                   key={option.value}
                   onClick={() => {
-                    setStatusFilter(option.value as Client["status"] | "all");
+                    setStatusFilter(option.value);
                     setShowStatusDropdown(false);
                   }}
                   className={`w-full cursor-pointer px-3 py-2 text-left flex justify-between items-center hover:bg-gray-100 ${

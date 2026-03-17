@@ -5,12 +5,15 @@ import { useParams } from "next/navigation";
 
 import { Loader2 } from "lucide-react";
 import { useGetProgramByIdQuery } from "@/redux/features/api/TrainerDashboard/Program/GetProgramById";
+import { useGetAssignedUsersQuery } from "@/redux/features/api/TrainerDashboard/Program/GetAssignedUsers";
+import { AssignedUser } from "@/redux/features/api/TrainerDashboard/Program/AssignProgram";
 
 export default function ProgramDetailsPage() {
   const params = useParams();
   const programId = Number(params.programId);
 
   const { data, isLoading, isError } = useGetProgramByIdQuery(programId);
+  const { data: assignedUsersData } = useGetAssignedUsersQuery(programId);
 
   if (isLoading) {
     return (
@@ -25,6 +28,18 @@ export default function ProgramDetailsPage() {
   }
 
   const program = data.data;
+
+  // Map ProgramUser to AssignedUser format
+  const mappedUsers: AssignedUser[] = (assignedUsersData?.users || []).map((user) => ({
+    id: user.id,
+    name: user.name,
+    email: user.email,
+    image_url: user.profile_image,
+    pivot: {
+      program_set_id: programId,
+      user_id: user.id,
+    },
+  }));
 
   return (
     <ProgramView
@@ -44,7 +59,7 @@ export default function ProgramDetailsPage() {
           fat: program.fat ?? 0,
         },
         supplements: program.supplement_recommendation ?? [],
-        users: program.users ?? [],
+        users: mappedUsers,
       }}
     />
   );
