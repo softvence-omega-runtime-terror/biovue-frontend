@@ -70,7 +70,7 @@ export default function CalendarPage() {
     data: scheduleData,
     isLoading,
     isError,
-  } = useGetSchedulesQuery(formattedStartDate);
+  } = useGetSchedulesQuery();
 
   const formatRange = (s: Date, e: Date) =>
     `${s.toLocaleDateString("en-US", {

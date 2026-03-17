@@ -31,18 +31,16 @@ export interface ScheduleItem {
 
 export interface GetSchedulesResponse {
   status: string;
-  message: string;
   data: ScheduleItem[];
 }
 
 // RTK Query endpoint
 export const getSchedulesApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
-    getSchedules: builder.query<GetSchedulesResponse, string>({
-      query: (date) => ({
+    getSchedules: builder.query<GetSchedulesResponse, void>({
+      query: () => ({
         url: `/calendar-schedules`,
         method: "GET",
-        params: { date },
       }),
       providesTags: (result) =>
         result?.data && Array.isArray(result.data)
