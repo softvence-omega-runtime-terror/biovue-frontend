@@ -3,15 +3,20 @@
 import { useCreateScheduleMutation } from "@/redux/features/api/TrainerDashboard/Calendar/CreateSchedule";
 import { useGetConnectedClientsQuery } from "@/redux/features/api/TrainerDashboard/Clients/YourClients";
 import { X, ChevronDown } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { toast } from "sonner";
 
 interface Props {
   isOpen: boolean;
   onClose: () => void;
+  initialDate?: string;
 }
 
-export default function ScheduleCheckinModal({ isOpen, onClose }: Props) {
+export default function ScheduleCheckinModal({
+  isOpen,
+  onClose,
+  initialDate,
+}: Props) {
   const [clientId, setClientId] = useState<number | null>(null);
   const [selectedDate, setSelectedDate] = useState("");
   const [selectedTime, setSelectedTime] = useState("");
@@ -20,6 +25,13 @@ export default function ScheduleCheckinModal({ isOpen, onClose }: Props) {
   const [createSchedule, { isLoading }] = useCreateScheduleMutation();
   const { data: clientsData, isLoading: clientsLoading } =
     useGetConnectedClientsQuery();
+
+  // Pre-fill date when opened with an initialDate
+  useEffect(() => {
+    if (isOpen && initialDate) {
+      setSelectedDate(initialDate);
+    }
+  }, [isOpen, initialDate]);
   if (!isOpen) return null;
 
   const handleSubmit = async () => {
@@ -147,7 +159,7 @@ export default function ScheduleCheckinModal({ isOpen, onClose }: Props) {
               <textarea
                 value={checkinType}
                 onChange={(e) => setCheckinType(e.target.value)}
-                placeholder="Enter check-in type"
+                placeholder="i.e Video Call"
                 className="w-full h-24 bg-[#F0FDFD] border border-[#CCFBF1] text-[#0D9488] px-5 py-4 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-[#0D9488]/20 resize-none transition-all"
               ></textarea>
             </div>

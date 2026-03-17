@@ -42,7 +42,7 @@ export const projectionApi = baseApi.injectEndpoints({
         method: "GET",
       }),
       transformResponse: (response: ProjectionResponse) => {
-        const base = "https://biovue-ai.onrender.com";
+        const base = "https://ai.biovuedigitalwellness.com";
 
         if (
           response.data?.projection_url &&
