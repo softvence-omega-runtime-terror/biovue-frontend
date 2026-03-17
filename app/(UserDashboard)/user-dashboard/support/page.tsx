@@ -284,7 +284,7 @@ const SupportPage = () => {
     const fetchRecommendations = async () => {
       setIsLoadingRecommendations(true);
       try {
-        const response = await fetch(`https://biovue-ai.onrender.com/api/v1/recommend/professionals/${user.id}`, {
+        const response = await fetch(`https://ai.biovuedigitalwellness.com/api/v1/recommend/professionals/${user.id}`, {
           method: 'GET',
           headers: {
             'accept': 'application/json'

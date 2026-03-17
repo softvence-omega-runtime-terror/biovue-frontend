@@ -1,6 +1,7 @@
 "use client";
 
 import { useCreateSupplierProductMutation } from "@/redux/features/api/SupplierDashboard/Product/SupplierProduct";
+import Image from "next/image";
 import { useState, ChangeEvent, FormEvent } from "react";
 import { toast } from "sonner";
 
@@ -34,20 +35,63 @@ export default function AddProductPage() {
 
   const [focused, setFocused] = useState<Record<string, boolean>>({});
   const [createProduct, { isLoading }] = useCreateSupplierProductMutation();
-
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
   const handleChange = (
     e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>,
   ) => {
     const { name, value } = e.target;
 
     const target = e.target as HTMLInputElement;
+    // if (target.type === "file" && target.files) {
+    //   setFormData((prev) => ({ ...prev, [name]: target.files![0] }));
+    // } else {
+    //   setFormData((prev) => ({ ...prev, [name]: value }));
+    // }
     if (target.type === "file" && target.files) {
-      setFormData((prev) => ({ ...prev, [name]: target.files![0] }));
+      const file = target.files[0];
+
+      setFormData((prev) => ({ ...prev, [name]: file }));
+
+      // preview
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
     } else {
       setFormData((prev) => ({ ...prev, [name]: value }));
     }
   };
 
+  // const handleSubmit = async (e: FormEvent) => {
+  //   e.preventDefault();
+
+  //   try {
+  //     await createProduct({
+  //       name: formData.name,
+  //       description: formData.description,
+  //       category: formData.category,
+  //       price: formData.price,
+  //       redirect_url: formData.redirectUrl,
+  //       status: formData.status,
+  //       image: formData.image,
+  //     }).unwrap();
+
+  //     toast.success("Product created successfully!");
+  //     // Reset form
+  //     setFormData({
+  //       name: "",
+  //       description: "",
+  //       price: "",
+  //       redirectUrl: "",
+  //       category: "",
+  //       status: "draft",
+  //       image: undefined,
+  //     });
+  //   } catch (err: any) {
+  //     toast.error(err?.data?.message || "Failed to create product.");
+  //   }
+  // };
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
 
@@ -61,9 +105,8 @@ export default function AddProductPage() {
         status: formData.status,
         image: formData.image,
       }).unwrap();
-
       toast.success("Product created successfully!");
-      // Reset form
+
       setFormData({
         name: "",
         description: "",
@@ -73,11 +116,12 @@ export default function AddProductPage() {
         status: "draft",
         image: undefined,
       });
+
+      setImagePreview(null);
     } catch (err: any) {
       toast.error(err?.data?.message || "Failed to create product.");
     }
   };
-
   const inputStyle = (name: string): React.CSSProperties => ({
     width: "100%",
     boxSizing: "border-box",
@@ -104,8 +148,22 @@ export default function AddProductPage() {
             Product Media
           </h2>
           <label className="border border-[#E2E8F0] rounded-xl p-6 flex flex-col items-center justify-center cursor-pointer bg-white">
-            <UploadIcon />
-            <span className="mt-3 text-[#14A4A9] cursor-pointer">Browse</span>
+            {/* <UploadIcon />
+            <span className="mt-3 text-[#14A4A9] cursor-pointer">Browse</span> */}
+            {imagePreview ? (
+              <Image
+                src={imagePreview}
+                alt="Preview"
+                width={300}
+                height={200}
+                className="w-full max-w-md h-48 object-cover rounded-xl"
+              />
+            ) : (
+              <>
+                <UploadIcon />
+                <span className="mt-3 text-[#14A4A9]">Browse</span>
+              </>
+            )}
             <input
               type="file"
               name="image"
@@ -120,6 +178,7 @@ export default function AddProductPage() {
           <h2 className="text-sm font-bold text-[#041228] mb-4">
             Basic Information
           </h2>
+          <label className="font-semibold text-sm mb-1">Product Name</label>
           <input
             type="text"
             name="name"
@@ -131,6 +190,7 @@ export default function AddProductPage() {
             onBlur={() => setFocused((p) => ({ ...p, name: false }))}
             className="mb-4"
           />
+          <label className="font-semibold text-sm mb-1">Description</label>
           <textarea
             name="description"
             value={formData.description}
@@ -146,7 +206,7 @@ export default function AddProductPage() {
             onBlur={() => setFocused((p) => ({ ...p, description: false }))}
             className="mb-4"
           />
-          <input
+          {/* <input
             type="text"
             name="category"
             value={formData.category}
@@ -156,40 +216,64 @@ export default function AddProductPage() {
             onFocus={() => setFocused((p) => ({ ...p, category: true }))}
             onBlur={() => setFocused((p) => ({ ...p, category: false }))}
             className="mb-4"
-          />
+          /> */}
+          <label className="font-semibold text-sm mb-1">Category</label>
+          <select
+            name="category"
+            value={formData.category}
+            onChange={handleChange}
+            style={inputStyle("category")}
+            onFocus={() => setFocused((p) => ({ ...p, category: true }))}
+            onBlur={() => setFocused((p) => ({ ...p, category: false }))}
+            className="mb-4"
+          >
+            <option value="">Select Category</option>
+            <option value="fitness">Fitness</option>
+            <option value="nutrition">Nutrition</option>
+            <option value="supplements">Supplements</option>
+          </select>
         </div>
 
         {/* Pricing & URL */}
         <div className="flex flex-col gap-4">
-          <input
-            type="text"
-            name="price"
-            value={formData.price}
-            onChange={handleChange}
-            placeholder="Price"
-            style={inputStyle("price")}
-            onFocus={() => setFocused((p) => ({ ...p, price: true }))}
-            onBlur={() => setFocused((p) => ({ ...p, price: false }))}
-          />
-          <input
-            type="text"
-            name="redirectUrl"
-            value={formData.redirectUrl}
-            onChange={handleChange}
-            placeholder="Redirect URL"
-            style={inputStyle("redirectUrl")}
-            onFocus={() => setFocused((p) => ({ ...p, redirectUrl: true }))}
-            onBlur={() => setFocused((p) => ({ ...p, redirectUrl: false }))}
-          />
-          <select
-            name="status"
-            value={formData.status}
-            onChange={handleChange}
-            style={inputStyle("status")}
-          >
-            <option value="draft">Draft</option>
-            <option value="published">Published</option>
-          </select>
+          <div>
+            <label className="font-semibold text-sm mb-1">Price</label>
+            <input
+              type="text"
+              name="price"
+              value={formData.price}
+              onChange={handleChange}
+              placeholder="Price"
+              style={inputStyle("price")}
+              onFocus={() => setFocused((p) => ({ ...p, price: true }))}
+              onBlur={() => setFocused((p) => ({ ...p, price: false }))}
+            />
+          </div>
+          <div>
+            <label className="font-semibold text-sm mb-1">Redirect URL</label>
+            <input
+              type="text"
+              name="redirectUrl"
+              value={formData.redirectUrl}
+              onChange={handleChange}
+              placeholder="Redirect URL"
+              style={inputStyle("redirectUrl")}
+              onFocus={() => setFocused((p) => ({ ...p, redirectUrl: true }))}
+              onBlur={() => setFocused((p) => ({ ...p, redirectUrl: false }))}
+            />
+          </div>
+          <div>
+            <label className="font-semibold text-sm mb-1">Status</label>
+            <select
+              name="status"
+              value={formData.status}
+              onChange={handleChange}
+              style={inputStyle("status")}
+            >
+              <option value="draft">Draft</option>
+              <option value="published">Published</option>
+            </select>
+          </div>
         </div>
 
         {/* Submit */}
