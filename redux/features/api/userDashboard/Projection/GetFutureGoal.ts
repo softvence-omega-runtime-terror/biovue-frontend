@@ -48,18 +48,18 @@ export const futureGoalApi = baseApi.injectEndpoints({
           method: "GET",
         }),
 
-        transformResponse: (response: FutureGoalResponse) => {
-          const base = "https://ai.biovuedigitalwellness.com";
+        // transformResponse: (response: FutureGoalResponse) => {
+        //   const base = "https://api.biovuedigitalwellness.com";
 
-          if (
-            response.data?.projection_url &&
-            !response.data.projection_url.startsWith("http")
-          ) {
-            response.data.projection_url = base + response.data.projection_url;
-          }
+        //   if (
+        //     response.data?.projection_url &&
+        //     !response.data.projection_url.startsWith("http")
+        //   ) {
+        //     response.data.projection_url = base + response.data.projection_url;
+        //   }
 
-          return response;
-        },
+        //   return response;
+        // },
 
         providesTags: ["Projection"],
       },
