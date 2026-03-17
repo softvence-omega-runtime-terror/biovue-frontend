@@ -197,7 +197,17 @@ const PricingPage = () => {
                       ? "See your future and track how your lifestyle is improving."
                       : "Build a complete picture of your future health with our advanced AI, real-world data sync, and long-term forecasting."
                   }
-                  features={plan.features.map(f => ({ text: f, included: true }))}
+                  features={plan.features.map(f => {
+                    const lockedFeatures = [
+                      "ai improvement suggestions",
+                      "health indicators",
+                      "recommended coaches & clinics",
+                      "achievement badges & progress reports",
+                    ];
+                    const isLocked = plan.name.toLowerCase().includes("free trial") && 
+                                    lockedFeatures.some(lf => f.toLowerCase().includes(lf));
+                    return { text: f, included: !isLocked };
+                  })}
                   cta={plan.name.toLowerCase().includes("free trial") ? `Start ${plan.duration}-Day Trial` : `Upgrade To ${plan.name}`}
                   active={false}
                   ctaColor="bg-[#0FA4A9]"
