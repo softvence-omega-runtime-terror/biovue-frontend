@@ -14,11 +14,17 @@ export const profileApi = baseApi.injectEndpoints({
         method: "POST",
         body: formData,
       }),
+      invalidatesTags: ["Profile"],
+    }),
+
+    getProfile: builder.query<ProfileResponse, string | number>({
+      query: (id) => `/profile/${id}`,
+      providesTags: ["Profile"],
     }),
   }),
   overrideExisting: false,
 });
 
-export const { useCreateUpdateProfileMutation } = profileApi;
+export const { useCreateUpdateProfileMutation, useGetProfileQuery } = profileApi;
 
 export default profileApi;
