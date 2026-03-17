@@ -14,6 +14,7 @@ import { cn } from "@/lib/utils";
 import { Notification } from "@/components/dashboard/NotificationDropdown";
 import { useGetNotificationsQuery, useMarkAsReadMutation } from "@/redux/features/api/userDashboard/notificationApi";
 import { Loader2 } from "lucide-react";
+import { toast } from "sonner";
 
 const getNotificationIcon = (type: string | null) => {
   const t = type?.toLowerCase() || "";
@@ -45,9 +46,13 @@ export default function NotificationsPage() {
 
   const handleMarkAllAsRead = async () => {
     try {
-      await markAsRead({ all: true }).unwrap();
+      const res = await markAsRead({ all: true }).unwrap();
+      if (res.success) {
+        toast.success("All notifications marked as read");
+      }
     } catch (err) {
       console.error("Failed to mark all as read", err);
+      toast.error("Failed to mark all as read");
     }
   };
 
@@ -59,8 +64,10 @@ export default function NotificationsPage() {
   const handleMarkSingleAsRead = async (id: string) => {
     try {
       await markAsRead({ notification_id: id }).unwrap();
+      toast.success("Notification marked as read");
     } catch (err) {
       console.error("Failed to mark notification as read", err);
+      toast.error("Failed to mark as read");
     }
   };
 
