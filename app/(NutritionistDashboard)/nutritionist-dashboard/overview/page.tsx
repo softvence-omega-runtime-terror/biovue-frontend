@@ -1,9 +1,27 @@
+"use client";
+
+import DashboardHeading from "@/components/common/DashboardHeading";
+import Actions from "@/components/NutritionistDashboard/overview/Actions";
+import Clients from "@/components/NutritionistDashboard/overview/Clients";
+import StatCards from "@/components/NutritionistDashboard/overview/StatCard";
+import { useGetNutritionistOverviewQuery } from "@/redux/features/api/NutritionistDashboard/nutritionistOverviewApi";
+
 export default function NutritionistOverviewPage() {
+  const { data, isLoading } = useGetNutritionistOverviewQuery();
+
   return (
-    <div className="flex flex-col gap-6">
-      <h1 className="text-2xl font-bold text-gray-800">Nutritionist Overview</h1>
-      <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-        <p className="text-gray-600">Welcome to your Nutritionist dashboard overview. From here, you can monitor your clients' dietary adherence and goals.</p>
+    <div className="min-h-screen ">
+      <div className="mb-4 md:mb-8">
+        <DashboardHeading
+          heading="Overview"
+          subheading="Your nutritional coaching activity at a glance"
+        />
+      </div>
+      <div className="space-y-5 md:space-y-10">
+        <StatCards stats={data?.stats} isLoading={isLoading} />
+        <Clients clients={data?.client_table} isLoading={isLoading} />
+        <Actions />
+        {/* <RecentActivity /> */}
       </div>
     </div>
   );

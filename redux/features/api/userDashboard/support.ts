@@ -17,6 +17,13 @@ export const supportApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["SupportTeam"],
     }),
+    updateLifestyleImage: builder.mutation<any, FormData>({
+      query: (formData) => ({
+        url: "/user/update-current-image",
+        method: "POST",
+        body: formData,
+      }),
+    }),
   }),
   overrideExisting: false,
 });
@@ -24,5 +31,6 @@ export const supportApi = baseApi.injectEndpoints({
 export const { 
   useGetRecommendedProfessionalsQuery,
   useGetConnectedProfessionsQuery,
-  useConnectProfessionMutation
+  useConnectProfessionMutation,
+  useUpdateLifestyleImageMutation
 } = supportApi;

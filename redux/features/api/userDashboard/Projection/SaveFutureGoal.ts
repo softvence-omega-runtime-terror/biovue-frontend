@@ -2,7 +2,7 @@
 
 import { baseApi } from "../../baseApi";
 
-export interface SaveProjectionRequest {
+export interface SaveFutureGoalRequest {
   user_id: number | string;
   image?: File | null;
   projection_id?: string;
@@ -16,9 +16,12 @@ export interface SaveProjectionRequest {
   duration?: string;
   resolution?: string;
   tier?: string;
+  use_default_goal?: boolean;
+  goal?: string;
+  goal_description?: string;
 }
 
-export interface SavedProjection {
+export interface FutureGoalSaved {
   id: number;
   user_id: string;
   image: string | null;
@@ -34,19 +37,20 @@ export interface SavedProjection {
   updated_at: string;
 }
 
-export interface SaveProjectionResponse {
+export interface SaveFutureGoalResponse {
   message: string;
-  data: SavedProjection;
+  data: FutureGoalSaved;
 }
 
-export const saveProjectionApi = baseApi.injectEndpoints({
+export const saveFutureGoalApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
-    saveCurrentProjection: builder.mutation<
-      SaveProjectionResponse,
-      SaveProjectionRequest
+    saveFutureGoal: builder.mutation<
+      SaveFutureGoalResponse,
+      SaveFutureGoalRequest
     >({
       query: (body) => {
         const formData = new FormData();
+
         formData.append("user_id", String(body.user_id));
 
         if (body.image) {
@@ -88,9 +92,18 @@ export const saveProjectionApi = baseApi.injectEndpoints({
         if (body.tier) {
           formData.append("tier", body.tier);
         }
+        if (body.use_default_goal !== undefined) {
+          formData.append("use_default_goal", String(body.use_default_goal));
+        }
+        if (body.goal) {
+          formData.append("goal", body.goal);
+        }
+        if (body.goal_description) {
+          formData.append("goal_description", body.goal_description);
+        }
 
         return {
-          url: "/projection-lifestyle",
+          url: "/projection-future-goal",
           method: "POST",
           body: formData,
         };
@@ -101,4 +114,4 @@ export const saveProjectionApi = baseApi.injectEndpoints({
   }),
 });
 
-export const { useSaveCurrentProjectionMutation } = saveProjectionApi;
+export const { useSaveFutureGoalMutation } = saveFutureGoalApi;
