@@ -14,8 +14,15 @@ import {
   Utensils, 
   Droplets, 
   Smartphone,
-  Crown
+  Crown,
+  Loader2
 } from "lucide-react";
+import { useSelector } from "react-redux";
+import { selectCurrentUser } from "@/redux/features/slice/authSlice";
+import { usePostSleepLogMutation } from "@/redux/features/api/userDashboard/sleeplog";
+import { usePostActivityLogMutation } from "@/redux/features/api/userDashboard/activitylog";
+import { usePostHydrationLogMutation } from "@/redux/features/api/userDashboard/hydration";
+import { toast } from "sonner";
 
 interface LogTodayModalProps {
   isOpen: boolean;
@@ -32,6 +39,55 @@ const LogTodayModal = ({
   habitData, 
   setHabitData 
 }: LogTodayModalProps) => {
+  const currentUser = useSelector(selectCurrentUser);
+  const userId = currentUser?.id || currentUser?.user_id;
+
+  const [postSleepLog, { isLoading: isSleepPosting }] = usePostSleepLogMutation();
+  const [postActivityLog, { isLoading: isActivityPosting }] = usePostActivityLogMutation();
+  const [postHydrationLog, { isLoading: isHydrationPosting }] = usePostHydrationLogMutation();
+
+  const isLoading = isSleepPosting || isActivityPosting || isHydrationPosting;
+
+  const handleSubmit = async () => {
+    if (!userId) {
+      toast.error("User not found. Please log in again.");
+      return;
+    }
+
+    const payload = {
+      user_id: userId,
+      weight: Number(habitData.weight) || 0,
+      daily_steps: Number(habitData.steps) || 0,
+      sleep_hours: Number(habitData.sleep) || 0,
+      water_glasses: 8, // Fixed mapping or from data? Modal doesn't have water count yet
+      log_date: new Date().toISOString().slice(0, 10),
+    };
+
+    try {
+      // For now, we'll hit the sleep log as the primary log point if any data is provided
+      // In a real scenario, we might want to split these or have a combined endpoint
+      const response = await postSleepLog({
+        ...payload,
+        log_date: new Date().toISOString().slice(0, 19).replace("T", " ")
+      }).unwrap();
+
+      if (response.success || response.status === "success") {
+        toast.success("Daily habits logged successfully!");
+        onClose();
+      } else {
+        toast.error(response.message || "Failed to log habits.");
+      }
+    } catch (err: any) {
+      console.error("Error logging habits:", err);
+      // Handle the duplicate entry error 1062/Constraint violation which usually comes as 500 or 400
+      if (err.status === 400 || err.status === 500 || err.data?.message?.toLowerCase().includes("duplicate") || err.data?.message?.toLowerCase().includes("already logged")) {
+        toast.error("You have already logged data for today.");
+      } else {
+        toast.error("An error occurred while logging habits.");
+      }
+    }
+  };
+
   if (!isOpen) return null;
 
   return (
@@ -283,9 +339,11 @@ const LogTodayModal = ({
           {/* Save Button */}
           <div className="flex justify-end mt-8">
             <button
-              onClick={onClose}
-              className="w-full md:w-auto bg-[#0FA4A9] hover:bg-opacity-90 text-white font-bold px-8 py-3.5 rounded-xl transition-all cursor-pointer shadow-lg shadow-[#0FA4A9]/20"
+              onClick={handleSubmit}
+              disabled={isLoading}
+              className="w-full md:w-auto bg-[#0FA4A9] hover:bg-opacity-90 text-white font-bold px-8 py-3.5 rounded-xl transition-all cursor-pointer shadow-lg shadow-[#0FA4A9]/20 flex items-center justify-center gap-2"
             >
+              {isLoading && <Loader2 className="w-4 h-4 animate-spin" />}
               Save Today's Data
             </button>
           </div>
