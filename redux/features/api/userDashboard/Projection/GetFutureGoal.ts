@@ -49,7 +49,7 @@ export const futureGoalApi = baseApi.injectEndpoints({
         }),
 
         transformResponse: (response: FutureGoalResponse) => {
-          const base = "https://biovue-ai.onrender.com";
+          const base = "https://ai.biovuedigitalwellness.com";
 
           if (
             response.data?.projection_url &&
