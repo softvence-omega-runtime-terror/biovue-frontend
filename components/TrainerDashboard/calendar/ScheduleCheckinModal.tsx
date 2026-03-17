@@ -139,26 +139,17 @@ export default function ScheduleCheckinModal({ isOpen, onClose }: Props) {
             </div>
           </div>
 
-          {/* Check-in Type (First) */}
           <div>
             <label className="block text-sm font-medium text-[#64748B] mb-2 uppercase tracking-wide">
               Check - in Type
             </label>
             <div className="relative group">
-              <select
+              <textarea
                 value={checkinType}
                 onChange={(e) => setCheckinType(e.target.value)}
-                className="w-full appearance-none bg-[#F0FDFD] border border-[#CCFBF1] text-[#0D9488] px-5 py-4 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-[#0D9488]/20 cursor-pointer transition-all"
-              >
-                <option value="">Select Type</option>
-                <option value="Upper Body Workout">Upper Body Workout</option>
-                <option value="Lower Body Workout">Lower Body Workout</option>
-                <option value="Full Body Session">Full Body Session</option>
-              </select>
-              <ChevronDown
-                className="absolute right-4 top-1/2 -translate-y-1/2 text-[#0D9488] pointer-events-none group-hover:scale-110 transition-transform"
-                size={20}
-              />
+                placeholder="Enter check-in type"
+                className="w-full h-24 bg-[#F0FDFD] border border-[#CCFBF1] text-[#0D9488] px-5 py-4 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-[#0D9488]/20 resize-none transition-all"
+              ></textarea>
             </div>
           </div>
 
