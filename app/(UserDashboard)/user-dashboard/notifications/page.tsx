@@ -11,53 +11,66 @@ import {
   ChevronRight
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { MOCK_NOTIFICATIONS, Notification } from "@/components/dashboard/NotificationDropdown";
+import { Notification } from "@/components/dashboard/NotificationDropdown";
+import { useGetNotificationsQuery, useMarkAsReadMutation } from "@/redux/features/api/userDashboard/notificationApi";
+import { Loader2 } from "lucide-react";
 
-const getNotificationIcon = (type: Notification["type"]) => {
-  switch (type) {
-    case "motivation":
-      return <MessageCircle size={24} className="text-[#A855F7]" />;
-    case "insight":
-      return <Sparkles size={24} className="text-[#F59E0B]" />;
-    case "program":
-      return <Dumbbell size={24} className="text-[#3A86FF]" />;
-    case "reminder":
-      return <Clock size={24} className="text-[#EF4444]" />;
-    case "approval":
-      return <CheckCircle2 size={24} className="text-[#10B981]" />;
-  }
+const getNotificationIcon = (type: string | null) => {
+  const t = type?.toLowerCase() || "";
+  if (t === "insight_msg" || t.includes("insight") || t.includes("ai")) return <Sparkles size={24} className="text-[#F59E0B]" />;
+  if (t.includes("program") || t.includes("workout")) return <Dumbbell size={24} className="text-[#3A86FF]" />;
+  if (t.includes("motivation") || t.includes("message")) return <MessageCircle size={24} className="text-[#A855F7]" />;
+  if (t.includes("reminder") || t.includes("check-in")) return <Clock size={24} className="text-[#EF4444]" />;
+  if (t.includes("approval") || t.includes("goal")) return <CheckCircle2 size={24} className="text-[#10B981]" />;
+  return <Bell size={24} className="text-[#6366F1]" />; // Default icon
 };
 
-const getNotificationIconBg = (type: Notification["type"]) => {
-  switch (type) {
-    case "motivation":
-      return "bg-[#A855F7]/10";
-    case "insight":
-      return "bg-[#F59E0B]/10";
-    case "program":
-      return "bg-[#3A86FF]/10";
-    case "reminder":
-      return "bg-[#EF4444]/10";
-    case "approval":
-      return "bg-[#10B981]/10";
-  }
+import { Bell } from "lucide-react";
+
+const getNotificationIconBg = (type: string | null) => {
+  const t = type?.toLowerCase() || "";
+  if (t === "insight_msg" || t.includes("insight") || t.includes("ai")) return "bg-[#F59E0B]/10";
+  if (t.includes("program") || t.includes("workout")) return "bg-[#3A86FF]/10";
+  if (t.includes("motivation") || t.includes("message")) return "bg-[#A855F7]/10";
+  if (t.includes("reminder") || t.includes("check-in")) return "bg-[#EF4444]/10";
+  if (t.includes("approval") || t.includes("goal")) return "bg-[#10B981]/10";
+  return "bg-[#6366F1]/10"; // Default bg
 };
 
 export default function NotificationsPage() {
-  const [notifications, setNotifications] = useState(MOCK_NOTIFICATIONS);
+  const { data: response, isLoading } = useGetNotificationsQuery();
+  const [markAsRead] = useMarkAsReadMutation();
 
-  const markAllAsRead = () => {
-    setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
+  const notifications = response?.data || [];
+
+  const handleMarkAllAsRead = async () => {
+    try {
+      await markAsRead({ all: true }).unwrap();
+    } catch (err) {
+      console.error("Failed to mark all as read", err);
+    }
   };
 
-  const clearAll = () => {
-    setNotifications([]);
+  const handleClearAll = () => {
+    // If the API supports clear all, call it here. For now, we'll use mark all as read
+    handleMarkAllAsRead();
   };
 
-  const removeNotification = (id: string, e: React.MouseEvent) => {
-    e.stopPropagation();
-    setNotifications((prev) => prev.filter((n) => n.id !== id));
+  const handleMarkSingleAsRead = async (id: string) => {
+    try {
+      await markAsRead({ notification_id: id }).unwrap();
+    } catch (err) {
+      console.error("Failed to mark notification as read", err);
+    }
   };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-[calc(100vh-80px)]">
+        <Loader2 className="w-10 h-10 animate-spin text-[#0FA4A9]" />
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col min-h-[calc(100vh-80px)] p-6 md:p-8 max-w-5xl mx-auto w-full">
@@ -69,13 +82,13 @@ export default function NotificationsPage() {
         </div>
         <div className="flex items-center gap-3">
           <button
-            onClick={markAllAsRead}
+            onClick={handleMarkAllAsRead}
             className="bg-[#0FA4A9] text-white px-4 py-2 rounded-lg font-medium hover:bg-opacity-90 transition-colors text-sm cursor-pointer"
           >
             Mark all as read
           </button>
           <button
-            onClick={clearAll}
+            onClick={handleClearAll}
             className="bg-red-50 text-red-500 px-4 py-2 rounded-lg font-medium hover:bg-red-100 transition-colors text-sm cursor-pointer"
           >
             Clear all
@@ -96,10 +109,12 @@ export default function NotificationsPage() {
               transition={{ delay: index * 0.05, duration: 0.2 }}
               className={cn(
                 "bg-white rounded-2xl p-5 md:p-6 border shadow-[0_2px_12px_rgba(0,0,0,0.02)] flex flex-col sm:flex-row sm:items-center gap-4 group hover:border-[#0FA4A9]/50 transition-all cursor-pointer relative",
-                notif.isRead ? "border-gray-100" : "border-blue-100 bg-blue-50/50"
+                notif.read_at ? "border-gray-100" : "border-blue-100 bg-blue-50/50"
               )}
               onClick={() => {
-                setNotifications(prev => prev.map(n => n.id === notif.id ? { ...n, isRead: true } : n));
+                if (!notif.read_at) {
+                  handleMarkSingleAsRead(notif.id);
+                }
               }}
             >
               <div
@@ -113,20 +128,20 @@ export default function NotificationsPage() {
               <div className="flex flex-col gap-1.5 flex-1 pr-12 sm:pr-0">
                 <div className="flex items-start justify-between gap-2">
                   <h3 className="text-lg font-bold text-[#1F2D2E] leading-tight flex items-center gap-2">
-                    {notif.title}
-                    {!notif.isRead && (
+                    {notif.title || "Notification"}
+                    {!notif.read_at && (
                       <span className="w-2 h-2 rounded-full bg-blue-500 inline-block"></span>
                     )}
                   </h3>
-                  <span className="text-xs font-bold text-[#5F6F73] uppercase tracking-wider shrink-0 hidden sm:block">
-                    {notif.time}
+                  <span className="text-[10px] font-bold text-[#5F6F73] uppercase tracking-wider shrink-0 hidden sm:block">
+                    {notif.created_at_formatted}
                   </span>
                 </div>
                 <p className="text-[#5F6F73] text-sm md:text-base leading-relaxed">
                   {notif.message}
                 </p>
-                <span className="text-xs font-bold text-[#5F6F73] uppercase tracking-wider shrink-0 sm:hidden mt-2">
-                  {notif.time}
+                <span className="text-[10px] font-bold text-[#5F6F73] uppercase tracking-wider shrink-0 sm:hidden mt-2">
+                  {notif.created_at_formatted}
                 </span>
               </div>
               

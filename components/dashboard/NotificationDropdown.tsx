@@ -9,94 +9,47 @@ import { cn } from "@/lib/utils";
 
 export type Notification = {
   id: string;
-  type: "motivation" | "insight" | "program" | "reminder" | "approval";
-  title: string;
-  time: string;
+  title: string | null;
+  type: string | null;
   message: string;
-  isRead: boolean;
+  created_at: string;
+  created_at_formatted: string;
+  read_at: string | null;
 };
 
-export const MOCK_NOTIFICATIONS: Notification[] = [
-  {
-    id: "1",
-    type: "motivation",
-    title: "Sarah Jenkins sent motivation",
-    time: "2M AGO",
-    message: "You're crushing your water goals today! Keep that momentum going into the evening.",
-    isRead: false,
-  },
-  {
-    id: "2",
-    type: "insight",
-    title: "New AI Insight available",
-    time: "1H AGO",
-    message: "Based on your sleep data, shifting your workout to 8 AM might improve recovery.",
-    isRead: false,
-  },
-  {
-    id: "3",
-    type: "program",
-    title: "Program phase updated",
-    time: "3H AGO",
-    message: "Phase 2: Metabolic Conditioning is now active. Review your new workout block.",
-    isRead: false,
-  },
-  {
-    id: "4",
-    type: "reminder",
-    title: "Check-in Reminder",
-    time: "5H AGO",
-    message: "Your weekly progress review is due. Please upload your latest metrics.",
-    isRead: false,
-  },
-  {
-    id: "5",
-    type: "approval",
-    title: "Goal Approved",
-    time: "YESTERDAY",
-    message: "Coach Sarah approved your new target: 12,000 steps per day.",
-    isRead: true,
-  },
-];
+// MOCK_NOTIFICATIONS removed to favor dynamic data
 
-const getNotificationIcon = (type: Notification["type"]) => {
-  switch (type) {
-    case "motivation":
-      return <MessageCircle size={20} className="text-[#A855F7]" />;
-    case "insight":
-      return <Sparkles size={20} className="text-[#F59E0B]" />;
-    case "program":
-      return <Dumbbell size={20} className="text-[#3A86FF]" />;
-    case "reminder":
-      return <Clock size={20} className="text-[#EF4444]" />;
-    case "approval":
-      return <CheckCircle2 size={20} className="text-[#10B981]" />;
-  }
+const getNotificationIcon = (type: string | null) => {
+  const t = type?.toLowerCase() || "";
+  if (t === "insight_msg" || t.includes("insight") || t.includes("ai")) return <Sparkles size={20} className="text-[#F59E0B]" />;
+  if (t.includes("program") || t.includes("workout")) return <Dumbbell size={20} className="text-[#3A86FF]" />;
+  if (t.includes("motivation") || t.includes("message")) return <MessageCircle size={20} className="text-[#A855F7]" />;
+  if (t.includes("reminder") || t.includes("check-in")) return <Clock size={20} className="text-[#EF4444]" />;
+  if (t.includes("approval") || t.includes("goal")) return <CheckCircle2 size={20} className="text-[#10B981]" />;
+  return <Bell size={20} className="text-[#6366F1]" />; // Default icon
 };
 
-const getNotificationIconBg = (type: Notification["type"]) => {
-  switch (type) {
-    case "motivation":
-      return "bg-[#A855F7]/10";
-    case "insight":
-      return "bg-[#F59E0B]/10";
-    case "program":
-      return "bg-[#3A86FF]/10";
-    case "reminder":
-      return "bg-[#EF4444]/10";
-    case "approval":
-      return "bg-[#10B981]/10";
-  }
+const getNotificationIconBg = (type: string | null) => {
+  const t = type?.toLowerCase() || "";
+  if (t === "insight_msg" || t.includes("insight") || t.includes("ai")) return "bg-[#F59E0B]/10";
+  if (t.includes("program") || t.includes("workout")) return "bg-[#3A86FF]/10";
+  if (t.includes("motivation") || t.includes("message")) return "bg-[#A855F7]/10";
+  if (t.includes("reminder") || t.includes("check-in")) return "bg-[#EF4444]/10";
+  if (t.includes("approval") || t.includes("goal")) return "bg-[#10B981]/10";
+  return "bg-[#6366F1]/10"; // Default bg
 };
 
 interface NotificationDropdownProps {
   isOpen: boolean;
   onClose: () => void;
   onMarkAllAsRead: () => void;
+  onMarkSingleAsRead: (id: string) => void;
   notifications: Notification[];
 }
 
-export default function NotificationDropdown({ isOpen, onClose, onMarkAllAsRead, notifications }: NotificationDropdownProps) {
+import { Bell } from "lucide-react";
+
+export default function NotificationDropdown({ isOpen, onClose, onMarkAllAsRead, onMarkSingleAsRead, notifications }: NotificationDropdownProps) {
   return (
     <AnimatePresence>
       {isOpen && (
@@ -139,7 +92,15 @@ export default function NotificationDropdown({ isOpen, onClose, onMarkAllAsRead,
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, scale: 0.95 }}
                     transition={{ delay: index * 0.05, duration: 0.2 }}
-                    className="flex gap-4 p-4 hover:bg-gray-50 rounded-xl transition-colors cursor-pointer border-b border-gray-50 last:border-0"
+                    onClick={() => {
+                      if (!notif.read_at) {
+                        onMarkSingleAsRead(notif.id);
+                      }
+                    }}
+                    className={cn(
+                      "flex gap-4 p-4 hover:bg-gray-50 rounded-xl transition-colors cursor-pointer border-b border-gray-50 last:border-0",
+                      !notif.read_at && "bg-blue-50/30"
+                    )}
                   >
                     <div
                       className={cn(
@@ -152,10 +113,10 @@ export default function NotificationDropdown({ isOpen, onClose, onMarkAllAsRead,
                     <div className="flex flex-col gap-1 flex-1">
                       <div className="flex items-start justify-between gap-2">
                         <h4 className="text-base font-medium text-[#1F2D2E] leading-tight">
-                          {notif.title}
+                          {notif.title || "Notification"}
                         </h4>
-                        <span className="text-xs font-bold text-[#5F6F73] uppercase tracking-wider shrink-0 mt-0.5">
-                          {notif.time}
+                        <span className="text-[10px] font-bold text-[#5F6F73] uppercase tracking-wider shrink-0 mt-0.5">
+                          {notif.created_at_formatted}
                         </span>
                       </div>
                       <p className="text-sm text-[#5F6F73] leading-relaxed">

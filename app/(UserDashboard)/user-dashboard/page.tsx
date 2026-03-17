@@ -20,11 +20,11 @@ import {
   Loader2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useSelector } from "react-redux";
+import { selectCurrentUser } from "@/redux/features/slice/authSlice";
 import LogTodayModal from "@/components/dashboard/LogTodayModal";
 import ChangeSourceModal from "@/components/dashboard/ChangeSourceModal";
-import NotificationDropdown, {
-  MOCK_NOTIFICATIONS,
-} from "@/components/dashboard/NotificationDropdown";
+import NotificationBell from "@/components/dashboard/NotificationBell";
 import ChartsNutrition from "@/components/UserDashboard/Dashboard/ChartsNutrition";
 import { useGetCardDataQuery } from "@/redux/features/api/userDashboard/habit";
 import { useGetInsightsQuery } from "@/redux/features/api/userDashboard/insightsApi";
@@ -32,10 +32,12 @@ import { useGetUserOverviewChartQuery } from "@/redux/features/api/userDashboard
 
 // --- Main Page ---
 const UserDashboard = () => {
+  const currentUser = useSelector(selectCurrentUser);
+  const userName = currentUser?.name || "User";
+
   const [showLogModal, setShowLogModal] = useState(false);
   const [showSourceModal, setShowSourceModal] = useState(false);
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
-  const [notifications, setNotifications] = useState(MOCK_NOTIFICATIONS);
   const [dataSource, setDataSource] = useState<"device" | "manual">("device");
   const [days, setDays] = useState(7);
   
@@ -77,28 +79,7 @@ const UserDashboard = () => {
       <header className="sticky top-0 z-20 flex items-center justify-between py-4 bg-white border-b border-gray-100 px-6 w-full">
         <h1 className="text-xl font-semibold text-[#1F2D2E]">Dashboard</h1>
         <div className="flex items-center gap-4 ml-auto">
-          <div className="relative">
-            <button
-              onClick={() => setIsNotificationOpen(!isNotificationOpen)}
-              className="relative p-2 rounded-full bg-[#F4FBFA] hover:bg-gray-100 transition-colors cursor-pointer"
-              aria-label="Notifications"
-            >
-              <Bell size={20} className="text-[#5F6F73]" />
-              {notifications.some((n) => !n.isRead) && (
-                <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full border-2 border-white"></span>
-              )}
-            </button>
-            <NotificationDropdown
-              isOpen={isNotificationOpen}
-              onClose={() => setIsNotificationOpen(false)}
-              onMarkAllAsRead={() =>
-                setNotifications((prev) =>
-                  prev.map((n) => ({ ...n, isRead: true })),
-                )
-              }
-              notifications={notifications.filter((n) => !n.isRead)}
-            />
-          </div>
+          <NotificationBell />
           <div className="flex items-center gap-3 pr-2">
             <Image
               src="/images/avatar.png"
@@ -122,7 +103,7 @@ const UserDashboard = () => {
         {/* Welcome Message */}
         <div className="bg-white rounded-xl p-4 md:p-6 border border-gray-100 shadow-[0_2px_12px_rgba(0,0,0,0.02)]">
           <h2 className="text-lg font-bold text-[#1F2D2E] mb-1">
-            Welcome, Shamim.airclub!
+            Welcome, {userName}!
           </h2>
           <p className="text-sm text-[#5F6F73]">
             Complete your setup to unlock future features

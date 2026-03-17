@@ -198,7 +198,7 @@ export default function FoodLogView({ onSave, onBack }: FoodLogViewProps) {
 
     try {
       const response = await calculateNutrition({
-        user_id: userId || 3,
+        user_id: userId,
         foods: [
           {
             food: foodNameInput,
@@ -311,7 +311,7 @@ export default function FoodLogView({ onSave, onBack }: FoodLogViewProps) {
       const today = new Date().toISOString().split("T")[0]; // YYYY-MM-DD
       const payload = {
         log_date: today,
-        user_id: userId || 3,
+        user_id: userId,
         meals: meals.map(meal => ({
           type: meal.type,
           foods: meal.foods.map(f => ({
