@@ -180,9 +180,9 @@ export default function SuggestionCarousel({ suggestions }: SuggestionCarouselPr
                   </div>
 
                   {/* Action Button */}
-                  <button className={`mt-6 w-full py-4 ${theme.accent} text-white rounded-[1.25rem] text-[13px] font-black uppercase tracking-widest shadow-lg shadow-${theme.accent}/20 hover:scale-[1.02] active:scale-[0.98] transition-all`}>
+                  {/* <button className={`mt-6 w-full py-4 ${theme.accent} text-white rounded-[1.25rem] text-[13px] font-black uppercase tracking-widest shadow-lg shadow-${theme.accent}/20 hover:scale-[1.02] active:scale-[0.98] transition-all`}>
                     Analyze Profile
-                  </button>
+                  </button> */}
                 </motion.div>
               );
             })}

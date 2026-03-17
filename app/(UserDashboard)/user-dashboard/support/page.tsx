@@ -29,7 +29,8 @@ import {
 import { cn } from "@/lib/utils";
 import { 
   useConnectProfessionMutation,
-  useGetConnectedProfessionsQuery
+  useGetConnectedProfessionsQuery,
+  useUpdateLifestyleImageMutation
 } from "@/redux/features/api/userDashboard/support";
 import { 
   useGetMessagesByUserIdQuery, 
@@ -355,6 +356,14 @@ const SupportPage = () => {
   const [messageInput, setMessageInput] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
+  const [updateLifestyleImage, { isLoading: isUploading }] = useUpdateLifestyleImageMutation();
+
+  useEffect(() => {
+    if (user?.current_image) {
+      setHealthImage(user.current_image);
+    }
+  }, [user]);
+
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
@@ -400,14 +409,22 @@ const SupportPage = () => {
     }
   };
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setHealthImage(reader.result as string);
-      };
-      reader.readAsDataURL(file);
+      const formData = new FormData();
+      formData.append("current_image", file);
+
+      try {
+        const response = await updateLifestyleImage(formData).unwrap();
+        if (response.success) {
+          setHealthImage(response.image_url);
+          toast.success("Health update image uploaded successfully!");
+        }
+      } catch (error) {
+        console.error("Failed to upload image:", error);
+        toast.error("Failed to upload image. Please try again.");
+      }
     }
   };
 
@@ -843,25 +860,36 @@ const SupportPage = () => {
 
                   {/* Image Preview / Dropzone */}
                   <div className="relative w-32 h-32 rounded-2xl overflow-hidden border-2 border-dashed border-gray-200 shadow-sm bg-gray-50 group transition-transform hover:scale-105">
-                    <Image
-                      src={
-                        healthImage ||
-                        "https://images.unsplash.com/photo-1576091160550-217359f42f8c?auto=format&fit=crop&q=80&w=200"
-                      }
-                      alt="Health Data"
-                      fill
-                      className="object-cover"
-                    />
-                    <div className="absolute inset-0 bg-black/10 opacity-0 group-hover:opacity-50 transition-opacity flex flex-col items-center justify-center rounded-2xl">
-                      <LayoutGrid size={16} className="text-[#1F2D2E]" />
-                      <span className="text-xs text-gray-600 mt-1">
-                        Drag & drop or click
-                      </span>
-                    </div>
-                    {healthImage && (
-                      <div className="absolute top-2 right-2 bg-green-500 text-white p-1.5 rounded-full shadow-md">
-                        <Check size={12} strokeWidth={3} />
+                    {isUploading ? (
+                      <div className="absolute inset-0 flex items-center justify-center bg-white/60 z-10">
+                        <Loader2 className="animate-spin text-[#0FA4A9]" size={24} />
                       </div>
+                    ) : (
+                      <>
+                        <Image
+                          src={
+                            healthImage || "/images/health-placeholder.png"
+                          }
+                          alt="Health Data"
+                          fill
+                          className="object-cover"
+                          onError={(e) => {
+                            const target = e.target as HTMLImageElement;
+                            target.src = "/images/health-placeholder.png";
+                          }}
+                        />
+                        <div className="absolute inset-0 bg-black/10 opacity-0 group-hover:opacity-50 transition-opacity flex flex-col items-center justify-center rounded-2xl">
+                          <LayoutGrid size={16} className="text-[#1F2D2E]" />
+                          <span className="text-xs text-gray-600 mt-1">
+                            Drag & drop or click
+                          </span>
+                        </div>
+                        {healthImage && (
+                          <div className="absolute top-2 right-2 bg-green-500 text-white p-1.5 rounded-full shadow-md">
+                            <Check size={12} strokeWidth={3} />
+                          </div>
+                        )}
+                      </>
                     )}
                   </div>
 
@@ -875,10 +903,10 @@ const SupportPage = () => {
                   />
                   <label
                     htmlFor="health-upload-banner"
-                    className="bg-[#0FA4A9] text-white px-6 py-3 rounded-2xl text-sm font-bold hover:bg-[#0d8d91] transition-all cursor-pointer flex items-center gap-2"
+                    className="bg-[#0FA4A9] text-white px-6 py-3 rounded-2xl text-sm font-bold hover:bg-[#0d8d91] transition-all cursor-pointer flex items-center gap-2 disabled:opacity-50"
                   >
-                    <LayoutGrid size={16} />
-                    {healthImage ? "Change Image" : "Upload Image"}
+                    {isUploading ? <Loader2 size={16} className="animate-spin" /> : <LayoutGrid size={16} />}
+                    {isUploading ? "Uploading..." : healthImage ? "Change Image" : "Upload Image"}
                   </label>
                 </div>
               </div>
