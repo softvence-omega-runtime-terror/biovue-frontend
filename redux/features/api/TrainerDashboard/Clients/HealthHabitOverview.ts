@@ -2,8 +2,6 @@
 
 import { baseApi } from "../../baseApi";
 
-
-
 export interface DashboardMetrics {
   weight: number | null;
   nutrition_quality: number | null;
@@ -20,9 +18,9 @@ export interface DashboardMetricsResponse {
 
 export const healthHabitOverviewApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
-    getDashboardMetrics: builder.query<DashboardMetricsResponse, void>({
-      query: () => ({
-        url: "/dashboard-metrics",
+    getDashboardMetrics: builder.query<DashboardMetricsResponse, number>({
+      query: (userId) => ({
+        url: `/dashboard-metrics/${userId}`,
         method: "GET",
       }),
       providesTags: ["HealthHabitOverview"],

@@ -2,14 +2,20 @@
 
 import { X } from "lucide-react";
 import Image from "next/image";
+import { useUpdateScheduleMutation } from "@/redux/features/api/TrainerDashboard/Calendar/CreateSchedule";
+import { toast } from "sonner";
 import { useState } from "react";
 
 interface EventData {
+  id: number; // ✅ MUST
+  client_id: number; // ✅ MUST
   title: string;
   name: string;
   time: string;
   status: "missed" | "scheduled" | "completed";
   avatar?: string;
+  date?: string;
+  privateNote?: string;
 }
 
 interface Props {
@@ -27,10 +33,27 @@ export default function RescheduleEventModal({
 }: Props) {
   const [newDate, setNewDate] = useState("");
   const [newTime, setNewTime] = useState("");
+  const [updateSchedule, { isLoading }] = useUpdateScheduleMutation();
 
-  const handleConfirm = () => {
-    if (!newDate || !newTime) return;
-    onConfirm();
+  const handleConfirm = async () => {
+    if (!newDate || !newTime || !event) return;
+    
+    try {
+      await updateSchedule({
+        id: event.id,
+        client_id: event.client_id,
+        date: newDate,
+        time: newTime,
+        check_in_type: event.title || "Message",
+        private_note: event.privateNote || "",
+        status: "scheduled", // ✅ reset to scheduled
+      }).unwrap();
+
+      onConfirm();
+      onClose();
+    } catch (err) {
+      console.error(err);
+    }
   };
   if (!isOpen || !event) return null;
 
@@ -70,7 +93,7 @@ export default function RescheduleEventModal({
               </div>
               <div>
                 <h4 className="font-bold text-[#1E293B]">{event.name}</h4>
-                <p className="text-xs text-[#94A3B8] font-medium">Check-in</p>
+                <p className="text-xs text-[#94A3B8] font-medium">{event.title || "Check-in"}</p>
               </div>
             </div>
             <div
@@ -127,9 +150,10 @@ export default function RescheduleEventModal({
             </button>
             <button
               onClick={handleConfirm}
-              className="py-4 rounded-xl bg-[#0D9488] text-white font-bold text-[15px] hover:opacity-90 transition-all shadow-lg active:scale-[0.98] uppercase tracking-widest cursor-pointer"
+              disabled={isLoading}
+              className="py-4 rounded-xl bg-[#0D9488] text-white font-bold text-[15px] hover:opacity-90 transition-all shadow-lg active:scale-[0.98] uppercase tracking-widest cursor-pointer disabled:opacity-50"
             >
-              Confirm
+              {isLoading ? "Confirming..." : "Confirm"}
             </button>
           </div>
         </div>

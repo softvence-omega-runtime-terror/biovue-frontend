@@ -2,12 +2,7 @@
 
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import {
-  MessageSquare,
-  ChevronLeft,
-  Loader2,
-  BookOpen,
-} from "lucide-react";
+import { MessageSquare, ChevronLeft, Loader2, BookOpen } from "lucide-react";
 import Link from "next/link";
 import { useGetProgramsQuery } from "@/redux/features/api/TrainerDashboard/Program/GetPrograms";
 import { useGetClientProgramContextQuery } from "@/redux/features/api/TrainerDashboard/Clients/ClientOverview";
@@ -42,11 +37,14 @@ export default function ClientDetailsContent({
     inactive: "bg-[#9AAEB24D] text-[#5F6F73]",
   };
 
-  const { data: programsData, isLoading: programsLoading } = useGetProgramsQuery();
-  const { data: programContextData, isLoading: isProgramContextLoading } = useGetClientProgramContextQuery(clientDetails.id);
-  const [assignProgram, { isLoading: isAssigning }] = useAssignProgramUsersMutation();
+  const { data: programsData, isLoading: programsLoading } =
+    useGetProgramsQuery();
+  const { data: programContextData, isLoading: isProgramContextLoading } =
+    useGetClientProgramContextQuery(clientDetails.id);
+  const [assignProgram, { isLoading: isAssigning }] =
+    useAssignProgramUsersMutation();
   const [selectedProgramId, setSelectedProgramId] = useState<string>("");
-  
+
   const programContext = programContextData?.data;
 
   const handleAssignProgram = async () => {
@@ -62,20 +60,18 @@ export default function ClientDetailsContent({
       }).unwrap();
 
       if (response.status) {
-        toast.success(response.message || "Client assigned to program successfully");
+        toast.success(
+          response.message || "Client assigned to program successfully",
+        );
       } else {
         toast.error(response.message || "Failed to assign program");
       }
     } catch (error: any) {
-      toast.error(error?.data?.message || "An error occurred while assigning program");
+      toast.error(
+        error?.data?.message || "An error occurred while assigning program",
+      );
     }
   };
-
-  // Determine if assigned
-  // const hasProgram = clientDetails.programContext && 
-  //                    clientDetails.programContext.name && 
-  //                    clientDetails.programContext.name !== "Standard Training" &&
-  //                    clientDetails.programContext.name !== "Not Assigned";
 
   return (
     <div className="min-h-screen space-y-8">
@@ -235,15 +231,21 @@ export default function ClientDetailsContent({
                 </div>
               </div>
             ) : (
-              <p className="text-sm text-[#5F6F73]">No program connected yet. Assign one to help the client reach their goals.</p>
+              <p className="text-sm text-[#5F6F73]">
+                No program connected yet. Assign one to help the client reach
+                their goals.
+              </p>
             )}
 
             <div className="space-y-3 pt-2">
               <div className="flex gap-2">
                 <div className="flex-1">
-                  <Select value={selectedProgramId} onValueChange={setSelectedProgramId}>
+                  <Select
+                    value={selectedProgramId}
+                    onValueChange={setSelectedProgramId}
+                  >
                     <SelectTrigger className="w-full">
-                       <SelectValue placeholder="Select a program" />
+                      <SelectValue placeholder="Select a program" />
                     </SelectTrigger>
                     <SelectContent>
                       {programsLoading ? (
@@ -252,12 +254,17 @@ export default function ClientDetailsContent({
                         </div>
                       ) : programsData?.data && programsData.data.length > 0 ? (
                         programsData.data.map((program) => (
-                          <SelectItem key={program.id} value={program.id.toString()}>
+                          <SelectItem
+                            key={program.id}
+                            value={program.id.toString()}
+                          >
                             {program.name}
                           </SelectItem>
                         ))
                       ) : (
-                        <SelectItem value="none" disabled>No programs found</SelectItem>
+                        <SelectItem value="none" disabled>
+                          No programs found
+                        </SelectItem>
                       )}
                     </SelectContent>
                   </Select>
@@ -267,7 +274,11 @@ export default function ClientDetailsContent({
                   disabled={isAssigning || !selectedProgramId}
                   className="bg-[#0D9488] text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-[#0A7A6F] transition-colors disabled:opacity-50"
                 >
-                  {isAssigning ? <Loader2 size={16} className="animate-spin" /> : "Assign"}
+                  {isAssigning ? (
+                    <Loader2 size={16} className="animate-spin" />
+                  ) : (
+                    "Assign"
+                  )}
                 </button>
               </div>
             </div>
