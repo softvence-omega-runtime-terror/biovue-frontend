@@ -333,9 +333,24 @@ export default function FoodLogView({ onSave, onBack }: FoodLogViewProps) {
       } else {
         toast.error(response.message || "Failed to log nutrition data.");
       }
-    } catch (error) {
-      console.error("Nutrition log submission error:", error);
-      toast.error("An error occurred while saving. Please try again.");
+    } catch (err: any) {
+      console.error("Nutrition log submission error:", err);
+      
+      const errorData = err.data || {};
+      const errorMessage = (errorData.message || "").toLowerCase();
+      const exception = (errorData.exception || "").toLowerCase();
+      
+      if (
+        err.status === 409 || 
+        err.status === 500 ||
+        exception.includes("uniqueconstraintviolationexception") || 
+        errorMessage.includes("duplicate entry") || 
+        errorMessage.includes("already logged")
+      ) {
+        toast.error("You have already logged nutrition for today.");
+      } else {
+        toast.error(errorData.message || "An error occurred while saving. Please try again.");
+      }
     }
   };
 

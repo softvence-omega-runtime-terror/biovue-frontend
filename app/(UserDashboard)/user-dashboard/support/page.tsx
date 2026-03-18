@@ -20,11 +20,8 @@ import {
   Clock,
   CircleCheck,
   LayoutGrid,
-  TrendingUp,
   Info,
-  Calendar,
   Loader2,
-  CloudCog
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { 
