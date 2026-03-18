@@ -74,6 +74,8 @@ const OnboardingStepsPage = () => {
   const router = useRouter();
   const user = useSelector(selectCurrentUser);
 
+  console.log(user,"user");
+
   const handleSubmit = async () => {
     try {
       const apiData = new FormData();
@@ -131,16 +133,15 @@ const OnboardingStepsPage = () => {
         
         // Automated Insights Fetching
         try {
-          // POST {{url}}/insights/fetch { "user_id": 3 }
-          fetchInsights({ user_id: user?.id }).unwrap();
+            
+          fetchInsights({ user_id: Number(user?.id) });
           
-          // POST {{url}}/future-insights/fetch { "user_id": "3", "timeframe": "5 years" }
           fetchFutureInsights({ 
-            user_id: user?.id?.toString(), 
+            user_id: String(user?.id), 
             timeframe: "5 years" 
-          }).unwrap();
+          });
           
-          console.log("Triggered automated insights fetching");
+          console.log("Triggered automated insights fetching in the background");
         } catch (error) {
           console.error("Failed to trigger automated insights:", error);
         }

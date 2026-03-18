@@ -3,11 +3,13 @@
 import { baseApi } from "../../baseApi";
 
 export interface CreateSchedulePayload {
+  id?: number;
   client_id: number;
   date: string;
   time: string;
   check_in_type: string;
   private_note: string;
+  status?: "scheduled" | "missed" | "completed";
 }
 
 export interface CreateScheduleResponse {
@@ -27,8 +29,21 @@ export const scheduleApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: [{ type: "Schedule", id: "LIST" }, "Clients"],
     }),
+
+    updateSchedule: builder.mutation<
+      CreateScheduleResponse,
+      CreateSchedulePayload
+    >({
+      query: ({ id, ...body }) => ({
+        url: `/schedule-checkin/${id}`,
+        method: "PUT",
+        body,
+      }),
+      invalidatesTags: [{ type: "Schedule", id: "LIST" }, "Clients"],
+    }),
   }),
   overrideExisting: false,
 });
 
-export const { useCreateScheduleMutation } = scheduleApi;
+export const { useCreateScheduleMutation, useUpdateScheduleMutation } =
+  scheduleApi;

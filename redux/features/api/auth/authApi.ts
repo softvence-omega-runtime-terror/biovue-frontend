@@ -30,6 +30,7 @@ const authApi = baseApi.injectEndpoints({
 
     getCurrentUser: builder.query({
       query: () => "/user/me",
+      providesTags: ["Profile"],
     }),
 
     logout: builder.mutation({
@@ -63,6 +64,14 @@ const authApi = baseApi.injectEndpoints({
       }),
     }),
 
+    changePassword: builder.mutation({
+      query: (body) => ({
+        url: "/change-password",
+        method: "POST",
+        body,
+      }),
+    }),
+
   }),
 });
 
@@ -75,6 +84,7 @@ export const {
   useForgotPasswordMutation,
   useResetPasswordMutation,
   useResendOtpMutation,
+  useChangePasswordMutation,
 } = authApi;
 
 export default authApi;

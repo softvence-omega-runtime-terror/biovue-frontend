@@ -10,10 +10,13 @@ import EventDetailsModal from "@/components/TrainerDashboard/calendar/EventDetai
 import RescheduleEventModal from "@/components/TrainerDashboard/calendar/RescheduleEventModal";
 import { ChevronLeft, ChevronRight, Filter, Plus } from "lucide-react";
 import { useState } from "react";
+import { useUpdateScheduleMutation } from "@/redux/features/api/TrainerDashboard/Calendar/CreateSchedule";
 
 export type CalendarEventStatus = "missed" | "scheduled" | "completed";
 
 export interface CalendarEvent {
+  id: number;
+  client_id: number;
   name: string;
   title: string;
   time: string;
@@ -46,8 +49,8 @@ export default function CalendarPage() {
   // Helpers
   const formatDateLocal = (date: Date) => {
     const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
     return `${year}-${month}-${day}`;
   };
 
@@ -66,11 +69,7 @@ export default function CalendarPage() {
   // Format date for API (YYYY-MM-DD)
   const formattedStartDate = formatDateLocal(start);
 
-  const {
-    data: scheduleData,
-    isLoading,
-    isError,
-  } = useGetSchedulesQuery(formattedStartDate);
+  const { data: scheduleData, isLoading, isError } = useGetSchedulesQuery();
 
   const formatRange = (s: Date, e: Date) =>
     `${s.toLocaleDateString("en-US", {
@@ -91,6 +90,10 @@ export default function CalendarPage() {
   const handleEventClick = (event: CalendarEvent) => {
     setSelectedEvent(event);
     setIsEventDetailsOpen(true);
+  };
+
+  const handleRescheduleConfirm = () => {
+    setIsRescheduleOpen(false);
   };
 
   const handleSendReminderFromDetails = () => {
@@ -131,20 +134,8 @@ export default function CalendarPage() {
       <div className="bg-white rounded-2xl p-4 mb-6 shadow-sm border border-[#F1F5F9]">
         <div className="flex flex-col md:flex-row items-center justify-between gap-4 p-2">
           {/* View Toggle */}
-          <div className="bg-[#E0F2F1] rounded-xl p-1 flex items-center w-full md:w-auto">
-            {views.map((item) => (
-              <button
-                key={item}
-                onClick={() => setView(item)}
-                className={`flex-1 md:flex-none px-8 py-2.5 text-sm rounded-lg capitalize transition-all font-semibold ${
-                  view === item
-                    ? "bg-white text-[#0D9488] shadow-sm"
-                    : "text-[#64748B] hover:text-[#0D9488]"
-                }`}
-              >
-                {item}
-              </button>
-            ))}
+          <div className="bg-[#E0F2F1]  flex-1 md:flex-none px-8 py-2.5 text-sm  capitalize transition-all font-semiboldtext-[#64748B] rounded-lg p-1 flex items-center w-full md:w-auto">
+            <p>Your Schedules</p>
           </div>
 
           {/* Date Navigation + Filters */}
@@ -216,8 +207,12 @@ export default function CalendarPage() {
           </div>
         ) : isError ? (
           <div className="flex flex-col items-center justify-center p-20 gap-4">
-            <p className="text-[#EF4444] font-bold text-lg">Error loading schedules</p>
-            <p className="text-[#64748B]">Please try refreshing the page or contact support.</p>
+            <p className="text-[#EF4444] font-bold text-lg">
+              Error loading schedules
+            </p>
+            <p className="text-[#64748B]">
+              Please try refreshing the page or contact support.
+            </p>
           </div>
         ) : (
           <WeeklyCalendar
@@ -249,7 +244,7 @@ export default function CalendarPage() {
         isOpen={isRescheduleOpen}
         onClose={() => setIsRescheduleOpen(false)}
         event={selectedEvent}
-        onConfirm={() => setIsRescheduleOpen(false)}
+        onConfirm={handleRescheduleConfirm}
       />
     </div>
   );

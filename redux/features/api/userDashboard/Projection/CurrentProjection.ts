@@ -1,6 +1,4 @@
-"use client";
-
-import { baseApi } from "../../baseApi";
+import { projectionApi } from "./projectionApi";
 
 export interface ProjectionResponse {
   user_id: string;
@@ -22,7 +20,7 @@ export interface ProjectionRequest {
   tier?: string;
 }
 
-export const projectionApiEndpoints = baseApi.injectEndpoints({
+export const projectionApiEndpoints = projectionApi.injectEndpoints({
   endpoints: (builder) => ({
     currentLifestyleProjection: builder.mutation<
       ProjectionResponse,
@@ -40,14 +38,14 @@ export const projectionApiEndpoints = baseApi.injectEndpoints({
           }
         });
         return {
-          url: "/projection-lifestyle",
+          url: "/projection/current-lifestyle",
           method: "POST",
           body: formData,
         };
       },
-      invalidatesTags: ["Projection"],
     }),
   }),
+  overrideExisting: true,
 });
 
 export const { useCurrentLifestyleProjectionMutation } = projectionApiEndpoints;
