@@ -2,9 +2,12 @@
 
 import { X, Calendar, Clock } from "lucide-react";
 import Image from "next/image";
+import { useUpdateScheduleMutation } from "@/redux/features/api/TrainerDashboard/Calendar/CreateSchedule";
+import { toast } from "sonner";
 import { useEffect, useState } from "react";
-
 interface EventData {
+  id: number;
+  client_id: number;
   title: string;
   name: string;
   time: string;
@@ -21,7 +24,6 @@ interface Props {
   event: EventData | null;
   onSendReminder: () => void;
   onReschedule: () => void;
-  onSaveStatus: (status: "missed" | "completed") => void;
 }
 
 export default function EventDetailsModal({
@@ -32,12 +34,14 @@ export default function EventDetailsModal({
   onReschedule,
 }: Props) {
   const [status, setStatus] = useState<"missed" | "completed">("missed");
+  const [updateSchedule, { isLoading }] = useUpdateScheduleMutation();
 
   useEffect(() => {
     if (event?.status) {
-      setStatus(event.status === "scheduled" ? "missed" : event.status);
+      setStatus(event.status === "scheduled" ? "missed" : (event.status as "missed" | "completed"));
     }
   }, [event]);
+
   if (!isOpen || !event) return null;
 
   // Format date for display
@@ -48,6 +52,24 @@ export default function EventDetailsModal({
         year: "2-digit",
       })
     : "N/A";
+  const handleSaveStatus = async () => {
+    try {
+      await updateSchedule({
+        id: event.id,
+        client_id: event.client_id,
+        date: event.date || "",
+        time: event.time,
+        check_in_type: event.title,
+        private_note: event.privateNote || "",
+        status: status,
+      }).unwrap();
+
+      toast.success("Status updated successfully");
+      onClose();
+    } catch (error: any) {
+      toast.error(error?.data?.message || "Failed to update status");
+    }
+  };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
@@ -168,16 +190,17 @@ export default function EventDetailsModal({
           {/* Actions */}
           <div className="grid grid-cols-1 gap-4">
             <button
-              onClick={() => onSaveStatus(status)}
-              className="py-3.5 rounded-xl bg-[#afc8ff] cursor-pointer text-black font-bold text-sm hover:opacity-90 transition-all shadow-md active:scale-[0.98]"
-            >
-              Save Status
-            </button>
-            <button
               onClick={onSendReminder}
               className="py-3.5 rounded-xl border border-[#F1F5F9] text-[#475569] font-bold text-sm hover:bg-gray-50 transition-colors cursor-pointer"
             >
               Send Reminder
+            </button>
+            <button
+              onClick={handleSaveStatus}
+              disabled={isLoading}
+              className="py-3.5 rounded-xl bg-[#afc8ff] cursor-pointer text-black font-bold text-sm hover:opacity-90 transition-all shadow-md active:scale-[0.98] disabled:opacity-50"
+            >
+              {isLoading ? "Saving..." : "Save Status"}
             </button>
             <button
               onClick={onReschedule}

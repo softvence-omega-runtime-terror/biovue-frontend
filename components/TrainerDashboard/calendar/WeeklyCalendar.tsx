@@ -91,6 +91,8 @@ export default function WeeklyCalendar({
                       }
                       onClick={() =>
                         onEventClick({
+                          id: schedule.id,
+                          client_id: schedule.client_id,
                           name: schedule.client?.name || "Unknown Client",
                           title: schedule.check_in_type || "Check-in",
                           time: (schedule.schedule_time || "00:00").slice(0, 5),
