@@ -14,6 +14,12 @@ import LogStressView from "@/components/dashboard/LogStressView";
 import { useSelector } from "react-redux";
 import { selectCurrentUser } from "@/redux/features/slice/authSlice";
 
+import { useGetSleepReportQuery } from "@/redux/features/api/userDashboard/sleeplog";
+import { useGetActivityReportQuery } from "@/redux/features/api/userDashboard/activitylog";
+import { useGetStressReportQuery } from "@/redux/features/api/userDashboard/stresslog";
+import { useGetHydrationReportQuery } from "@/redux/features/api/userDashboard/hydration";
+import { useGetNutritionReportQuery } from "@/redux/features/api/userDashboard/nutrition";
+
 
 const HABIT_DETAILS: Record<string, any> = {
   "sleep": {
@@ -93,10 +99,21 @@ export default function HabitDetailPage() {
   const { data: cardData, isLoading: isCardLoading } = useGetCardDataQuery();
   const { data: habitData, isLoading: isHabitLoading } = useGetHabitsQuery(userId, { skip: !userId });
 
+  const { data: sleepReport, isLoading: isSleepLoading } = useGetSleepReportQuery(7, { skip: habitId !== 'sleep' });
+  const { data: activityReport, isLoading: isActivityLoading } = useGetActivityReportQuery(7, { skip: habitId !== 'activity' });
+  const { data: stressReport, isLoading: isStressLoading } = useGetStressReportQuery(7, { skip: habitId !== 'stress' });
+  const { data: hydrationReport, isLoading: isHydrationLoading } = useGetHydrationReportQuery(7, { skip: habitId !== 'hydration' });
+  const { data: nutritionReport, isLoading: isNutritionLoading } = useGetNutritionReportQuery(7, { skip: habitId !== 'nutrition' });
+
+  const isAnyLoading = isCardLoading || isHabitLoading || isSleepLoading || isActivityLoading || isStressLoading || isHydrationLoading || isNutritionLoading;
+
+  console.log("habitData", habitData);
+  console.log("cardData", cardData);
+
   const [view, setView] = useState<"details" | "logging">("details");
   const [isLogModalOpen, setIsLogModalOpen] = useState(false);
 
-  if (isCardLoading || isHabitLoading) {
+  if (isAnyLoading) {
     return (
       <div className="flex items-center justify-center min-h-[calc(100vh-80px)]">
         <Loader2 className="animate-spin text-[#3A86FF]" size={48} />
@@ -110,6 +127,50 @@ export default function HabitDetailPage() {
 
   const insight = habitData?.habits?.[habitId.toLowerCase()];
 
+  // Robust report data mapping
+  let reportStats: any = null;
+  if (habitId === 'sleep' && sleepReport) {
+    const sData = sleepReport.data || sleepReport;
+    reportStats = {
+      avg: sData.statistics?.average_sleep,
+      ratio: sData.statistics?.total_logged,
+      target: sData.statistics?.sleep_target,
+      consistency: sData.statistics?.consistency
+    };
+  } else if (habitId === 'activity' && activityReport) {
+    const aData = activityReport.data || activityReport;
+    reportStats = {
+      avg: aData.statistics?.average_steps,
+      ratio: aData.statistics?.best_streak ? `${aData.statistics.best_streak}` : undefined,
+      target: aData.statistics?.steps_target,
+      consistency: aData.statistics?.consistency
+    };
+  } else if (habitId === 'stress' && stressReport) {
+    const strData = stressReport;
+    reportStats = {
+      avg: strData.stats?.average,
+      ratio: strData.stats?.best_streak ? `${strData.stats.best_streak}` : undefined,
+      target: undefined, // Update if stress report adds a target
+      consistency: strData.stats?.consistency
+    };
+  } else if (habitId === 'hydration' && hydrationReport) {
+    const hData = hydrationReport.data || hydrationReport;
+    reportStats = {
+      avg: hData.statistics?.average_water,
+      ratio: hData.statistics?.best_streak ? `${hData.statistics.best_streak}` : undefined,
+      target: hData.statistics?.water_target,
+      consistency: hData.statistics?.consistency
+    };
+  } else if (habitId === 'nutrition' && nutritionReport) {
+    const nData = nutritionReport.data || nutritionReport;
+    reportStats = {
+      avg: nData.statistics?.average,
+      ratio: nData.statistics?.best_streak ? `${nData.statistics.best_streak}` : undefined,
+      target: undefined,
+      consistency: nData.statistics?.consistency
+    };
+  }
+
   const habit = {
     ...HABIT_DETAILS[habitId] || HABIT_DETAILS["sleep"],
     ...(habitMetrics ? {
@@ -119,6 +180,12 @@ export default function HabitDetailPage() {
       statusBg: (insight?.status ? insight.status === "NEED_ATTENTION" : habitMetrics.status === "Need Attention")
         ? "bg-pink-100 text-pink-500"
         : "bg-teal-100 text-[#0FA4A9]"
+    } : {}),
+    ...(reportStats ? {
+      avg: reportStats.avg || habitMetrics?.avg || (HABIT_DETAILS[habitId] || HABIT_DETAILS["sleep"]).avg,
+      daysLogged: reportStats.ratio || habitMetrics?.ratio || (HABIT_DETAILS[habitId] || HABIT_DETAILS["sleep"]).daysLogged,
+      consistency: reportStats.consistency || (habitMetrics ? (parseInt(habitMetrics.ratio.split('/')[0]) / 7 * 100).toFixed(0) + '%' : (HABIT_DETAILS[habitId] || HABIT_DETAILS["sleep"]).consistency),
+      target: reportStats.target || (HABIT_DETAILS[habitId] || HABIT_DETAILS["sleep"]).target
     } : {}),
     ...(insight ? {
       why: insight.why_this_matters,
@@ -216,7 +283,7 @@ export default function HabitDetailPage() {
                   </div>
                   <div className="bg-[#EAF6F6] rounded-2xl p-8 flex flex-col gap-2">
                     <div className="text-[#94A3B8] font-bold text-[11px] uppercase tracking-widest">CONSISTENCY</div>
-                    <div className="text-[28px] font-bold text-[#1F2D2E] leading-none">{habitMetrics ? (parseInt(habitMetrics.ratio.split('/')[0]) / 7 * 100).toFixed(0) + '%' : habit.consistency}</div>
+                    <div className="text-[28px] font-bold text-[#1F2D2E] leading-none">{habit.consistency}</div>
                   </div>
                 </div>
               </div>
@@ -229,7 +296,7 @@ export default function HabitDetailPage() {
               {/* Suggested Target */}
               <div className="border border-gray-100 rounded-[16px] p-8 flex flex-col items-center justify-center text-center gap-3 bg-white shadow-sm">
                 <div className="text-[#94A3B8] font-bold text-[11px] uppercase tracking-widest">SUGGESTED TARGET</div>
-                <div className="text-[32px] font-bold text-[#1F2D2E] leading-none my-1">{habitId === 'activity' ? '10k Steps' : habit.target}</div>
+                <div className="text-[32px] font-bold text-[#1F2D2E] leading-none my-1">{habit.target}</div>
                 <div className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-widest text-[#1F2D2E]">
                   <div className="w-2.5 h-2.5 rounded-full bg-[#10B981]" />
                   COACH SUGGESTS ADJUSTMENT

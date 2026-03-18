@@ -54,11 +54,23 @@ export default function LogStressView({ onSave, onBack }: LogStressViewProps) {
       }
     } catch (err: any) {
       console.error("Error logging stress:", err);
-      const errorMessage = err.data?.message?.toLowerCase() || "";
-      if (err.status === 400 || err.status === 500 || errorMessage.includes("already logged") || errorMessage.includes("duplicate entry")) {
+      
+      const errorData = err.data || {};
+      const errorMessage = (errorData.message || "").toLowerCase();
+      const exception = (errorData.exception || "").toLowerCase();
+      
+      if (
+        err.status === 409 || 
+        err.status === 500 ||
+        exception.includes("uniqueconstraintviolationexception") || 
+        errorMessage.includes("duplicate entry") || 
+        errorMessage.includes("already logged")
+      ) {
         toast.error("You have already logged data for today.");
+      } else if (err.status === 400) {
+        toast.error(errorData.message || "Invalid data. Please check your inputs.");
       } else {
-        toast.error("An error occurred while logging stress data.");
+        toast.error("An error occurred while logging stress data. Please try again.");
       }
     }
   };

@@ -14,8 +14,8 @@ export const stressLogApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["Reports", "Habit"],
     }),
-    getStressReport: builder.query<any, void>({
-      query: () => "/stress-report",
+    getStressReport: builder.query<any, number | void>({
+      query: (days) => (days ? `/stress-report?days=${days}` : "/stress-report"),
       providesTags: ["Reports"],
     }),
   }),

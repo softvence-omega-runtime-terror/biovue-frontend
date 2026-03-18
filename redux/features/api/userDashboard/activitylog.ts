@@ -14,8 +14,8 @@ export const activityLogApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["Reports", "Habit"],
     }),
-    getActivityReport: builder.query<any, void>({
-      query: () => "/activity-report",
+    getActivityReport: builder.query<any, number | void>({
+      query: (days) => (days ? `/activity-report?days=${days}` : "/activity-report"),
       providesTags: ["Reports"],
     }),
   }),
