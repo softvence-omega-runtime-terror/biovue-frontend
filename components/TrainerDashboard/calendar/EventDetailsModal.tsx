@@ -2,6 +2,7 @@
 
 import { X, Calendar, Clock } from "lucide-react";
 import Image from "next/image";
+import { useEffect, useState } from "react";
 
 interface EventData {
   title: string;
@@ -20,6 +21,7 @@ interface Props {
   event: EventData | null;
   onSendReminder: () => void;
   onReschedule: () => void;
+  onSaveStatus: (status: "missed" | "completed") => void;
 }
 
 export default function EventDetailsModal({
@@ -29,10 +31,17 @@ export default function EventDetailsModal({
   onSendReminder,
   onReschedule,
 }: Props) {
+  const [status, setStatus] = useState<"missed" | "completed">("missed");
+
+  useEffect(() => {
+    if (event?.status) {
+      setStatus(event.status === "scheduled" ? "missed" : event.status);
+    }
+  }, [event]);
   if (!isOpen || !event) return null;
 
   // Format date for display
-  const displayDate = event.date 
+  const displayDate = event.date
     ? new Date(event.date).toLocaleDateString("en-US", {
         month: "numeric",
         day: "numeric",
@@ -50,7 +59,9 @@ export default function EventDetailsModal({
           >
             <X size={20} />
           </button>
-          <h2 className="text-xl font-bold text-[#1E293B] mb-6">Event Details</h2>
+          <h2 className="text-xl font-bold text-[#1E293B] mb-6">
+            Event Details
+          </h2>
 
           {/* User Card */}
           <div className="flex items-center justify-between border border-[#F1F5F9] rounded-2xl p-4 mb-6">
@@ -71,45 +82,97 @@ export default function EventDetailsModal({
               </div>
               <div>
                 <h4 className="font-bold text-[#1E293B]">{event.name}</h4>
-                <p className="text-xs text-[#94A3B8] font-medium">{event.title}</p>
+                <p className="text-xs text-[#94A3B8] font-medium">
+                  {event.title}
+                </p>
               </div>
             </div>
-            <div className={`px-3 py-1 rounded-full text-[11px] font-bold ${
-              event.status === 'missed' ? 'bg-[#FEE2E2] text-[#EF4444]' : 
-              event.status === 'scheduled' ? 'bg-[#F3E8FF] text-[#A855F7]' : 
-              'bg-[#DCFCE7] text-[#22C55E]'
-            }`}>
+            <div
+              className={`px-3 py-1 rounded-full text-[11px] font-bold ${
+                event.status === "missed"
+                  ? "bg-[#FEE2E2] text-[#EF4444]"
+                  : event.status === "scheduled"
+                    ? "bg-[#F3E8FF] text-[#A855F7]"
+                    : "bg-[#DCFCE7] text-[#22C55E]"
+              }`}
+            >
               {event.status.charAt(0).toUpperCase() + event.status.slice(1)}
             </div>
           </div>
 
           {/* Details Section */}
           <div className="border-2 border-[#3B82F6] rounded-xl p-5 mb-6">
-            <h5 className="text-[13px] font-medium text-[#94A3B8] mb-4">Timing</h5>
+            <h5 className="text-[13px] font-medium text-[#94A3B8] mb-4">
+              Timing
+            </h5>
             <div className="space-y-4">
               <div className="flex items-center gap-3">
                 <Calendar size={18} className="text-[#1E293B]" />
-                <span className="text-sm font-semibold text-[#1E293B]">{displayDate}</span>
+                <span className="text-sm font-semibold text-[#1E293B]">
+                  {displayDate}
+                </span>
               </div>
               <div className="flex items-center gap-3">
                 <Clock size={18} className="text-[#1E293B]" />
-                <span className="text-sm font-semibold text-[#1E293B]">{event.time}</span>
+                <span className="text-sm font-semibold text-[#1E293B]">
+                  {event.time}
+                </span>
               </div>
             </div>
 
-            <h5 className="text-[13px] font-medium text-[#94A3B8] mt-6 mb-2">Subject</h5>
+            <h5 className="text-[13px] font-medium text-[#94A3B8] mt-6 mb-2">
+              Subject
+            </h5>
             <p className="text-sm font-bold text-[#1E293B]">{event.title}</p>
           </div>
 
           <div className="mb-6">
-            <h5 className="text-[13px] font-medium text-[#94A3B8] mb-2 uppercase tracking-wide">Trainer Notes</h5>
+            <h5 className="text-[13px] font-medium text-[#94A3B8] mb-2 uppercase tracking-wide">
+              Trainer Notes
+            </h5>
             <div className="bg-[#F6EFE9] border border-[#EAC9B5] rounded-xl p-4 min-h-[60px]">
-              <p className="text-xs text-[#BC7F61] font-medium">{event.privateNote || "No notes provided."}</p>
+              <p className="text-xs text-[#BC7F61] font-medium">
+                {event.privateNote || "No notes provided."}
+              </p>
             </div>
           </div>
+          <div className="mb-6">
+            <h5 className="text-[13px] font-medium text-[#94A3B8] mb-2 uppercase tracking-wide">
+              Update Status
+            </h5>
 
+            <div className="flex gap-3">
+              <button
+                onClick={() => setStatus("missed")}
+                className={`flex-1 py-2 rounded-lg text-sm font-bold border ${
+                  status === "missed"
+                    ? "bg-[#FEE2E2] text-[#EF4444] border-[#EF4444]"
+                    : "border-[#E5E7EB] text-[#64748B]"
+                }`}
+              >
+                Missed
+              </button>
+
+              <button
+                onClick={() => setStatus("completed")}
+                className={`flex-1 py-2 rounded-lg text-sm font-bold border ${
+                  status === "completed"
+                    ? "bg-[#DCFCE7] text-[#22C55E] border-[#22C55E]"
+                    : "border-[#E5E7EB] text-[#64748B]"
+                }`}
+              >
+                Completed
+              </button>
+            </div>
+          </div>
           {/* Actions */}
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4">
+            <button
+              onClick={() => onSaveStatus(status)}
+              className="py-3.5 rounded-xl bg-[#afc8ff] cursor-pointer text-black font-bold text-sm hover:opacity-90 transition-all shadow-md active:scale-[0.98]"
+            >
+              Save Status
+            </button>
             <button
               onClick={onSendReminder}
               className="py-3.5 rounded-xl border border-[#F1F5F9] text-[#475569] font-bold text-sm hover:bg-gray-50 transition-colors cursor-pointer"

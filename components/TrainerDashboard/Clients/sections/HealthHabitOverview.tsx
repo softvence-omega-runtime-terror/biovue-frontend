@@ -11,7 +11,7 @@ export default function HealthHabitOverview({
 }: {
   clientDetails: ClientDetails;
 }) {
-  const { data } = useGetDashboardMetricsQuery();
+  const { data } = useGetDashboardMetricsQuery(clientDetails.id);
 
   const apiMetrics = data?.data ?? {
     weight: null,
@@ -28,7 +28,7 @@ export default function HealthHabitOverview({
       title: "Weight",
       value:
         apiMetrics?.weight !== null
-          ? `${apiMetrics.weight} lbs`
+          ? `${apiMetrics.weight}`
           : `${staticMetrics.weight.value} ${staticMetrics.weight.unit}`,
       icon: Scale,
       targetApplied: staticMetrics.weight.targetApplied,
