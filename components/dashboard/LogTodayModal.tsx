@@ -79,11 +79,21 @@ const LogTodayModal = ({
       }
     } catch (err: any) {
       console.error("Error logging habits:", err);
-      // Handle the duplicate entry error 1062/Constraint violation which usually comes as 500 or 400
-      if (err.status === 400 || err.status === 500 || err.data?.message?.toLowerCase().includes("duplicate") || err.data?.message?.toLowerCase().includes("already logged")) {
+      
+      const errorData = err.data || {};
+      const errorMessage = (errorData.message || "").toLowerCase();
+      const exception = (errorData.exception || "").toLowerCase();
+      
+      if (
+        err.status === 409 || 
+        err.status === 500 ||
+        exception.includes("uniqueconstraintviolationexception") || 
+        errorMessage.includes("duplicate entry") || 
+        errorMessage.includes("already logged")
+      ) {
         toast.error("You have already logged data for today.");
       } else {
-        toast.error("An error occurred while logging habits.");
+        toast.error(errorData.message || "An error occurred while logging habits.");
       }
     }
   };

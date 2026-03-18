@@ -18,8 +18,8 @@ export const nutritionApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["Nutrition", "Habit"],
     }),
-    getNutritionReport: builder.query({
-      query: () => "/nutrition-report",
+    getNutritionReport: builder.query<any, number | void>({
+      query: (days) => (days ? `/nutrition-report?days=${days}` : "/nutrition-report"),
       providesTags: ["Nutrition"],
     }),
     calculateNutrition: builder.mutation({
