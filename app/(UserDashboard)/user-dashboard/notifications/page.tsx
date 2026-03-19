@@ -8,11 +8,12 @@ import {
   Dumbbell, 
   Clock, 
   CheckCircle2,
-  ChevronRight
+  ChevronRight,
+  Trash2
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Notification } from "@/components/dashboard/NotificationDropdown";
-import { useGetNotificationsQuery, useMarkAsReadMutation } from "@/redux/features/api/userDashboard/notificationApi";
+import { useGetNotificationsQuery, useMarkAsReadMutation, useMarkSingleAsReadMutation, useDeleteSingleNotificationMutation, useDeleteAllNotificationsMutation } from "@/redux/features/api/userDashboard/notificationApi";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -41,6 +42,9 @@ const getNotificationIconBg = (type: string | null) => {
 export default function NotificationsPage() {
   const { data: response, isLoading } = useGetNotificationsQuery();
   const [markAsRead] = useMarkAsReadMutation();
+  const [markSingleAsRead] = useMarkSingleAsReadMutation();
+  const [deleteSingleNotification] = useDeleteSingleNotificationMutation();
+  const [deleteAllNotifications] = useDeleteAllNotificationsMutation();
 
   const notifications = response?.data || [];
 
@@ -56,18 +60,33 @@ export default function NotificationsPage() {
     }
   };
 
-  const handleClearAll = () => {
-    // If the API supports clear all, call it here. For now, we'll use mark all as read
-    handleMarkAllAsRead();
+  const handleClearAll = async () => {
+    try {
+      await deleteAllNotifications().unwrap();
+      toast.success("All notifications cleared");
+    } catch (err) {
+      console.error("Failed to clear notifications", err);
+      toast.error("Failed to clear notifications");
+    }
   };
 
   const handleMarkSingleAsRead = async (id: string) => {
     try {
-      await markAsRead({ notification_id: id }).unwrap();
+      await markSingleAsRead({ notification_id: id }).unwrap();
       toast.success("Notification marked as read");
     } catch (err) {
       console.error("Failed to mark notification as read", err);
       toast.error("Failed to mark as read");
+    }
+  };
+
+  const handleDeleteSingleNotification = async (id: string) => {
+    try {
+      await deleteSingleNotification({ notification_id: id }).unwrap();
+      toast.success("Notification deleted");
+    } catch (err) {
+      console.error("Failed to delete notification", err);
+      toast.error("Failed to delete notification");
     }
   };
 
@@ -152,9 +171,21 @@ export default function NotificationsPage() {
                 </span>
               </div>
               
-              {/* Arrow Icon */}
-              <div className="absolute right-5 top-1/2 -translate-y-1/2 sm:static sm:translate-y-0 w-10 h-10 rounded-xl border border-gray-100 flex items-center justify-center text-gray-400 group-hover:border-[#0FA4A9] group-hover:text-[#0FA4A9] transition-all ml-4">
-                <ChevronRight size={20} />
+              {/* Action Icons */}
+              <div className="absolute right-5 top-1/2 -translate-y-1/2 sm:static sm:translate-y-0 flex items-center gap-2 ml-4">
+                <div 
+                  className="w-10 h-10 rounded-xl border border-gray-100 flex items-center justify-center text-gray-400 hover:border-red-500 hover:text-red-500 hover:bg-red-50 transition-all cursor-pointer"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleDeleteSingleNotification(notif.id);
+                  }}
+                  title="Delete notification"
+                >
+                  <Trash2 size={18} />
+                </div>
+                <div className="w-10 h-10 rounded-xl border border-gray-100 flex items-center justify-center text-gray-400 group-hover:border-[#0FA4A9] group-hover:text-[#0FA4A9] transition-all hidden sm:flex">
+                  <ChevronRight size={20} />
+                </div>
               </div>
             </motion.div>
           ))}
