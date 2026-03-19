@@ -13,7 +13,6 @@ import {
   ChevronUp,
   Mail,
   ArrowRight,
-  PhoneCallIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -183,13 +182,6 @@ const HelpPage = () => {
 
             <div className="flex flex-col md:flex-row items-center justify-center gap-6 relative z-10">
               <button className="bg-[#0fa4a9] text-white px-8 py-4 rounded-xl font-bold flex items-center gap-3 hover:bg-[#0d8d91] transition-all cursor-pointer group shadow-lg shadow-[#0fa4a9]/20">
-                <PhoneCallIcon
-                  size={20}
-                  className="group-hover:scale-110 transition-transform"
-                />
-                Call for help
-              </button>
-              <button className="bg-white/10 text-white border border-white/20 px-8 py-4 rounded-xl font-bold flex items-center gap-3 hover:bg-white/20 transition-all cursor-pointer group">
                 <Mail
                   size={20}
                   className="group-hover:scale-110 transition-transform"
