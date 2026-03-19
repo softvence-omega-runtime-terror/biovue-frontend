@@ -29,7 +29,30 @@ export const notificationApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["Notifications"],
     }),
+    markSingleAsRead: builder.mutation<any, { notification_id: string }>({
+      query: (body) => ({
+        url: "/mark-single-as-read",
+        method: "POST",
+        body,
+      }),
+      invalidatesTags: ["Notifications"],
+    }),
+    deleteSingleNotification: builder.mutation<any, { notification_id: string }>({
+      query: (body) => ({
+        url: "/delete-single-notification",
+        method: "POST",
+        body,
+      }),
+      invalidatesTags: ["Notifications"],
+    }),
+    deleteAllNotifications: builder.mutation<any, void>({
+      query: () => ({
+        url: "/delete-all-notification",
+        method: "POST",
+      }),
+      invalidatesTags: ["Notifications"],
+    }),
   }),
 });
 
-export const { useGetNotificationsQuery, useMarkAsReadMutation } = notificationApi;
+export const { useGetNotificationsQuery, useMarkAsReadMutation, useMarkSingleAsReadMutation, useDeleteSingleNotificationMutation, useDeleteAllNotificationsMutation } = notificationApi;

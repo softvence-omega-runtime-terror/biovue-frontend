@@ -59,6 +59,7 @@ export default function HabitsPage() {
   const { data: cardData, isLoading: isLoadingCards } = useGetCardDataQuery();
   const { data: habitData, isLoading: isLoadingHabits } = useGetHabitsQuery(userId, { skip: !userId });
   const [updateHabits, { isLoading: isUpdating }] = useUpdateHabitsMutation();
+  
 
   console.log(cardData, "carddata frontend page ");
   console.log(habitData, "habitData - insights");

@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { Bell } from "lucide-react";
-import { useGetNotificationsQuery, useMarkAsReadMutation } from "@/redux/features/api/userDashboard/notificationApi";
+import { useGetNotificationsQuery, useMarkAsReadMutation, useMarkSingleAsReadMutation, useDeleteSingleNotificationMutation } from "@/redux/features/api/userDashboard/notificationApi";
 import NotificationDropdown from "./NotificationDropdown";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
@@ -16,6 +16,8 @@ export default function NotificationBell({ className, iconSize = 20 }: Notificat
   const [isOpen, setIsOpen] = useState(false);
   const { data: response, isLoading, error } = useGetNotificationsQuery();
   const [markAsRead] = useMarkAsReadMutation();
+  const [markSingleAsRead] = useMarkSingleAsReadMutation();
+  const [deleteSingleNotification] = useDeleteSingleNotificationMutation();
 
   console.log("NotificationBell - response:", response);
   console.log("NotificationBell - isLoading:", isLoading);
@@ -38,9 +40,18 @@ export default function NotificationBell({ className, iconSize = 20 }: Notificat
 
   const handleMarkSingleAsRead = async (id: string) => {
     try {
-      await markAsRead({ notification_id: id }).unwrap();
+      await markSingleAsRead({ notification_id: id }).unwrap();
     } catch (err) {
       console.error("Failed to mark notification as read", err);
+    }
+  };
+
+  const handleDeleteSingleNotification = async (id: string) => {
+    try {
+      await deleteSingleNotification({ notification_id: id }).unwrap();
+      toast.success("Notification deleted");
+    } catch (err) {
+      console.error("Failed to delete notification", err);
     }
   };
 
@@ -64,6 +75,7 @@ export default function NotificationBell({ className, iconSize = 20 }: Notificat
         onClose={() => setIsOpen(false)}
         onMarkAllAsRead={handleMarkAllAsRead}
         onMarkSingleAsRead={handleMarkSingleAsRead}
+        onDeleteSingleNotification={handleDeleteSingleNotification}
         notifications={notifications}
       />
     </div>

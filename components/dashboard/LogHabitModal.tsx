@@ -88,7 +88,7 @@ export default function LogHabitModal({ isOpen, onClose, habitType }: LogHabitMo
         response = await postHydrationLog(payload).unwrap();
       }
 
-      if (response.success || response.status === "success") {
+      if (response.success !== false && (response.success || response.status === "success" || response.id || response.sleep_hours !== undefined || Object.keys(response).length > 0)) {
         toast.success(`${habitType} data logged successfully!`);
         onClose();
       } else {

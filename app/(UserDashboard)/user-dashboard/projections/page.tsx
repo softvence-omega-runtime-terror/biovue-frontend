@@ -69,7 +69,9 @@ const ProjectionsPage = () => {
   );
 
   const projection =
-    lifestyle === "current" ? latestProjection?.data : futureGoalProjection?.data;
+    lifestyle === "current"
+      ? latestProjection?.data
+      : futureGoalProjection?.data;
 
   const expectedChanges: string[] = (() => {
     if (!projection?.expected_changes) return [];
@@ -171,7 +173,8 @@ const ProjectionsPage = () => {
           resolution: resolution.toUpperCase(),
           tier: quality,
         }).unwrap();
-      } else { // lifestyle === "improved"
+      } else {
+        // lifestyle === "improved"
         // Step 1: POST to external AI API to generate Future Goal projection
         res = await createFutureGoal({
           user_id: user.id.toString(),
@@ -525,10 +528,18 @@ const ProjectionsPage = () => {
 
         <button
           onClick={handleGenerate}
-          disabled={isCurrentLoading || isFutureLoading || isSaveLoading || isSaveFutureLoading}
+          disabled={
+            isCurrentLoading ||
+            isFutureLoading ||
+            isSaveLoading ||
+            isSaveFutureLoading
+          }
           className="w-full bg-[#0FA4A9] text-white py-5 rounded-xl font-bold flex items-center justify-center gap-3 hover:bg-[#0d8d91] transition-all group cursor-pointer shadow-lg shadow-[#0FA4A9]/20 disabled:opacity-50"
         >
-          {isCurrentLoading || isFutureLoading || isSaveLoading || isSaveFutureLoading
+          {isCurrentLoading ||
+          isFutureLoading ||
+          isSaveLoading ||
+          isSaveFutureLoading
             ? "Generating..."
             : "Generate Projection"}
           <ArrowRight
@@ -588,7 +599,13 @@ const ProjectionsPage = () => {
               </h3>
               <div className="relative w-full aspect-[4/3.2] rounded-2xl overflow-hidden bg-gray-50 shadow-inner">
                 <Image
-                  src={projection?.projection_url || "/images/auth/body1.png"}
+                  src={
+                    projection?.projection_url
+                      ? projection.projection_url.startsWith("http")
+                        ? projection.projection_url
+                        : `https://ai.biovuedigitalwellness.com${projection.projection_url}`
+                      : "/images/auth/body1.png"
+                  }
                   alt="Projection Result"
                   fill
                   className="object-cover"
