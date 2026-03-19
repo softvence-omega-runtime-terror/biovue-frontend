@@ -196,7 +196,7 @@ const RecommendationCard = ({ coach, onView }: { coach: any; onView: () => void 
 );
 
 const SupportTeamCard = ({ member, onMessage, onGoals }: { member: any; onMessage: () => void; onGoals: () => void }) => (
-  <div className="bg-white rounded-[16px] p-6 border border-[#3A86FF]/25 shadow-[0_4px_20px_rgba(0,0,0,0.03)] flex flex-col gap-5 min-w-[320px]">
+  <div className="bg-white   rounded-[16px] p-6 border border-[#3A86FF]/25 shadow-[0_4px_20px_rgba(0,0,0,0.03)] flex flex-col gap-5 min-w-[320px]">
     <div className="flex items-start justify-between">
       <div className="flex items-center gap-4">
         <div className="w-14 h-14 rounded-xl overflow-hidden">
@@ -822,7 +822,7 @@ const SupportPage = () => {
     const isPageLoading = isLoadingRecommendations || isLoadingConnected;
 
     return (
-      <div className="flex flex-col gap-12 container mx-auto pb-24 min-h-[60vh]">
+      <div className="flex flex-col gap-12 container mx-auto pb-24 min-h-[95vh]">
         {isPageLoading ? (
           <div className="flex-1 flex flex-col items-center justify-center py-20 gap-4 animate-in fade-in duration-700">
             <div className="relative">

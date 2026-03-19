@@ -71,7 +71,7 @@ const LogTodayModal = ({
         log_date: new Date().toISOString().slice(0, 19).replace("T", " ")
       }).unwrap();
 
-      if (response.success || response.status === "success") {
+      if (response.success !== false && (response.success || response.status === "success" || response.id || response.sleep_hours !== undefined || Object.keys(response).length > 0)) {
         toast.success("Daily habits logged successfully!");
         onClose();
       } else {
