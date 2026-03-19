@@ -4,7 +4,7 @@ import React from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
-import { MessageCircle, Sparkles, Dumbbell, Clock, CheckCircle2 } from "lucide-react";
+import { MessageCircle, Sparkles, Dumbbell, Clock, CheckCircle2, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export type Notification = {
@@ -44,12 +44,13 @@ interface NotificationDropdownProps {
   onClose: () => void;
   onMarkAllAsRead: () => void;
   onMarkSingleAsRead: (id: string) => void;
+  onDeleteSingleNotification: (id: string) => void;
   notifications: Notification[];
 }
 
 import { Bell } from "lucide-react";
 
-export default function NotificationDropdown({ isOpen, onClose, onMarkAllAsRead, onMarkSingleAsRead, notifications }: NotificationDropdownProps) {
+export default function NotificationDropdown({ isOpen, onClose, onMarkAllAsRead, onMarkSingleAsRead, onDeleteSingleNotification, notifications }: NotificationDropdownProps) {
   return (
     <AnimatePresence>
       {isOpen && (
@@ -98,7 +99,7 @@ export default function NotificationDropdown({ isOpen, onClose, onMarkAllAsRead,
                       }
                     }}
                     className={cn(
-                      "flex gap-4 p-4 hover:bg-gray-50 rounded-xl transition-colors cursor-pointer border-b border-gray-50 last:border-0",
+                      "group flex gap-4 p-4 hover:bg-gray-50 rounded-xl transition-colors cursor-pointer border-b border-gray-50 last:border-0",
                       !notif.read_at && "bg-blue-50/30"
                     )}
                   >
@@ -110,9 +111,9 @@ export default function NotificationDropdown({ isOpen, onClose, onMarkAllAsRead,
                     >
                       {getNotificationIcon(notif.type)}
                     </div>
-                    <div className="flex flex-col gap-1 flex-1">
+                    <div className="flex flex-col gap-1 flex-1 relative pr-6">
                       <div className="flex items-start justify-between gap-2">
-                        <h4 className="text-base font-medium text-[#1F2D2E] leading-tight">
+                        <h4 className="text-base font-medium text-[#1F2D2E] leading-tight pr-2">
                           {notif.title || "Notification"}
                         </h4>
                         <span className="text-[10px] font-bold text-[#5F6F73] uppercase tracking-wider shrink-0 mt-0.5">
@@ -122,6 +123,17 @@ export default function NotificationDropdown({ isOpen, onClose, onMarkAllAsRead,
                       <p className="text-sm text-[#5F6F73] leading-relaxed">
                         {notif.message}
                       </p>
+                      {/* Delete Icon */}
+                      <div 
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onDeleteSingleNotification(notif.id);
+                        }}
+                        className="absolute right-0 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center text-gray-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors opacity-0 group-hover:opacity-100"
+                        title="Delete notification"
+                      >
+                        <Trash2 size={16} />
+                      </div>
                     </div>
                   </motion.div>
                 ))}
