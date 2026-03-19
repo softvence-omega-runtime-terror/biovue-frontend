@@ -198,6 +198,7 @@ const PricingPage = () => {
                       : "Build a complete picture of your future health with our advanced AI, real-world data sync, and long-term forecasting."
                   }
                   features={plan.features.map(f => {
+                    
                     const lockedFeatures = [
                       "ai improvement suggestions",
                       "health indicators",
