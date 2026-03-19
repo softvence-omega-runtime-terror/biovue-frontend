@@ -22,6 +22,7 @@ import { useRouter } from "next/navigation";
 import { useLogoutMutation } from "@/redux/features/api/auth/authApi";
 import { logout } from "@/redux/features/slice/authSlice";
 import { useAppDispatch } from "@/redux/store/hooks";
+import ProtectedRoute from "@/components/auth/ProtectedRoute";
 
 const MENU_ITEMS = [
   { icon: LayoutGrid, label: "Dashboard", href: "/supplier-dashboard" },
@@ -74,6 +75,7 @@ export default function SupplierDashboardLayout({
   };
 
   return (
+    <ProtectedRoute allowedRoles={["professional"]} allowedProfessions={["supplement_supplier"]}>
     <div className="flex h-screen bg-[#F3F8FF] overflow-hidden">
       {/* Sidebar */}
       <aside
@@ -173,5 +175,6 @@ export default function SupplierDashboardLayout({
         <main className="flex-1 overflow-y-auto p-8">{children}</main>
       </div>
     </div>
+    </ProtectedRoute>
   );
 }

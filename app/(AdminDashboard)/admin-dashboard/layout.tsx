@@ -2,6 +2,7 @@ import { poppins } from "@/app/font";
 import AdminNavbar from "@/components/AdminDashboard/AdminNavbar";
 import Sidebar from "@/components/Sidebar";
 import { Suspense } from "react";
+import ProtectedRoute from "@/components/auth/ProtectedRoute";
 
 export default function AdminDashboardLayout({
   children,
@@ -9,9 +10,10 @@ export default function AdminDashboardLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className={`flex min-h-screen bg-[#F4FBFA] ${poppins.className}`}>
-      {/* Sidebar */}
-      <Suspense fallback={<div className="w-20 md:w-65 border-r border-gray-200" />}>
+    <ProtectedRoute allowedRoles={["admin"]} allowedProfessions={[null]}>
+      <div className={`flex min-h-screen bg-[#F4FBFA] ${poppins.className}`}>
+        {/* Sidebar */}
+        <Suspense fallback={<div className="w-20 md:w-65 border-r border-gray-200" />}>
         <Sidebar role="admin" />
       </Suspense>
 
@@ -24,5 +26,6 @@ export default function AdminDashboardLayout({
         <main className="flex-1 p-6 overflow-y-auto">{children}</main>
       </div>
     </div>
+    </ProtectedRoute>
   );
 }
