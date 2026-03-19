@@ -27,7 +27,8 @@ import { cn } from "@/lib/utils";
 import { 
   useConnectProfessionMutation,
   useGetConnectedProfessionsQuery,
-  useUpdateLifestyleImageMutation
+  useUpdateLifestyleImageMutation,
+  useGetCurrentImageQuery,
 } from "@/redux/features/api/userDashboard/support";
 import { 
   useGetMessagesByUserIdQuery, 
@@ -354,12 +355,21 @@ const SupportPage = () => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const [updateLifestyleImage, { isLoading: isUploading }] = useUpdateLifestyleImageMutation();
+  const { data: currentImageData, isLoading: isLoadingImage } = useGetCurrentImageQuery();
 
   useEffect(() => {
-    if (user?.current_image) {
+    if (currentImageData?.data?.current_image) {
+      setHealthImage(currentImageData.data.current_image);
+    } else if (currentImageData?.data?.image_url) {
+      setHealthImage(currentImageData.data.image_url);
+    } else if (currentImageData?.current_image) {
+      setHealthImage(currentImageData.current_image);
+    } else if (currentImageData?.image_url) {
+      setHealthImage(currentImageData.image_url);
+    } else if (user?.current_image) {
       setHealthImage(user.current_image);
     }
-  }, [user]);
+  }, [currentImageData, user]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
