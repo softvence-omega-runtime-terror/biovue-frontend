@@ -10,10 +10,13 @@ import EventDetailsModal from "@/components/TrainerDashboard/calendar/EventDetai
 import RescheduleEventModal from "@/components/TrainerDashboard/calendar/RescheduleEventModal";
 import { ChevronLeft, ChevronRight, Filter, Plus } from "lucide-react";
 import { useState } from "react";
+import { useUpdateScheduleMutation } from "@/redux/features/api/TrainerDashboard/Calendar/CreateSchedule";
 
 export type CalendarEventStatus = "missed" | "scheduled" | "completed";
 
 export interface CalendarEvent {
+  id: number;
+  client_id: number;
   name: string;
   title: string;
   time: string;
@@ -89,6 +92,10 @@ export default function CalendarPage() {
     setIsEventDetailsOpen(true);
   };
 
+  const handleRescheduleConfirm = () => {
+    setIsRescheduleOpen(false);
+  };
+
   const handleSendReminderFromDetails = () => {
     setIsEventDetailsOpen(false);
     setIsReminderOpen(true);
@@ -128,20 +135,6 @@ export default function CalendarPage() {
         <div className="flex flex-col md:flex-row items-center justify-between gap-4 p-2">
           {/* View Toggle */}
           <div className="bg-[#E0F2F1]  flex-1 md:flex-none px-8 py-2.5 text-sm  capitalize transition-all font-semiboldtext-[#64748B] rounded-lg p-1 flex items-center w-full md:w-auto">
-            {/* {views.map((item) => (
-              <button
-                key={item}
-                onClick={() => setView(item)}
-                className={`flex-1 md:flex-none px-8 py-2.5 text-sm rounded-lg capitalize transition-all font-semibold ${
-                  view === item
-                    ? "bg-white text-[#0D9488] shadow-sm"
-                    : "text-[#64748B] hover:text-[#0D9488]"
-                }`}
-              >
-                {item}
-              </button>
-
-            ))} */}
             <p>Your Schedules</p>
           </div>
 
@@ -251,7 +244,7 @@ export default function CalendarPage() {
         isOpen={isRescheduleOpen}
         onClose={() => setIsRescheduleOpen(false)}
         event={selectedEvent}
-        onConfirm={() => setIsRescheduleOpen(false)}
+        onConfirm={handleRescheduleConfirm}
       />
     </div>
   );
