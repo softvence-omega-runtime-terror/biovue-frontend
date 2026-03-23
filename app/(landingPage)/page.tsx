@@ -6,6 +6,7 @@ import ProfessionalsSection from "@/components/ProfessionalsSection";
 import FAQSection from "@/components/FAQSection";
 import DownloadSection from "@/components/DownloadSection";
 import TransformSection from "@/components/TransformSection";
+import PartnersSection from "@/components/PartnersSection";
 import Footer from "@/components/Footer";
 
 export default function LandingPage() {
@@ -21,6 +22,7 @@ export default function LandingPage() {
         <FAQSection />
         <DownloadSection />
         <TransformSection />
+        <PartnersSection />
         <Footer />
       </main>
     </div>
