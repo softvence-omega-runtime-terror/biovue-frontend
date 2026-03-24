@@ -1,4 +1,4 @@
-import { Cable, LucideIcon } from "lucide-react";
+import { Cable, Fingerprint, LucideIcon } from "lucide-react";
 import {
   LayoutGrid,
   TrendingUp,
@@ -95,8 +95,21 @@ export const SIDEBAR_MENU: SidebarMenu = {
       href: "/admin-dashboard/banner-management",
     },
     { label: "Settings", icon: Settings, href: "/admin-dashboard/settings" },
-    { label: "FAQ Management", icon: HelpCircle, href: "/admin-dashboard/faqs" },
-    { label: "Partners", icon: HeartHandshake, href: "/admin-dashboard/partners" },
+    {
+      label: "FAQ Management",
+      icon: HelpCircle,
+      href: "/admin-dashboard/faqs",
+    },
+    {
+      label: "Partners",
+      icon: HeartHandshake,
+      href: "/admin-dashboard/partners",
+    },
+    {
+      label: "Privacy Policy",
+      icon: Fingerprint,
+      href: "/admin-dashboard/privacy",
+    },
     { label: "API Service", icon: Cable, href: "/admin-dashboard/api-service" },
   ],
 };
