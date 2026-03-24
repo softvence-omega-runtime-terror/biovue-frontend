@@ -41,18 +41,6 @@ export const projectionApi = baseApi.injectEndpoints({
         url: `/projection-lifestyle/latest/${userId}`,
         method: "GET",
       }),
-      // transformResponse: (response: ProjectionResponse) => {
-      //   const base = "https://api.biovuedigitalwellness.com";
-
-      //   if (
-      //     response.data?.projection_url &&
-      //     !response.data.projection_url.startsWith("http")
-      //   ) {
-      //     response.data.projection_url = base + response.data.projection_url;
-      //   }
-
-      //   return response;
-      // },
       providesTags: ["Projection"],
     }),
   }),

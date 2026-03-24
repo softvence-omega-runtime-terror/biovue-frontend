@@ -48,7 +48,7 @@ export const futureGoalApi = projectionApi.injectEndpoints({
           formData.append("goal_description", data.goal_description);
 
         return {
-          url: "/projection/future-goal",
+          url: "/projection/future-goal/",
           method: "POST",
           body: formData,
         };
