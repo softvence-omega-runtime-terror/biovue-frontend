@@ -73,7 +73,7 @@ export default function EventDetailsModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
-      <div className="w-full max-w-[400px] bg-white rounded-3xl shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200">
+      <div className="w-full max-w-100 bg-white rounded-3xl shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200">
         <div className="p-6 relative">
           <button
             onClick={onClose}
@@ -152,7 +152,7 @@ export default function EventDetailsModal({
             <h5 className="text-[13px] font-medium text-[#94A3B8] mb-2 uppercase tracking-wide">
               Trainer Notes
             </h5>
-            <div className="bg-[#F6EFE9] border border-[#EAC9B5] rounded-xl p-4 min-h-[60px]">
+            <div className="bg-[#F6EFE9] border border-[#EAC9B5] rounded-xl p-4 min-h-15">
               <p className="text-xs text-[#BC7F61] font-medium">
                 {event.privateNote || "No notes provided."}
               </p>
