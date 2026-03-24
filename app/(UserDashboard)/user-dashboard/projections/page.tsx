@@ -14,6 +14,7 @@ import {
   AlertCircle,
   Upload,
   Sparkles,
+  User,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -497,13 +498,19 @@ const ProjectionsPage = () => {
       <div className="space-y-6">
         <div className="bg-white rounded-[24px] overflow-hidden border border-[#3A86FF]/20 flex flex-col items-center p-12 text-center shadow-sm">
           <div className="relative w-64 h-80 rounded-2xl overflow-hidden mb-6 bg-gray-50 border border-gray-100 shadow-inner">
-            <Image
-              src={imagePreview || "/images/auth/body1.png"}
-              alt="Baseline"
-              fill
-              className="object-cover"
-              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-            />
+            {imagePreview ? (
+              <Image
+                src={imagePreview}
+                alt="Baseline"
+                fill
+                className="object-cover"
+                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+              />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center bg-gray-100">
+                <User size={120} className="text-gray-300" />
+              </div>
+            )}
           </div>
           <h3 className="font-bold text-[#041228] uppercase tracking-wider mb-4">
             {imagePreview
@@ -598,19 +605,23 @@ const ProjectionsPage = () => {
                   : `Achieving your future goals in ${projection.timeframe}`}
               </h3>
               <div className="relative w-full aspect-[4/3.2] rounded-2xl overflow-hidden bg-gray-50 shadow-inner">
-                <Image
-                  src={
-                    projection?.projection_url
-                      ? projection.projection_url.startsWith("http")
+                {projection?.projection_url ? (
+                  <Image
+                    src={
+                      projection.projection_url.startsWith("http")
                         ? projection.projection_url
                         : `https://ai.biovuedigitalwellness.com${projection.projection_url}`
-                      : "/images/auth/body1.png"
-                  }
-                  alt="Projection Result"
-                  fill
-                  className="object-cover"
-                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                />
+                    }
+                    alt="Projection Result"
+                    fill
+                    className="object-cover"
+                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center bg-gray-100">
+                    <User size={80} className="text-gray-300" />
+                  </div>
+                )}
               </div>
 
               <div className="space-y-4 pt-4">
