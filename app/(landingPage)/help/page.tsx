@@ -181,13 +181,16 @@ const HelpPage = () => {
             </p>
 
             <div className="flex flex-col md:flex-row items-center justify-center gap-6 relative z-10">
-              <button className="bg-[#0fa4a9] text-white px-8 py-4 rounded-xl font-bold flex items-center gap-3 hover:bg-[#0d8d91] transition-all cursor-pointer group shadow-lg shadow-[#0fa4a9]/20">
+              <a
+                href="mailto:BioVueSupport@gmail.com?subject=Support Request&body=Hi BioVue Team,"
+                className="bg-[#0fa4a9] text-white px-8 py-4 rounded-xl font-bold flex items-center gap-3 hover:bg-[#0d8d91] transition-all cursor-pointer group shadow-lg shadow-[#0fa4a9]/20"
+              >
                 <Mail
                   size={20}
                   className="group-hover:scale-110 transition-transform"
                 />
                 Email Us Directly
-              </button>
+              </a>
             </div>
           </div>
         </section>
