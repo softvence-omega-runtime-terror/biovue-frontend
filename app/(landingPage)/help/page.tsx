@@ -26,6 +26,7 @@ const HelpPage = () => {
         "Learn the basics of using BioVue and setting up your profile.",
       icon: Book,
       color: "bg-blue-50 text-blue-600",
+      buttonText: "Sign Up to Get Started",
     },
     {
       title: "My Account",
@@ -33,18 +34,21 @@ const HelpPage = () => {
         "Manage your subscription, personal details, and preferences.",
       icon: User,
       color: "bg-teal-50 text-teal-600",
+      buttonText: "See Your Account",
     },
     {
       title: "Trainer Dashboard",
       description: "How to use our powerful tools for managing your clients.",
       icon: Layout,
       color: "bg-purple-50 text-purple-600",
+      buttonText: "Dashboard View",
     },
     {
       title: "Billing & Payments",
       description: "Information about invoicing, payments, and plan upgrades.",
       icon: CreditCard,
       color: "bg-amber-50 text-amber-600",
+      buttonText: "See Pricing",
     },
   ];
 
@@ -117,7 +121,7 @@ const HelpPage = () => {
                   {cat.description}
                 </p>
                 <div className="flex items-center text-[#0fa4a9] font-bold text-sm tracking-wide gap-2">
-                  EXPLORE ARTICLES
+                  {cat.buttonText}
                   <ArrowRight size={16} />
                 </div>
               </div>
