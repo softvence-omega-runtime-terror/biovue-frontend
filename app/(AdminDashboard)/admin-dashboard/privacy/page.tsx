@@ -38,7 +38,7 @@ export default function PrivacyPage() {
     setSections([...sections, { id: Date.now(), title: "", content: "" }]);
   };
 
-  const updateSection = (id, field, value) => {
+  const updateSection = (id: number | string, field: string, value: string) => {
     setSections(
       sections.map((sec) => (sec.id === id ? { ...sec, [field]: value } : sec)),
     );
