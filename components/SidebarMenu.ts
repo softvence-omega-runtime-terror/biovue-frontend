@@ -96,6 +96,7 @@ export const SIDEBAR_MENU: SidebarMenu = {
     },
     { label: "Settings", icon: Settings, href: "/admin-dashboard/settings" },
     { label: "FAQ Management", icon: HelpCircle, href: "/admin-dashboard/faqs" },
+    { label: "Partners", icon: HeartHandshake, href: "/admin-dashboard/partners" },
     { label: "API Service", icon: Cable, href: "/admin-dashboard/api-service" },
   ],
 };
