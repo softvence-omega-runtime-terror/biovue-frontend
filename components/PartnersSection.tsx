@@ -9,11 +9,12 @@ const PartnersSection = () => {
   const { data, isLoading } = useGetPartnersQuery({});
   const [isPaused, setIsPaused] = useState(false);
 
-  if (isLoading || !data?.success || data.data.length === 0) {
+  const partners = data?.data || [];
+
+  if (isLoading || !Array.isArray(partners) || partners.length === 0) {
     return null;
   }
 
-  const partners = data.data;
   // Duplicate partners for a seamless loop
   const displayPartners = [...partners, ...partners, ...partners];
 

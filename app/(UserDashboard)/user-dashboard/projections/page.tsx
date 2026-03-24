@@ -47,8 +47,15 @@ const ProjectionsPage = () => {
   const user = useAppSelector(selectCurrentUser);
   const [currentLifestyleProjection, { isLoading: isCurrentLoading }] =
     useCurrentLifestyleProjectionMutation();
+
+    console.log("User from Redux:", currentLifestyleProjection);
+
   const [createFutureGoal, { isLoading: isFutureLoading }] =
     useCreateFutureGoalMutation();
+
+    console.log("User from future goal:", createFutureGoal);
+
+    
   const [saveCurrentProjection, { isLoading: isSaveLoading }] =
     useSaveCurrentProjectionMutation();
   const [saveFutureGoal, { isLoading: isSaveFutureLoading }] =
