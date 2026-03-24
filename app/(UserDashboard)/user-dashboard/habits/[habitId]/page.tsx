@@ -42,7 +42,7 @@ const HABIT_DETAILS: Record<string, any> = {
     status: "Need Attention",
     statusBg: "bg-pink-100 text-pink-500",
     why: "proper nutrition provides essential macronutrients and micros for sustained energy.",
-    target: "3-4 Servings",
+    target: "3-4 Meals",
     avg: "3 Servings",
     consistency: "28%",
     daysLogged: "2/7",
