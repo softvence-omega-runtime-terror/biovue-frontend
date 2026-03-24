@@ -45,11 +45,16 @@ const ProjectionsPage = () => {
   const [projectionData, setProjectionData] =
     useState<ProjectionResponse | null>(null);
 
+
+  
+
   const user = useAppSelector(selectCurrentUser);
   const [currentLifestyleProjection, { isLoading: isCurrentLoading }] =
     useCurrentLifestyleProjectionMutation();
+
   const [createFutureGoal, { isLoading: isFutureLoading }] =
     useCreateFutureGoalMutation();
+
   const [saveCurrentProjection, { isLoading: isSaveLoading }] =
     useSaveCurrentProjectionMutation();
   const [saveFutureGoal, { isLoading: isSaveFutureLoading }] =
@@ -58,21 +63,26 @@ const ProjectionsPage = () => {
   const { data: latestProjection } = useGetLatestProjectionQuery(
     user?.id ?? "",
     {
-      skip: !user?.id,
+      skip: true, // skip: !user?.id,
     },
   );
 
   const { data: futureGoalProjection } = useGetFutureGoalProjectionQuery(
     user?.id ?? "",
     {
-      skip: !user?.id,
+      skip: true, // skip: !user?.id,
     },
   );
 
-  const projection =
-    lifestyle === "current"
-      ? latestProjection?.data
-      : futureGoalProjection?.data;
+  const projection = projectionData;
+
+  const getFullProjectionUrl = (url: string) => {
+    if (!url) return "";
+    if (url.startsWith("http")) return url;
+    const base = "https://ai.biovuedigitalwellness.com";
+    const normalizedUrl = url.startsWith("/") ? url : `/${url}`;
+    return `${base}${normalizedUrl}`;
+  };
 
   const expectedChanges: string[] = (() => {
     if (!projection?.expected_changes) return [];
@@ -83,6 +93,10 @@ const ProjectionsPage = () => {
       return Array.isArray(parsed) ? parsed : [];
     } catch (e) {
       console.error("Failed to parse expected_changes:", e);
+      // If it's not a JSON string and not an array, maybe it's just a string
+      if (typeof projection.expected_changes === "string") {
+        return [projection.expected_changes];
+      }
       return [];
     }
   })();
@@ -149,7 +163,6 @@ const ProjectionsPage = () => {
       let res;
 
       if (lifestyle === "current") {
-        // Step 1: POST to external AI API to generate projection
         res = await currentLifestyleProjection({
           user_id: user.id.toString(),
           image: projectionImage as File,
@@ -157,47 +170,10 @@ const ProjectionsPage = () => {
           resolution: resolution.toUpperCase(),
           tier: quality,
         }).unwrap();
-
-        // Step 2: Save the AI response to the backend (Current Projection)
-        await saveCurrentProjection({
-          user_id: user.id,
-          image: projectionImage,
-          projection_id: res.projection_id,
-          projection_url: res.projection_url,
-          route: res.route,
-          timeframe: res.timeframe,
-          est_bmi: res.est_bmi,
-          est_weight: res.est_weight,
-          expected_changes: res.expected_changes,
-          confidence_score: res.confidence_score,
-          duration: timeHorizon,
-          resolution: resolution.toUpperCase(),
-          tier: quality,
-        }).unwrap();
       } else {
-        // lifestyle === "improved"
-        // Step 1: POST to external AI API to generate Future Goal projection
         res = await createFutureGoal({
           user_id: user.id.toString(),
           image: projectionImage as File,
-          duration: timeHorizon,
-          resolution: resolution.toUpperCase(),
-          tier: quality,
-          use_default_goal: true,
-        }).unwrap();
-
-        // Step 2: Save the AI response to the backend (Future Goal)
-        await saveFutureGoal({
-          user_id: user.id,
-          image: projectionImage,
-          projection_id: res.projection_id,
-          projection_url: res.projection_url,
-          route: res.route,
-          timeframe: res.timeframe,
-          est_bmi: res.est_bmi,
-          est_weight: res.est_weight,
-          expected_changes: res.expected_changes,
-          confidence_score: res.confidence_score,
           duration: timeHorizon,
           resolution: resolution.toUpperCase(),
           tier: quality,
@@ -207,12 +183,53 @@ const ProjectionsPage = () => {
 
       setProjectionData(res);
 
-      // Step 3: GET auto-refetches via invalidatesTags on baseApi
-      toast.success("Projection generated and saved successfully!");
+      // Step 3: Switch to results view as soon as AI response is received
+      toast.success("Projection generated successfully!");
+      setStep("results");
 
-      setTimeout(() => {
-        setStep("results");
-      }, 3000);
+      // Step 4: Try to save the AI response to the backend (Async)
+      /* 
+      try {
+        if (lifestyle === "current") {
+          await saveCurrentProjection({
+            user_id: user.id,
+            image: projectionImage,
+            projection_id: res.projection_id,
+            projection_url: res.projection_url,
+            route: res.route,
+            timeframe: res.timeframe,
+            est_bmi: res.est_bmi,
+            est_weight: res.est_weight,
+            expected_changes: res.expected_changes,
+            confidence_score: res.confidence_score,
+            duration: timeHorizon,
+            resolution: resolution.toUpperCase(),
+            tier: quality,
+          }).unwrap();
+        } else {
+          await saveFutureGoal({
+            user_id: user.id,
+            image: projectionImage,
+            projection_id: res.projection_id,
+            projection_url: res.projection_url,
+            route: res.route,
+            timeframe: res.timeframe,
+            est_bmi: res.est_bmi,
+            est_weight: res.est_weight,
+            expected_changes: res.expected_changes,
+            confidence_score: res.confidence_score,
+            duration: timeHorizon,
+            resolution: resolution.toUpperCase(),
+            tier: quality,
+            use_default_goal: true,
+          }).unwrap();
+        }
+        toast.success("Projection saved to dashboard.");
+      } catch (saveErr) {
+        console.error("Failed to save projection to main backend:", saveErr);
+        // We don't change step to "input" because we already have the result from AI
+      }
+      */
     } catch (err: any) {
       setStep("input");
       toast.error(err?.data?.message || "Failed to generate projection.");
@@ -607,13 +624,12 @@ const ProjectionsPage = () => {
               <div className="relative w-full aspect-[4/3.2] rounded-2xl overflow-hidden bg-gray-50 shadow-inner">
                 {projection?.projection_url ? (
                   <Image
-                    src={
-                      projection.projection_url.startsWith("http")
-                        ? projection.projection_url
-                        : `https://ai.biovuedigitalwellness.com${projection.projection_url}`
-                    }
+                    key={projection.projection_url}
+                    src={getFullProjectionUrl(projection.projection_url)}
                     alt="Projection Result"
                     fill
+                    unoptimized={true}
+                    priority={true}
                     className="object-cover"
                     sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                   />
