@@ -3,10 +3,10 @@
 import { useState } from "react";
 import { Apple, X, ArrowLeft, Plus, Trash2, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { 
-  useCalculateNutritionMutation, 
+import {
+  useCalculateNutritionMutation,
   usePostNutritionLogMutation,
-  useGetNutritionShowQuery
+  useGetNutritionShowQuery,
 } from "@/redux/features/api/userDashboard/nutrition";
 import { useSelector } from "react-redux";
 import { selectCurrentUser } from "@/redux/features/slice/authSlice";
@@ -63,9 +63,12 @@ export default function FoodLogView({ onSave, onBack }: FoodLogViewProps) {
   const currentUser = useSelector(selectCurrentUser);
   const userId = currentUser?.id || currentUser?.user_id;
 
-  const { data: existingNutrition, isLoading: isLoadingExisting } = useGetNutritionShowQuery(undefined);
-  const [calculateNutrition, { isLoading: loadingAiCalories }] = useCalculateNutritionMutation();
-  const [postNutritionLog, { isLoading: isSaving }] = usePostNutritionLogMutation();
+  const { data: existingNutrition, isLoading: isLoadingExisting } =
+    useGetNutritionShowQuery(undefined);
+  const [calculateNutrition, { isLoading: loadingAiCalories }] =
+    useCalculateNutritionMutation();
+  const [postNutritionLog, { isLoading: isSaving }] =
+    usePostNutritionLogMutation();
 
   const [calorieTarget, setCalorieTarget] = useState(2000);
   const [customUnitInput, setCustomUnitInput] = useState("");
@@ -93,7 +96,7 @@ export default function FoodLogView({ onSave, onBack }: FoodLogViewProps) {
   useEffect(() => {
     if (existingNutrition?.nutrition) {
       const nutri = existingNutrition.nutrition;
-      
+
       // Update calorie target if available in API (assuming a field exists or using fallback)
       if (nutri.daily_target) {
         setCalorieTarget(nutri.daily_target);
@@ -120,7 +123,7 @@ export default function FoodLogView({ onSave, onBack }: FoodLogViewProps) {
             type: "breakfast",
             time: "Today's Log",
             foods: apiFoods,
-          }
+          },
         ]);
       }
     }
@@ -204,8 +207,8 @@ export default function FoodLogView({ onSave, onBack }: FoodLogViewProps) {
             food: foodNameInput,
             quantity: parseFloat(foodQuantityInput),
             unit: foodUnitInput === "custom" ? customUnitInput : foodUnitInput,
-          }
-        ]
+          },
+        ],
       }).unwrap();
 
       const nutri = response.nutrition;
@@ -223,7 +226,9 @@ export default function FoodLogView({ onSave, onBack }: FoodLogViewProps) {
       }
     } catch (error) {
       console.error("Nutrition calculation error:", error);
-      toast.error("Unable to get calorie info. Please check food name and try again.");
+      toast.error(
+        "Unable to get calorie info. Please check food name and try again.",
+      );
     }
   };
 
@@ -302,7 +307,7 @@ export default function FoodLogView({ onSave, onBack }: FoodLogViewProps) {
   const caloriePercentage = getProgressPercentage();
 
   const handleSave = async () => {
-    if (meals.every(meal => meal.foods.length === 0)) {
+    if (meals.every((meal) => meal.foods.length === 0)) {
       toast.error("Please add at least one food item before saving.");
       return;
     }
@@ -312,18 +317,18 @@ export default function FoodLogView({ onSave, onBack }: FoodLogViewProps) {
       const payload = {
         log_date: today,
         user_id: userId,
-        meals: meals.map(meal => ({
+        meals: meals.map((meal) => ({
           type: meal.type,
-          foods: meal.foods.map(f => ({
+          foods: meal.foods.map((f) => ({
             food: f.name,
             quantity: f.quantity,
             unit: f.unit,
             calories: f.calories,
             protein: f.protein,
             carbs: f.carbs,
-            fat: f.fat
-          }))
-        }))
+            fat: f.fat,
+          })),
+        })),
       };
 
       const response = await postNutritionLog(payload).unwrap();
@@ -335,21 +340,24 @@ export default function FoodLogView({ onSave, onBack }: FoodLogViewProps) {
       }
     } catch (err: any) {
       console.error("Nutrition log submission error:", err);
-      
+
       const errorData = err.data || {};
       const errorMessage = (errorData.message || "").toLowerCase();
       const exception = (errorData.exception || "").toLowerCase();
-      
+
       if (
-        err.status === 409 || 
+        err.status === 409 ||
         err.status === 500 ||
-        exception.includes("uniqueconstraintviolationexception") || 
-        errorMessage.includes("duplicate entry") || 
+        exception.includes("uniqueconstraintviolationexception") ||
+        errorMessage.includes("duplicate entry") ||
         errorMessage.includes("already logged")
       ) {
         toast.error("You have already logged nutrition for today.");
       } else {
-        toast.error(errorData.message || "An error occurred while saving. Please try again.");
+        toast.error(
+          errorData.message ||
+            "An error occurred while saving. Please try again.",
+        );
       }
     }
   };
@@ -441,7 +449,7 @@ export default function FoodLogView({ onSave, onBack }: FoodLogViewProps) {
             </p>
             <div className="grid grid-cols-3 gap-4">
               {/* Protein Progress */}
-              <div>
+              {/* <div>
                 <div className="flex items-center justify-between mb-2">
                   <label className="text-xs font-semibold text-gray-700">
                     Protein
@@ -463,6 +471,35 @@ export default function FoodLogView({ onSave, onBack }: FoodLogViewProps) {
                     }}
                   />
                 </div>
+              </div> */}
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <label className="text-xs font-semibold text-gray-700">
+                    Protein
+                  </label>
+                  <span className="text-xs font-bold text-[#1F2D2E]">
+                    {totals.protein.toFixed(0)}g /{" "}
+                    {getMacroTargets().protein.toFixed(0)}g
+                  </span>
+                </div>
+
+                {/* ✅ Track (gray like calorie bar) */}
+                <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
+                  {/* ✅ Filled portion */}
+                  <div
+                    className="h-full rounded-full transition-all duration-300"
+                    style={{
+                      width: `${getMacroProgressPercentage(
+                        totals.protein,
+                        getMacroTargets().protein,
+                      )}%`,
+                      backgroundColor: getMacroProgressColor(
+                        totals.protein,
+                        getMacroTargets().protein,
+                      ),
+                    }}
+                  />
+                </div>
               </div>
 
               {/* Carbs Progress */}
@@ -476,11 +513,14 @@ export default function FoodLogView({ onSave, onBack }: FoodLogViewProps) {
                     {getMacroTargets().carbs.toFixed(0)}g
                   </span>
                 </div>
-                <div className="h-2 bg-[#66BBE2] rounded-full overflow-hidden">
+                <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
                   <div
                     className="h-full rounded-full transition-all duration-300"
                     style={{
-                      width: `${getMacroProgressPercentage(totals.carbs, getMacroTargets().carbs)}%`,
+                      width: `${getMacroProgressPercentage(
+                        totals.carbs,
+                        getMacroTargets().carbs,
+                      )}%`,
                       backgroundColor: getMacroProgressColor(
                         totals.carbs,
                         getMacroTargets().carbs,
@@ -501,11 +541,14 @@ export default function FoodLogView({ onSave, onBack }: FoodLogViewProps) {
                     {getMacroTargets().fat.toFixed(0)}g
                   </span>
                 </div>
-                <div className="h-2 bg-[#FFA350] rounded-full overflow-hidden">
+                <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
                   <div
                     className="h-full rounded-full transition-all duration-300"
                     style={{
-                      width: `${getMacroProgressPercentage(totals.fat, getMacroTargets().fat)}%`,
+                      width: `${getMacroProgressPercentage(
+                        totals.fat,
+                        getMacroTargets().fat,
+                      )}%`,
                       backgroundColor: getMacroProgressColor(
                         totals.fat,
                         getMacroTargets().fat,
