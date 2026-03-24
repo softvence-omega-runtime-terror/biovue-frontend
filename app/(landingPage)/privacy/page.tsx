@@ -56,7 +56,7 @@ const PrivacyPage = () => {
                     Last Updated:
                     <br />
                     {lastUpdated
-                      ? new Date(lastUpdated).toLocaleDateString()
+                      ? new Date(data.data.updated_at).toLocaleString()
                       : "—"}
                   </p>
                 </div>
