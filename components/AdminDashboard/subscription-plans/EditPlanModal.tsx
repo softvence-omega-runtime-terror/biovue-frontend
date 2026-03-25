@@ -2,7 +2,10 @@
 
 import { useState, useEffect } from "react";
 import { X } from "lucide-react";
-import { Plan, useUpdatePlanMutation } from "@/redux/features/api/adminDashboard/plan";
+import {
+  Plan,
+  useUpdatePlanMutation,
+} from "@/redux/features/api/adminDashboard/plan";
 
 interface EditPlanModalProps {
   isOpen: boolean;
@@ -21,6 +24,7 @@ interface FormData {
   features: string; // We'll handle this as a newline-separated string in the UI
   duration: number;
   member_limit: number | null;
+  projection_limit?: number | null;
 }
 
 function Toggle({
@@ -83,7 +87,7 @@ export default function EditPlanModal({
         id: plan.id,
         ...formData,
         price: formData.price.toString(),
-        features: formData.features.split("\n").filter(f => f.trim() !== ""),
+        features: formData.features.split("\n").filter((f) => f.trim() !== ""),
       }).unwrap();
       onSuccess();
       onClose();
@@ -95,16 +99,23 @@ export default function EditPlanModal({
 
   return (
     <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 animate-in fade-in duration-200">
-      <div className={`bg-white rounded-2xl shadow-2xl w-full ${formData.plan_type === 'professional' ? 'max-w-4xl' : 'max-w-xl'} mx-4 max-h-[95vh] overflow-y-auto`}>
+      <div
+        className={`bg-white rounded-2xl shadow-2xl w-full ${formData.plan_type === "professional" ? "max-w-4xl" : "max-w-xl"} mx-4 max-h-[95vh] overflow-y-auto`}
+      >
         {/* Header */}
         <div className="flex items-start justify-between px-8 pt-8 pb-4">
           <div>
             <h2 className="text-2xl font-bold text-[#111827]">
-              Edit {formData.plan_type === "individual" ? "Individual" : "Professional"} Plan
+              Edit{" "}
+              {formData.plan_type === "individual"
+                ? "Individual"
+                : "Professional"}{" "}
+              Plan
             </h2>
             {formData.plan_type === "professional" && (
               <p className="text-sm text-[#6B7280] mt-1">
-                Configure advanced settings and limits for the professional tier.
+                Configure advanced settings and limits for the professional
+                tier.
               </p>
             )}
           </div>
@@ -121,11 +132,15 @@ export default function EditPlanModal({
             /* INDIVIDUAL PLAN DESIGN */
             <div className="space-y-5">
               <div>
-                <label className="block text-sm font-medium text-[#4B5563] mb-1.5">Plan Name</label>
+                <label className="block text-sm font-medium text-[#4B5563] mb-1.5">
+                  Plan Name
+                </label>
                 <input
                   type="text"
                   value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, name: e.target.value })
+                  }
                   className="w-full px-4 py-2.5 bg-white border border-[#E5E7EB] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#4F39F6]/20 focus:border-[#4F39F6] transition-all"
                   placeholder="e.g. Premium Individual"
                   required
@@ -133,10 +148,14 @@ export default function EditPlanModal({
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-[#4B5563] mb-1.5">Billing Cycle</label>
+                <label className="block text-sm font-medium text-[#4B5563] mb-1.5">
+                  Billing Cycle
+                </label>
                 <select
                   value={formData.billing_cycle}
-                  onChange={(e) => setFormData({ ...formData, billing_cycle: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, billing_cycle: e.target.value })
+                  }
                   className="w-full px-4 py-2.5 bg-white border border-[#E5E7EB] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#4F39F6]/20 focus:border-[#4F39F6] transition-all appearance-none cursor-pointer"
                 >
                   <option value="monthly">Monthly</option>
@@ -146,48 +165,75 @@ export default function EditPlanModal({
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-[#4B5563] mb-1.5">Price</label>
+                <label className="block text-sm font-medium text-[#4B5563] mb-1.5">
+                  Price
+                </label>
                 <div className="relative group">
-                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[#9CA3AF] transition-colors group-focus-within:text-[#4F39F6]">$</span>
+                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[#9CA3AF] transition-colors group-focus-within:text-[#4F39F6]">
+                    $
+                  </span>
                   <input
                     type="number"
                     value={formData.price}
-                    onChange={(e) => setFormData({ ...formData, price: parseFloat(e.target.value) })}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        price: parseFloat(e.target.value),
+                      })
+                    }
                     className="w-full pl-8 pr-14 py-2.5 bg-white border border-[#E5E7EB] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#4F39F6]/20 focus:border-[#4F39F6] transition-all"
                     step="0.01"
                     required
                   />
-                  <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[#9CA3AF] text-sm font-medium">USD</span>
+                  <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[#9CA3AF] text-sm font-medium">
+                    USD
+                  </span>
                 </div>
               </div>
 
               <div className="grid grid-cols-1">
                 <div>
-                  <label className="block text-sm font-medium text-[#4B5563] mb-1.5">Duration (Days)</label>
+                  <label className="block text-sm font-medium text-[#4B5563] mb-1.5">
+                    Duration (Days)
+                  </label>
                   <input
                     type="number"
                     value={formData.duration}
-                    onChange={(e) => setFormData({ ...formData, duration: parseInt(e.target.value) })}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        duration: parseInt(e.target.value),
+                      })
+                    }
                     className="w-full px-4 py-2.5 bg-white border border-[#E5E7EB] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#4F39F6]/20 focus:border-[#4F39F6] transition-all"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-[#4B5563] mb-1.5">Features List</label>
+                <label className="block text-sm font-medium text-[#4B5563] mb-1.5">
+                  Features List
+                </label>
                 <textarea
                   value={formData.features}
-                  onChange={(e) => setFormData({ ...formData, features: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, features: e.target.value })
+                  }
                   className="w-full px-4 py-3 bg-white border border-[#E5E7EB] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#4F39F6]/20 focus:border-[#4F39F6] transition-all min-h-[120px] resize-none"
                   placeholder="Enter features (one per line)"
                 />
               </div>
 
               <div className="pt-4 flex items-center gap-4">
-                <span className={`text-sm font-medium transition-colors ${formData.status ? 'text-[#059669]' : 'text-[#6B7280]'}`}>
+                <span
+                  className={`text-sm font-medium transition-colors ${formData.status ? "text-[#059669]" : "text-[#6B7280]"}`}
+                >
                   Plan is Active
                 </span>
-                <Toggle checked={formData.status} onChange={(val) => setFormData({ ...formData, status: val })} />
+                <Toggle
+                  checked={formData.status}
+                  onChange={(val) => setFormData({ ...formData, status: val })}
+                />
               </div>
             </div>
           ) : (
@@ -196,23 +242,36 @@ export default function EditPlanModal({
               <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-6">
                 {/* Left Column */}
                 <div className="space-y-5">
-                  <h3 className="text-[11px] font-bold text-[#4B39EF] uppercase tracking-[0.05em] mb-2">CORE BILLING & LIMITS</h3>
-                  
+                  <h3 className="text-[11px] font-bold text-[#4B39EF] uppercase tracking-[0.05em] mb-2">
+                    CORE BILLING & LIMITS
+                  </h3>
+
                   <div>
-                    <label className="block text-sm font-medium text-[#4B5563] mb-1.5">Plan Name</label>
+                    <label className="block text-sm font-medium text-[#4B5563] mb-1.5">
+                      Plan Name
+                    </label>
                     <input
                       type="text"
                       value={formData.name}
-                      onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                      onChange={(e) =>
+                        setFormData({ ...formData, name: e.target.value })
+                      }
                       className="w-full px-4 py-2.5 bg-white border border-[#E5E7EB] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#4F39F6]/20 focus:border-[#4F39F6] transition-all"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-[#4B5563] mb-1.5">Billing Cycle</label>
+                    <label className="block text-sm font-medium text-[#4B5563] mb-1.5">
+                      Billing Cycle
+                    </label>
                     <select
                       value={formData.billing_cycle}
-                      onChange={(e) => setFormData({ ...formData, billing_cycle: e.target.value })}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          billing_cycle: e.target.value,
+                        })
+                      }
                       className="w-full px-4 py-2.5 bg-white border border-[#E5E7EB] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#4F39F6]/20 focus:border-[#4F39F6] transition-all appearance-none cursor-pointer"
                     >
                       <option value="monthly">Monthly</option>
@@ -222,11 +281,18 @@ export default function EditPlanModal({
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-[#4B5563] mb-1.5">Duration (Days)</label>
+                    <label className="block text-sm font-medium text-[#4B5563] mb-1.5">
+                      Duration (Days)
+                    </label>
                     <input
                       type="number"
                       value={formData.duration}
-                      onChange={(e) => setFormData({ ...formData, duration: parseInt(e.target.value) })}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          duration: parseInt(e.target.value),
+                        })
+                      }
                       className="w-full px-4 py-2.5 bg-white border border-[#E5E7EB] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#4F39F6]/20 focus:border-[#4F39F6] transition-all"
                     />
                   </div>
@@ -234,42 +300,85 @@ export default function EditPlanModal({
 
                 {/* Right Column */}
                 <div className="space-y-5">
-                  <h3 className="text-[11px] font-bold text-[#4B39EF] uppercase tracking-[0.05em] mb-2">TEAMS & FEATURES</h3>
-                  
+                  <h3 className="text-[11px] font-bold text-[#4B39EF] uppercase tracking-[0.05em] mb-2">
+                    TEAMS & FEATURES
+                  </h3>
+
                   <div>
-                    <label className="block text-sm font-medium text-[#4B5563] mb-1.5">Member Limit</label>
+                    <label className="block text-sm font-medium text-[#4B5563] mb-1.5">
+                      Member Limit
+                    </label>
                     <input
                       type="number"
                       value={formData.member_limit || 0}
-                      onChange={(e) => setFormData({ ...formData, member_limit: parseInt(e.target.value) })}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          member_limit: parseInt(e.target.value),
+                        })
+                      }
                       className="w-full px-4 py-2.5 bg-white border border-[#E5E7EB] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#4F39F6]/20 focus:border-[#4F39F6] transition-all"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-[#4B5563] mb-1.5">Price</label>
+                    <label className="block text-sm font-medium text-[#4B5563] mb-1.5">
+                      Price
+                    </label>
                     <div className="relative group">
-                      <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[#9CA3AF] transition-colors group-focus-within:text-[#4F39F6]">$</span>
+                      <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[#9CA3AF] transition-colors group-focus-within:text-[#4F39F6]">
+                        $
+                      </span>
                       <input
                         type="number"
                         value={formData.price}
-                        onChange={(e) => setFormData({ ...formData, price: parseFloat(e.target.value) })}
+                        onChange={(e) =>
+                          setFormData({
+                            ...formData,
+                            price: parseFloat(e.target.value),
+                          })
+                        }
                         className="w-full pl-8 pr-14 py-2.5 bg-white border border-[#E5E7EB] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#4F39F6]/20 focus:border-[#4F39F6] transition-all"
                       />
-                      <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[#9CA3AF] text-sm font-medium">USD</span>
+                      <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[#9CA3AF] text-sm font-medium">
+                        USD
+                      </span>
                     </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-[#4B5563] mb-1.5">
+                      Projection Limit
+                    </label>
+                    <input
+                      type="number"
+                      // value={formData.member_limit || 0}
+                      // onChange={(e) =>
+                      //   setFormData({
+                      //     ...formData,
+                      //     member_limit: parseInt(e.target.value),
+                      //   })
+                      // }
+                      className="w-full px-4 py-2.5 bg-white border border-[#E5E7EB] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#4F39F6]/20 focus:border-[#4F39F6] transition-all"
+                    />
                   </div>
                 </div>
               </div>
 
               <div>
                 <div className="flex justify-between items-center mb-1.5">
-                  <label className="block text-sm font-medium text-[#4B5563]">Features List</label>
-                  <span className="text-[10px] font-bold text-[#9CA3AF] uppercase tracking-wider">MARKDOWN SUPPORTED</span>
+                  <label className="block text-sm font-medium text-[#4B5563]">
+                    Features List
+                  </label>
+                  <span className="text-[10px] font-bold text-[#9CA3AF] uppercase tracking-wider">
+                    MARKDOWN SUPPORTED
+                  </span>
                 </div>
                 <textarea
                   value={formData.features}
-                  onChange={(e) => setFormData({ ...formData, features: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, features: e.target.value })
+                  }
                   className="w-full px-4 py-3 bg-white border border-[#E5E7EB] rounded-2xl focus:outline-none focus:ring-2 focus:ring-[#4F39F6]/20 focus:border-[#4F39F6] transition-all min-h-[180px] resize-none shadow-sm"
                   placeholder="Enter features (one per line)..."
                 />
@@ -277,14 +386,25 @@ export default function EditPlanModal({
 
               <div className="pt-6 border-t border-[#F3F4F6] flex items-center justify-between">
                 <div>
-                  <label className="block text-sm font-semibold text-[#111827]">Plan Availability</label>
-                  <p className="text-xs text-[#6B7280] mt-0.5">Enable or disable this plan from the pricing page.</p>
+                  <label className="block text-sm font-semibold text-[#111827]">
+                    Plan Availability
+                  </label>
+                  <p className="text-xs text-[#6B7280] mt-0.5">
+                    Enable or disable this plan from the pricing page.
+                  </p>
                 </div>
                 <div className="flex items-center gap-3">
-                  <span className={`text-xs font-bold tracking-wider ${formData.status ? 'text-[#059669]' : 'text-[#9CA3AF]'}`}>
-                    {formData.status ? 'ACTIVE' : 'INACTIVE'}
+                  <span
+                    className={`text-xs font-bold tracking-wider ${formData.status ? "text-[#059669]" : "text-[#9CA3AF]"}`}
+                  >
+                    {formData.status ? "ACTIVE" : "INACTIVE"}
                   </span>
-                  <Toggle checked={formData.status} onChange={(val) => setFormData({ ...formData, status: val })} />
+                  <Toggle
+                    checked={formData.status}
+                    onChange={(val) =>
+                      setFormData({ ...formData, status: val })
+                    }
+                  />
                 </div>
               </div>
             </div>
