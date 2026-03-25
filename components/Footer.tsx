@@ -78,15 +78,15 @@ const Footer = () => {
           <div className="flex flex-col items-start md:items-end gap-4">
             <div className="flex gap-3">
               {[
-                { icon: XIcon, name: "X" },
-                { icon: LinkedInIcon, name: "LinkedIn" },
-                { icon: TikTokIcon, name: "TikTok" },
-                { icon: FacebookIcon, name: "Facebook" },
-                { icon: Instagram, name: "Instagram" },
+                { icon: XIcon, name: "X", link: "https://x.com/biovuedw?s=21" },
+                { icon: LinkedInIcon, name: "LinkedIn", link: "https://www.linkedin.com/in/biovue-digital-wellness%E2%84%A2-30a083391/" },
+                { icon: TikTokIcon, name: "TikTok", link: "https://www.tiktok.com/@biovue.digital.we?_r=1&_t=ZN-94xdSHaY0pi" },
+                { icon: FacebookIcon, name: "Facebook", link: "https://www.facebook.com/share/1DkAYaFVRH/?mibextid=wwXIfr " },
+                { icon: Instagram, name: "Instagram", link: "https://www.instagram.com/biovuedigitalwellness?igsh=MW9nMGxhNmFpMmxlOQ%3D%3D&utm_source=qr" },
               ].map((social, index) => (
                 <Link
                   key={index}
-                  href="#"
+                  href={social.link}
                   className="w-10 h-10 rounded-lg flex items-center justify-center text-white transition-all transform hover:scale-110 bg-accent"
                   aria-label={social.name}
                 >

@@ -21,44 +21,66 @@ interface ProgressTrendsProps {
   clientId: number;
 }
 
-const getDaysFromDate = (dateString: string): number => {
-  if (!dateString) return 30;
-  const selectedDate = new Date(dateString);
+const getDateRangeDays = (startDate: string, endDate: string): number => {
+  if (!startDate && !endDate) return 30;
+
   const today = new Date();
-  
-  // Reset time part to ensure accurate day calculation
-  selectedDate.setHours(0, 0, 0, 0);
   today.setHours(0, 0, 0, 0);
-  
-  const diffTime = today.getTime() - selectedDate.getTime();
-  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-  return diffDays > 0 ? diffDays : 1;
+
+  if (startDate && endDate) {
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+    start.setHours(0, 0, 0, 0);
+    end.setHours(0, 0, 0, 0);
+    const diff = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
+    return diff > 0 ? diff : 1;
+  }
+
+  if (startDate) {
+    const start = new Date(startDate);
+    start.setHours(0, 0, 0, 0);
+    const diff = Math.ceil((today.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
+    return diff > 0 ? diff : 1;
+  }
+
+  if (endDate) {
+    const end = new Date(endDate);
+    end.setHours(0, 0, 0, 0);
+    const diff = Math.ceil((today.getTime() - end.getTime()) / (1000 * 60 * 60 * 24));
+    return diff > 0 ? diff : 30;
+  }
+
+  return 30;
 };
 
 export default function ProgressTrends({ clientId }: ProgressTrendsProps) {
-  const [weightDate, setWeightDate] = useState<string>("");
-  const [activityDate, setActivityDate] = useState<string>("");
-  const [nutritionDate, setNutritionDate] = useState<string>("");
-  const [sleepDate, setSleepDate] = useState<string>("");
+  const [weightStartDate, setWeightStartDate] = useState<string>("");
+  const [weightEndDate, setWeightEndDate] = useState<string>("");
+  const [activityStartDate, setActivityStartDate] = useState<string>("");
+  const [activityEndDate, setActivityEndDate] = useState<string>("");
+  const [nutritionStartDate, setNutritionStartDate] = useState<string>("");
+  const [nutritionEndDate, setNutritionEndDate] = useState<string>("");
+  const [sleepStartDate, setSleepStartDate] = useState<string>("");
+  const [sleepEndDate, setSleepEndDate] = useState<string>("");
 
   const { data: weightRes, isLoading: weightLoading } = useGetUserOverviewChartQuery({
     userId: clientId,
-    days: getDaysFromDate(weightDate),
+    days: getDateRangeDays(weightStartDate, weightEndDate),
   });
 
   const { data: activityRes, isLoading: activityLoading } = useGetUserOverviewChartQuery({
     userId: clientId,
-    days: getDaysFromDate(activityDate),
+    days: getDateRangeDays(activityStartDate, activityEndDate),
   });
 
   const { data: nutritionRes, isLoading: nutritionLoading } = useGetUserOverviewChartQuery({
     userId: clientId,
-    days: getDaysFromDate(nutritionDate),
+    days: getDateRangeDays(nutritionStartDate, nutritionEndDate),
   });
 
   const { data: sleepRes, isLoading: sleepLoading } = useGetUserOverviewChartQuery({
     userId: clientId,
-    days: getDaysFromDate(sleepDate),
+    days: getDateRangeDays(sleepStartDate, sleepEndDate),
   });
 
   const weightCharts = weightRes?.charts || [];
@@ -106,12 +128,24 @@ export default function ProgressTrends({ clientId }: ProgressTrendsProps) {
                 </div>
               </div>
               <div className="flex items-center gap-2">
-                <input
-                  type="date"
-                  value={weightDate}
-                  onChange={(e) => setWeightDate(e.target.value)}
-                  className="text-xs border border-gray-200 rounded-md p-1.5 focus:outline-none focus:ring-1 focus:ring-teal-500 text-gray-600"
-                />
+                <div className="flex items-center gap-1">
+                  <span className="text-[10px] text-[#9CA3AF]">From</span>
+                  <input
+                    type="date"
+                    value={weightStartDate}
+                    onChange={(e) => setWeightStartDate(e.target.value)}
+                    className="text-xs border border-gray-200 rounded-md p-1.5 focus:outline-none focus:ring-1 focus:ring-teal-500 text-gray-600"
+                  />
+                </div>
+                <div className="flex items-center gap-1">
+                  <span className="text-[10px] text-[#9CA3AF]">To</span>
+                  <input
+                    type="date"
+                    value={weightEndDate}
+                    onChange={(e) => setWeightEndDate(e.target.value)}
+                    className="text-xs border border-gray-200 rounded-md p-1.5 focus:outline-none focus:ring-1 focus:ring-teal-500 text-gray-600"
+                  />
+                </div>
                 <Info size={14} className="text-[#D1D5DB]" />
               </div>
             </div>
@@ -167,12 +201,24 @@ export default function ProgressTrends({ clientId }: ProgressTrendsProps) {
                 </div>
               </div>
               <div className="flex items-center gap-2">
-                <input
-                  type="date"
-                  value={activityDate}
-                  onChange={(e) => setActivityDate(e.target.value)}
-                  className="text-xs border border-gray-200 rounded-md p-1.5 focus:outline-none focus:ring-1 focus:ring-teal-500 text-gray-600"
-                />
+                <div className="flex items-center gap-1">
+                  <span className="text-[10px] text-[#9CA3AF]">From</span>
+                  <input
+                    type="date"
+                    value={activityStartDate}
+                    onChange={(e) => setActivityStartDate(e.target.value)}
+                    className="text-xs border border-gray-200 rounded-md p-1.5 focus:outline-none focus:ring-1 focus:ring-teal-500 text-gray-600"
+                  />
+                </div>
+                <div className="flex items-center gap-1">
+                  <span className="text-[10px] text-[#9CA3AF]">To</span>
+                  <input
+                    type="date"
+                    value={activityEndDate}
+                    onChange={(e) => setActivityEndDate(e.target.value)}
+                    className="text-xs border border-gray-200 rounded-md p-1.5 focus:outline-none focus:ring-1 focus:ring-teal-500 text-gray-600"
+                  />
+                </div>
                 <Info size={14} className="text-[#D1D5DB]" />
               </div>
             </div>
@@ -220,12 +266,24 @@ export default function ProgressTrends({ clientId }: ProgressTrendsProps) {
                 </div>
               </div>
               <div className="flex items-center gap-2">
-                <input
-                  type="date"
-                  value={nutritionDate}
-                  onChange={(e) => setNutritionDate(e.target.value)}
-                  className="text-xs border border-gray-200 rounded-md p-1.5 focus:outline-none focus:ring-1 focus:ring-teal-500 text-gray-600"
-                />
+                <div className="flex items-center gap-1">
+                  <span className="text-[10px] text-[#9CA3AF]">From</span>
+                  <input
+                    type="date"
+                    value={nutritionStartDate}
+                    onChange={(e) => setNutritionStartDate(e.target.value)}
+                    className="text-xs border border-gray-200 rounded-md p-1.5 focus:outline-none focus:ring-1 focus:ring-teal-500 text-gray-600"
+                  />
+                </div>
+                <div className="flex items-center gap-1">
+                  <span className="text-[10px] text-[#9CA3AF]">To</span>
+                  <input
+                    type="date"
+                    value={nutritionEndDate}
+                    onChange={(e) => setNutritionEndDate(e.target.value)}
+                    className="text-xs border border-gray-200 rounded-md p-1.5 focus:outline-none focus:ring-1 focus:ring-teal-500 text-gray-600"
+                  />
+                </div>
               </div>
             </div>
 
@@ -287,12 +345,24 @@ export default function ProgressTrends({ clientId }: ProgressTrendsProps) {
                 </div>
               </div>
               <div className="flex items-center gap-2">
-                <input
-                  type="date"
-                  value={sleepDate}
-                  onChange={(e) => setSleepDate(e.target.value)}
-                  className="text-xs border border-gray-200 rounded-md p-1.5 focus:outline-none focus:ring-1 focus:ring-teal-500 text-gray-600"
-                />
+                <div className="flex items-center gap-1">
+                  <span className="text-[10px] text-[#9CA3AF]">From</span>
+                  <input
+                    type="date"
+                    value={sleepStartDate}
+                    onChange={(e) => setSleepStartDate(e.target.value)}
+                    className="text-xs border border-gray-200 rounded-md p-1.5 focus:outline-none focus:ring-1 focus:ring-teal-500 text-gray-600"
+                  />
+                </div>
+                <div className="flex items-center gap-1">
+                  <span className="text-[10px] text-[#9CA3AF]">To</span>
+                  <input
+                    type="date"
+                    value={sleepEndDate}
+                    onChange={(e) => setSleepEndDate(e.target.value)}
+                    className="text-xs border border-gray-200 rounded-md p-1.5 focus:outline-none focus:ring-1 focus:ring-teal-500 text-gray-600"
+                  />
+                </div>
                 <Info size={14} className="text-[#D1D5DB]" />
               </div>
             </div>
