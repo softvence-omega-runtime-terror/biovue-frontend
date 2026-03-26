@@ -12,7 +12,9 @@ import {
 import { useState } from "react";
 import { toast } from "sonner";
 import { EditProductModal } from "@/components/SupplierDashboard/EditProductModal";
+import { BulkUploadModal } from "@/components/SupplierDashboard/BulkUploadModal";
 import { FetchBaseQueryError } from "@reduxjs/toolkit/query";
+import { Button } from "@/components/ui/button";
 
 const getSafeImageSrc = (src: string | null | undefined) => {
   if (!src) return "/images/placeholder-product.png";
@@ -39,6 +41,7 @@ export default function MyProductsPage() {
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isBulkUploadModalOpen, setIsBulkUploadModalOpen] = useState(false);
 
   const products = [...(data?.data ?? [])].sort(
     (a, b) =>
@@ -99,7 +102,13 @@ export default function MyProductsPage() {
               size={20}
             />
           </div>
-
+          <Button
+            onClick={() => setIsBulkUploadModalOpen(true)}
+            className="bg-[#14A4A9] text-white px-8 py-3.5 rounded-xl font-normal text-[16px] leading-6 hover:bg-opacity-90 transition-all flex items-center gap-3 shadow-lg shadow-[#14A4A9]/10 cursor-pointer"
+          >
+            <Plus size={22} strokeWidth={1.5} />
+            Bulk Upload(CSV)
+          </Button>
           <Link
             href="/supplier-dashboard/add-product"
             className="bg-[#14A4A9] text-white px-8 py-3.5 rounded-xl font-normal text-[16px] leading-6 hover:bg-opacity-90 transition-all flex items-center gap-3 shadow-lg shadow-[#14A4A9]/10 cursor-pointer"
@@ -253,6 +262,9 @@ export default function MyProductsPage() {
           product={selectedProduct}
           onClose={() => setIsEditModalOpen(false)}
         />
+      )}
+      {isBulkUploadModalOpen && (
+        <BulkUploadModal onClose={() => setIsBulkUploadModalOpen(false)} />
       )}
     </div>
   );
