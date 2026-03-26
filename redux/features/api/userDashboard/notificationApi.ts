@@ -16,58 +16,11 @@ export interface NotificationResponse {
   data: Notification[];
 }
 
-export interface NotificationSettings {
-  id: number;
-  user_id: number;
-  coach_messages: number;
-  client_messages: number;
-  goal_updates: number;
-  ai_insights: number;
-  missed_checkin_alerts: number;
-  program_milestone_updates: number;
-  weekly_summary_email: number;
-  auto_remind_missed_checkins: number;
-  default_reminder_time: string;
-  check_in_reminder_alerts: number;
-  subscription_updates: number;
-  created_at: string;
-  updated_at: string;
-}
-
-export interface NotificationSettingsResponse {
-  status: string;
-  message: string;
-  data: NotificationSettings;
-}
-
-export interface UpdateNotificationSettingsRequest {
-  enable_coach_messages?: boolean;
-  enable_goal_updates?: boolean;
-  reminder_time?: string;
-  missed_checkin_alerts?: boolean;
-  program_milestone_updates?: boolean;
-  ai_insights?: boolean;
-  subscription_updates?: boolean;
-  check_in_reminder_alerts?: boolean;
-}
-
 export const notificationApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     getNotifications: builder.query<NotificationResponse, void>({
       query: () => "/notification-list-by-user",
       providesTags: ["Notifications"],
-    }),
-    getNotificationSettings: builder.query<NotificationSettingsResponse, void>({
-      query: () => "/user/notification-settings",
-      providesTags: ["NotificationSettings"],
-    }),
-    updateNotificationSettings: builder.mutation<NotificationSettingsResponse, UpdateNotificationSettingsRequest>({
-      query: (body) => ({
-        url: "/user/notification-settings",
-        method: "POST",
-        body,
-      }),
-      invalidatesTags: ["NotificationSettings"],
     }),
     markAsRead: builder.mutation<any, { notification_id?: string; all?: boolean }>({
       query: () => ({
@@ -102,12 +55,4 @@ export const notificationApi = baseApi.injectEndpoints({
   }),
 });
 
-export const { 
-  useGetNotificationsQuery, 
-  useGetNotificationSettingsQuery,
-  useUpdateNotificationSettingsMutation,
-  useMarkAsReadMutation, 
-  useMarkSingleAsReadMutation, 
-  useDeleteSingleNotificationMutation, 
-  useDeleteAllNotificationsMutation 
-} = notificationApi;
+export const { useGetNotificationsQuery, useMarkAsReadMutation, useMarkSingleAsReadMutation, useDeleteSingleNotificationMutation, useDeleteAllNotificationsMutation } = notificationApi;
