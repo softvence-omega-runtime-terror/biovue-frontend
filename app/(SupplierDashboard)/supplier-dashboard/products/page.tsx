@@ -15,6 +15,10 @@ import { EditProductModal } from "@/components/SupplierDashboard/EditProductModa
 import { BulkUploadModal } from "@/components/SupplierDashboard/BulkUploadModal";
 import { FetchBaseQueryError } from "@reduxjs/toolkit/query";
 import { Button } from "@/components/ui/button";
+import { Download } from "lucide-react";
+import { downloadProductsXlsx } from "@/redux/features/api/SupplierDashboard/Product/DownloadCSV";
+import { useAppSelector } from "@/redux/store/hooks";
+import { selectCurrentToken } from "@/redux/features/slice/authSlice";
 
 const getSafeImageSrc = (src: string | null | undefined) => {
   if (!src) return "/images/placeholder-product.png";
@@ -42,6 +46,21 @@ export default function MyProductsPage() {
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isBulkUploadModalOpen, setIsBulkUploadModalOpen] = useState(false);
+  const token = useAppSelector(selectCurrentToken);
+
+  const handleExport = async () => {
+    if (!token) {
+      toast.error("You are not authenticated.");
+      return;
+    }
+    const loadingToast = toast.loading("Exporting products...");
+    try {
+      await downloadProductsXlsx(token);
+      toast.success("Products exported successfully!", { id: loadingToast });
+    } catch (error) {
+      toast.error("Failed to export products.", { id: loadingToast });
+    }
+  };
 
   const products = [...(data?.data ?? [])].sort(
     (a, b) =>
@@ -103,15 +122,22 @@ export default function MyProductsPage() {
             />
           </div>
           <Button
+            onClick={handleExport}
+            className="bg-[#14A4A9] hover:opacity-80 text-white px-8 py-3.5 rounded-xl font-normal text-[16px] leading-6 hover:bg-opacity-90 transition-all flex items-center gap-3 shadow-lg shadow-[#3A86FF]/10 cursor-pointer"
+          >
+            <Download size={22} strokeWidth={1.5} />
+            Export Products
+          </Button>
+          <Button
             onClick={() => setIsBulkUploadModalOpen(true)}
-            className="bg-[#14A4A9] text-white px-8 py-3.5 rounded-xl font-normal text-[16px] leading-6 hover:bg-opacity-90 transition-all flex items-center gap-3 shadow-lg shadow-[#14A4A9]/10 cursor-pointer"
+            className="bg-[#14A4A9] hover:opacity-80 text-white px-8 py-3.5 rounded-xl font-normal text-[16px] leading-6 hover:bg-opacity-90 transition-all flex items-center gap-3 shadow-lg shadow-[#14A4A9]/10 cursor-pointer"
           >
             <Plus size={22} strokeWidth={1.5} />
-            Bulk Upload(CSV)
+            Bulk Upload(.xlsx)
           </Button>
           <Link
             href="/supplier-dashboard/add-product"
-            className="bg-[#14A4A9] text-white px-8 py-3.5 rounded-xl font-normal text-[16px] leading-6 hover:bg-opacity-90 transition-all flex items-center gap-3 shadow-lg shadow-[#14A4A9]/10 cursor-pointer"
+            className="bg-[#14A4A9] hover:opacity-80 text-white px-8 py-3.5 rounded-xl font-normal text-[16px] leading-6 hover:bg-opacity-90 transition-all flex items-center gap-3 shadow-lg shadow-[#14A4A9]/10 cursor-pointer"
           >
             <Plus size={22} strokeWidth={1.5} />
             Add New Product
