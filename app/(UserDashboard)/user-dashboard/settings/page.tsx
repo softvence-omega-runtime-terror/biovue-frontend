@@ -1,13 +1,21 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
 import { selectCurrentUser } from "@/redux/features/slice/authSlice";
-import {
+
+import { useGetPlansQuery } from "@/redux/features/api/paymentApi";
+import { 
+  useGetNotificationsQuery,
   useGetNotificationSettingsQuery,
   useUpdateNotificationSettingsMutation
 } from "@/redux/features/api/userDashboard/notificationApi";
-import { useGetPlansQuery } from "@/redux/features/api/paymentApi";
+import { 
+  useFetchInsightsMutation, 
+  useFetchFutureInsightsMutation 
+} from "@/redux/features/api/userDashboard/insightsApi";
+import { useCreateUpdateProfileMutation, useGetProfileQuery } from "@/redux/features/api/profileApi";
+import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import Image from "next/image";
 import {
@@ -38,6 +46,132 @@ const SettingsPage = () => {
   const currentUser = useSelector(selectCurrentUser);
 
   // Notifications API
+  const { data: notificationSettingsData, isLoading: isLoadingSettings } = useGetNotificationSettingsQuery();
+  const [updateNotificationSettings] = useUpdateNotificationSettingsMutation();
+  
+  // Local state for smooth toggles
+  const [localSettings, setLocalSettings] = useState<any>(null);
+
+  // Synchronize local state with remote data, but only on initial load 
+  // or when not actively toggling to prevent flickering.
+  useEffect(() => {
+    if (notificationSettingsData?.data && !localSettings) {
+      setLocalSettings(notificationSettingsData.data);
+    }
+  }, [notificationSettingsData, localSettings]);
+
+  const handleNotificationToggle = async (key: string) => {
+    if (!localSettings) return;
+
+    const currentValue = localSettings[key];
+    const newValue = currentValue === 1 ? 0 : 1;
+
+    // Optimistically update local state
+    setLocalSettings((prev: any) => ({
+      ...prev,
+      [key]: newValue
+    }));
+
+    try {
+      // Use the original GET key and integer value (0/1) as expected by the backend
+      const payload = {
+        [key]: newValue,
+      };
+
+      await updateNotificationSettings(payload).unwrap();
+      toast.success("Notification settings updated");
+    } catch (error) {
+      // Revert if API fails
+      setLocalSettings((prev: any) => ({
+        ...prev,
+        [key]: currentValue
+      }));
+      toast.error("Failed to update notification settings");
+    }
+  };
+
+  const handleReminderTimeChange = async (newTime: string) => {
+    if (!localSettings) return;
+
+    const oldTime = localSettings.default_reminder_time;
+
+    // Optimistically update local state
+    setLocalSettings((prev: any) => ({
+      ...prev,
+      default_reminder_time: newTime
+    }));
+
+    try {
+      await updateNotificationSettings({
+        reminder_time: newTime
+      }).unwrap();
+      toast.success("Reminder time updated");
+    } catch (error) {
+      // Revert if API fails
+      setLocalSettings((prev: any) => ({
+        ...prev,
+        default_reminder_time: oldTime
+      }));
+      toast.error("Failed to update reminder time");
+    }
+  };
+
+  const notificationItems = [
+    { 
+      label: "Coach messages", 
+      sub: "Instant alerts when your coach writes to you", 
+      active: localSettings?.coach_messages === 1,
+      key: "coach_messages"
+    },
+    { 
+      label: "Goal Updates", 
+      sub: "Alerts when a coach approves, edits, or comments on your goals.", 
+      active: localSettings?.goal_updates === 1,
+      key: "goal_updates"
+    },
+    { 
+      label: "Check-in & Reminder Alerts", 
+      sub: "Reminders for scheduled check-ins, habits, or missed logs.", 
+      active: localSettings?.check_in_reminder_alerts === 1,
+      key: "check_in_reminder_alerts"
+    },
+    { 
+      label: "AI Insights & Recommendations", 
+      sub: "Notifications when new AI-generated insights or suggestions are available.", 
+      active: localSettings?.ai_insights === 1,
+      key: "ai_insights"
+    },
+    { 
+      label: "Subscription & Account Updates", 
+      sub: "Billing reminders, plan changes, and important account notices.", 
+      active: localSettings?.subscription_updates === 1,
+      key: "subscription_updates"
+    },
+    { 
+      label: "Missed Check-in Alerts", 
+      sub: "Alerts when you miss your scheduled check-ins.", 
+      active: localSettings?.missed_checkin_alerts === 1,
+      key: "missed_checkin_alerts"
+    },
+    { 
+      label: "Program Milestone Updates", 
+      sub: "Notifications about your program progress and milestones.", 
+      active: localSettings?.program_milestone_updates === 1,
+      key: "program_milestone_updates"
+    },
+    { 
+      label: "Weekly Summary Email", 
+      sub: "Receive a weekly summary of your health and fitness progress.", 
+      active: localSettings?.weekly_summary_email === 1,
+      key: "weekly_summary_email"
+    },
+    { 
+      label: "Auto Remind Missed Check-ins", 
+      sub: "Automatically send reminders when you miss a check-in.", 
+      active: localSettings?.auto_remind_missed_checkins === 1,
+      key: "auto_remind_missed_checkins"
+    },
+  ];
 
   if (view === "profile") return <ProfileEditView onBack={() => setView("overview")} currentUser={currentUser} />;
   if (view === "subscription") return <SubscriptionView onBack={() => setView("overview")} currentUser={currentUser} />;
@@ -179,30 +313,75 @@ const SettingsPage = () => {
       <section className="flex flex-col gap-6">
         <h2 className="text-xl font-bold text-[#1F2D2E]">Notifications</h2>
         <div className="bg-white rounded-[16px] p-8 border border-[#3A86FF]/25 shadow-sm flex flex-col gap-8">
-          {[
-            { label: "Coach messages", sub: "Instant alerts when your coach writes to you", active: true },
-            { label: "Goal Updates", sub: "Alerts when a coach approves, edits, or comments on your goals.", active: true },
-            { label: "Check-in & Reminder Alerts", sub: "Reminders for scheduled check-ins, habits, or missed logs.", active: true },
-            { label: "AI Insights & Recommendations", sub: "Notifications when new AI-generated insights or suggestions are available.", active: false },
-            { label: "Subscription & Account Updates", sub: "Billing reminders, plan changes, and important account notices.", active: false },
-          ].map((item, idx) => (
-            <div key={idx} className="flex items-center justify-between">
-              <div className="flex flex-col gap-1">
-                <span className="text-sm font-bold text-[#1F2D2E]">{item.label}</span>
-                <span className="text-[10px] text-[#5F6F73] font-medium leading-relaxed max-w-sm">{item.sub}</span>
+          {isLoadingSettings && !localSettings ? (
+            <div className="flex flex-col gap-8 animate-pulse">
+              {[1, 2, 3, 4, 5].map((i) => (
+                <div key={i} className="flex items-center justify-between">
+                  <div className="flex flex-col gap-2">
+                    <div className="h-4 w-32 bg-gray-100 rounded" />
+                    <div className="h-3 w-64 bg-gray-50 rounded" />
+                  </div>
+                  <div className="w-12 h-6 bg-gray-100 rounded-full" />
+                </div>
+              ))}
+            </div>
+          ) : (
+            notificationItems.map((item, idx) => (
+              <div key={idx} className="flex items-center justify-between">
+                <div className="flex flex-col gap-1">
+                  <span className="text-sm font-bold text-[#1F2D2E]">{item.label}</span>
+                  <span className="text-[10px] text-[#5F6F73] font-medium leading-relaxed max-w-sm">{item.sub}</span>
+                </div>
+                {/* Toggle */}
+                <div 
+                  onClick={() => handleNotificationToggle(item.key)}
+                  className={cn(
+                    "w-12 h-6 rounded-full p-1 cursor-pointer transition-all",
+                    item.active ? "bg-[#0FA4A9]" : "bg-gray-200"
+                  )}
+                >
+                  <div className={cn(
+                    "w-4 h-4 bg-white rounded-full transition-all",
+                    item.active ? "ml-6" : "ml-0"
+                  )} />
+                </div>
               </div>
-              {/* Toggle */}
-              <div className={cn(
-                "w-12 h-6 rounded-full p-1 cursor-pointer transition-all",
-                item.active ? "bg-[#0FA4A9]" : "bg-gray-200"
-              )}>
-                <div className={cn(
-                  "w-4 h-4 bg-white rounded-full transition-all",
-                  item.active ? "ml-6" : "ml-0"
-                )} />
+            ))
+          )}
+
+          {!isLoadingSettings && localSettings && (
+            <div className="flex items-center justify-between pt-4 border-t border-gray-50">
+              <div className="flex flex-col gap-1">
+                <span className="text-sm font-bold text-[#1F2D2E]">Check-in Reminder Time</span>
+                <span className="text-[10px] text-[#5F6F73] font-medium leading-relaxed max-w-sm">When do you want to receive your check-in reminders?</span>
+              </div>
+              <div className="relative">
+                <input 
+                  type="time" 
+                  value={localSettings.default_reminder_time?.includes(' ') 
+                    ? (function() {
+                        const parts = localSettings.default_reminder_time.split(' ');
+                        const time = parts[0];
+                        const modifier = parts[1];
+                        let [hoursStr, minutes] = time.split(':');
+                        let hours = parseInt(hoursStr, 10);
+                        if (modifier === 'PM' && hours < 12) hours += 12;
+                        if (modifier === 'AM' && hours === 12) hours = 0;
+                        return `${hours.toString().padStart(2, '0')}:${minutes}`;
+                      })()
+                    : localSettings.default_reminder_time}
+                  onChange={(e) => {
+                    const time24 = e.target.value;
+                    let [hours, minutes] = time24.split(':');
+                    const modifier = parseInt(hours, 10) >= 12 ? 'PM' : 'AM';
+                    hours = (parseInt(hours, 10) % 12 || 12).toString().padStart(2, '0');
+                    handleReminderTimeChange(`${hours}:${minutes} ${modifier}`);
+                  }}
+                  className="bg-white border border-gray-200 rounded-lg px-4 py-2 text-sm font-bold text-[#1F2D2E] outline-none focus:ring-2 focus:ring-[#0FA4A9]/20 transition-all cursor-pointer"
+                />
               </div>
             </div>
-          ))}
+          )}
           
           <div className="pt-4 border-t border-gray-50">
              <p className="text-[11px] text-[#94A3B8] font-medium italic">
@@ -278,8 +457,193 @@ const SettingsPage = () => {
 // --- Sub-components (Views) ---
 
 const ProfileEditView = ({ onBack, currentUser }: { onBack: () => void, currentUser: any }) => {
+  const router = useRouter();
+  const { data: profileData, isLoading: isLoadingProfile } = useGetProfileQuery(currentUser?.id, { skip: !currentUser?.id });
+  const [createUpdateProfile, { isLoading: isUpdatingProfile }] = useCreateUpdateProfileMutation();
+  const [fetchInsights, { isLoading: isFetchingInsights }] = useFetchInsightsMutation();
+  const [fetchFutureInsights, { isLoading: isFetchingFutureInsights }] = useFetchFutureInsightsMutation();
+
+  const [formData, setFormData] = useState({
+    name: currentUser?.name || "",
+    age: "",
+    sex: "Male",
+    height: "",
+    weight: "",
+    location: "",
+    body_fat: "",
+    smoking_status: "0",
+    alcohol_consumption: "0",
+    stress_level: "5",
+    daily_step: "",
+    sleep_hour: "",
+    water_consumption_week: "",
+    overall_diet_quality: "Good",
+    fast_food_frequency: "Once a week",
+    strength_training_week: "3 sessions",
+    workout_week: "5 sessions",
+    is_athletic: 0,
+    toned: 0,
+    lean: 0,
+    muscular: 0,
+    curvy_fit: 0,
+    notes: "",
+    diabetes: 0,
+    high_blood_pressure: 0,
+    high_cholesterol: 0,
+    heart_disease: 0,
+    asthma: 0,
+    athritis: 0,
+    depression: 0,
+    anxiety: 0,
+    sleep_apnea: 0,
+    thyroid_issue: 0,
+    current_medication: "",
+    profile_id: "",
+  });
+
+  useEffect(() => {
+    if (profileData?.data) {
+      const u = profileData.data;
+      const p = u.profile;
+      const m = u.medical_history;
+      
+      setFormData({
+        name: u?.name || currentUser?.name || "",
+        age: p?.age?.toString() || "",
+        sex: p?.sex || "Male",
+        height: p?.height?.toString() || "",
+        weight: p?.weight?.toString() || "",
+        location: p?.location || "",
+        body_fat: p?.body_fat?.toString() || "",
+        smoking_status: p?.smoking_status?.toString() || "0",
+        alcohol_consumption: p?.alcohol_consumption?.toString() || "0",
+        stress_level: p?.stress_level?.toString() || "5",
+        daily_step: p?.daily_step?.toString() || "",
+        sleep_hour: p?.sleep_hour?.toString() || "",
+        water_consumption_week: p?.water_consumption_week?.toString() || "",
+        overall_diet_quality: p?.overall_diet_quality || "good",
+        fast_food_frequency: p?.fast_food_frequency || "once in a week",
+        strength_training_week: p?.strength_training_week || "3 sessions",
+        workout_week: p?.workout_week || "5 sessions",
+        is_athletic: p?.is_athletic || 0,
+        toned: p?.toned || 0,
+        lean: p?.lean || 0,
+        muscular: p?.muscular || 0,
+        curvy_fit: p?.curvy_fit || 0,
+        notes: p?.notes || "",
+        diabetes: m?.diabetes || 0,
+        high_blood_pressure: m?.high_blood_pressure || 0,
+        high_cholesterol: m?.high_cholesterol || 0,
+        heart_disease: m?.heart_disease || 0,
+        asthma: m?.asthma || 0,
+        athritis: m?.athritis || 0,
+        depression: m?.depression || 0,
+        anxiety: m?.anxiety || 0,
+        sleep_apnea: m?.sleep_apnea || 0,
+        thyroid_issue: m?.thyroid_issue || 0,
+        current_medication: m?.current_medication || "",
+        profile_id: p?.id?.toString() || "",
+      });
+      
+      if (p?.image) {
+        setImagePreview(p.image);
+      }
+    }
+  }, [profileData, currentUser]);
+
+  const [image, setImage] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setImage(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const toggleField = (field: string) => {
+    setFormData(prev => ({ ...prev, [field]: (prev as any)[field] === 1 ? 0 : 1 }));
+  };
+
+  const handleSubmit = async () => {
+    try {
+      const data = new FormData();
+      if (formData.profile_id) {
+        data.append("id", formData.profile_id);
+      }
+      data.append("user_id", currentUser?.id);
+      data.append("user_type", "individual");
+      data.append("name", formData.name);
+      data.append("age", formData.age);
+      data.append("sex", formData.sex);
+      data.append("height", formData.height);
+      data.append("weight", formData.weight);
+      data.append("location", formData.location);
+      data.append("agreed_terms", "1");
+      data.append("body_fat", formData.body_fat);
+      data.append("smoking_status", formData.smoking_status);
+      data.append("alcohol_consumption", formData.alcohol_consumption);
+      data.append("stress_level", formData.stress_level);
+      data.append("daily_step", formData.daily_step);
+      data.append("sleep_hour", formData.sleep_hour);
+      data.append("water_consumption_week", formData.water_consumption_week);
+      data.append("overall_diet_quality", formData.overall_diet_quality);
+      data.append("fast_food_frequency", formData.fast_food_frequency);
+      data.append("strength_training_week", formData.strength_training_week);
+      data.append("workout_week", formData.workout_week);
+      
+      data.append("is_athletic", formData.is_athletic.toString());
+      data.append("toned", formData.toned.toString());
+      data.append("lean", formData.lean.toString());
+      data.append("muscular", formData.muscular.toString());
+      data.append("curvy_fit", formData.curvy_fit.toString());
+      
+      data.append("notes", formData.notes);
+      data.append("diabetes", formData.diabetes.toString());
+      data.append("high_blood_pressure", formData.high_blood_pressure.toString());
+      data.append("high_cholesterol", formData.high_cholesterol.toString());
+      data.append("heart_disease", formData.heart_disease.toString());
+      data.append("asthma", formData.asthma.toString());
+      data.append("athritis", formData.athritis.toString());
+      data.append("depression", formData.depression.toString());
+      data.append("anxiety", formData.anxiety.toString());
+      data.append("sleep_apnea", formData.sleep_apnea.toString());
+      data.append("thyroid_issue", formData.thyroid_issue.toString());
+      data.append("current_medication", formData.current_medication);
+      
+      if (image) {
+        data.append("image", image);
+      }
+
+      const res = await createUpdateProfile(data).unwrap();
+      
+      if (res.success) {
+        await fetchInsights({ user_id: currentUser?.id }).unwrap();
+        await fetchFutureInsights({ user_id: currentUser?.id, timeframe: "5 years" }).unwrap();
+        
+        toast.success("Profile updated successfully!");
+        // We stay on the settings page as requested
+      }
+    } catch (error: any) {
+      toast.error(error?.data?.message || "Failed to update profile");
+      console.error(error);
+    }
+  };
+
+  const isSaving = isUpdatingProfile || isFetchingInsights || isFetchingFutureInsights;
+
   return (
-    <div className="flex flex-col gap-8 p-6 md:p-8 w-full min-h-screen pb-24">
+    <div className="flex flex-col gap-8 p-6 md:p-8 w-full min-h-screen pb-24 max-w-5xl mx-auto">
        <button 
           onClick={onBack}
           className="flex items-center gap-2 px-4 py-2 bg-white border border-[#3A86FF]/30 rounded-lg text-[#3A86FF] text-xs font-semibold hover:bg-blue-50/50 transition-all w-fit cursor-pointer"
@@ -288,40 +652,76 @@ const ProfileEditView = ({ onBack, currentUser }: { onBack: () => void, currentU
           Back to Settings
         </button>
 
+        {/* Profile Image Section */}
+        <div className="flex flex-col items-center gap-4 bg-white rounded-[24px] p-8 border border-[#3A86FF]/20 shadow-sm">
+           <div className="relative group">
+              <div className="w-32 h-32 rounded-full border-4 border-[#0FA4A9]/10 overflow-hidden bg-gray-50 flex items-center justify-center">
+                 {imagePreview ? (
+                   <img src={imagePreview} alt="Profile" className="w-full h-full object-cover" />
+                 ) : (
+                    <User size={64} className="text-[#94A3B8]" />
+                 )}
+              </div>
+              <label className="absolute bottom-1 right-1 w-10 h-10 bg-[#0FA4A9] rounded-xl border-4 border-white flex items-center justify-center text-white cursor-pointer hover:scale-110 transition-transform">
+                 <Plus size={20} />
+                 <input type="file" className="hidden" accept="image/*" onChange={handleImageChange} />
+              </label>
+           </div>
+           <div className="text-center">
+              <h3 className="text-lg font-bold text-[#1F2D2E]">Profile Picture</h3>
+              <p className="text-xs text-[#5F6F73] font-medium mt-1">PNG, JPG or JPEG. Max 2MB.</p>
+           </div>
+        </div>
+
         <div className="bg-[#EAFBF7] rounded-[16px] p-6 flex items-center gap-4 text-[#0FA4A9]">
            <Info size={20} />
            <p className="text-xs font-medium">This information helps personalize your wellness insights and projections. Your privacy is our priority.</p>
         </div>
 
+        {/* Personal & Body Section */}
         <div className="bg-white rounded-[16px] p-8 border border-[#3A86FF]/25 shadow-sm flex flex-col gap-8">
-           <h2 className="text-xl font-bold text-[#1F2D2E]">Personal Details</h2>
+           <h2 className="text-xl font-bold text-[#1F2D2E]">Personal & Body Details</h2>
            
            <div className="flex flex-col gap-6">
-              <div className="flex flex-col gap-3">
-                 <label className="text-sm font-bold text-[#1F2D2E]">Full Name</label>
-                 <input 
-                   type="text" 
-                   defaultValue="Alex Rivera"
-                   className="w-full bg-white border border-gray-200 rounded-[12px] py-4 px-6 text-sm md:text-base outline-none focus:ring-2 focus:ring-[#3A86FF]/10 transition-all"
-                 />
-              </div>
-
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                  <div className="flex flex-col gap-3">
-                    <label className="text-sm font-bold text-[#1F2D2E]">Date of Birth</label>
-                    <div className="relative">
-                      <input 
-                        type="text" 
-                        defaultValue="06/15/1992"
-                        className="w-full bg-white border border-gray-200 rounded-[12px] py-4 px-6 text-sm md:text-base outline-none pr-12"
-                      />
-                      <Calendar size={20} className="absolute right-4 top-1/2 -translate-y-1/2 text-[#0FA4A9]" />
-                    </div>
+                    <label className="text-sm font-bold text-[#1F2D2E]">Full Name</label>
+                    <input 
+                      type="text" 
+                      name="name"
+                      value={formData.name}
+                      onChange={handleInputChange}
+                      className="w-full bg-white border border-gray-200 rounded-[12px] py-4 px-6 text-sm md:text-base outline-none focus:ring-2 focus:ring-[#3A86FF]/10 transition-all"
+                    />
+                 </div>
+                 <div className="flex flex-col gap-3">
+                    <label className="text-sm font-bold text-[#1F2D2E]">Location</label>
+                    <input 
+                      type="text" 
+                      name="location"
+                      placeholder="City, Country"
+                      value={formData.location}
+                      onChange={handleInputChange}
+                      className="w-full bg-white border border-gray-200 rounded-[12px] py-4 px-6 text-sm md:text-base outline-none focus:ring-2 focus:ring-[#3A86FF]/10 transition-all"
+                    />
+                 </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                 <div className="flex flex-col gap-3">
+                    <label className="text-sm font-bold text-[#1F2D2E]">Age</label>
+                    <input 
+                      type="number" 
+                      name="age"
+                      value={formData.age}
+                      onChange={handleInputChange}
+                      className="w-full bg-white border border-gray-200 rounded-[12px] py-4 px-6 text-sm md:text-base outline-none"
+                    />
                  </div>
                  <div className="flex flex-col gap-3">
                     <label className="text-sm font-bold text-[#1F2D2E]">Gender</label>
                     <div className="relative">
-                      <select className="w-full bg-white border border-gray-200 rounded-[12px] py-4 px-6 text-sm md:text-base outline-none appearance-none">
+                      <select name="sex" value={formData.sex} onChange={handleInputChange} className="w-full bg-white border border-gray-200 rounded-[12px] py-4 px-6 text-sm md:text-base outline-none appearance-none">
                         <option>Male</option>
                         <option>Female</option>
                         <option>Other</option>
@@ -329,76 +729,213 @@ const ProfileEditView = ({ onBack, currentUser }: { onBack: () => void, currentU
                       <ChevronDown size={20} className="absolute right-4 top-1/2 -translate-y-1/2 text-[#0FA4A9] pointer-events-none" />
                     </div>
                  </div>
+                 <div className="flex flex-col gap-3">
+                    <label className="text-sm font-bold text-[#1F2D2E]">Body Fat (%)</label>
+                    <input 
+                      type="number" 
+                      name="body_fat"
+                      value={formData.body_fat}
+                      onChange={handleInputChange}
+                      className="w-full bg-white border border-gray-200 rounded-[12px] py-4 px-6 text-sm md:text-base outline-none"
+                    />
+                 </div>
               </div>
 
-              <div className="flex flex-col gap-4">
-                 <div className="flex items-center justify-between">
-                    <h3 className="text-sm font-bold text-[#1F2D2E]">Preferred Units</h3>
-                    <div className="flex items-center gap-4 text-xs font-bold uppercase tracking-widest">
-                       <span className="text-[#0FA4A9] underline underline-offset-4">Metric</span>
-                       <span className="text-gray-300">Imperial</span>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                 <div className="flex flex-col gap-3">
+                    <label className="text-xs text-[#5F6F73] font-bold uppercase tracking-widest">HEIGHT (CM)</label>
+                    <input 
+                      type="number" 
+                      name="height"
+                      value={formData.height}
+                      onChange={handleInputChange}
+                      className="w-full bg-white border border-gray-200 rounded-[12px] py-4 px-6 text-sm md:text-base outline-none"
+                    />
+                 </div>
+                 <div className="flex flex-col gap-3">
+                    <label className="text-xs text-[#5F6F73] font-bold uppercase tracking-widest">WEIGHT (KG)</label>
+                    <input 
+                      type="number" 
+                      name="weight"
+                      value={formData.weight}
+                      onChange={handleInputChange}
+                      className="w-full bg-white border border-gray-200 rounded-[12px] py-4 px-6 text-sm md:text-base outline-none"
+                    />
+                 </div>
+              </div>
+           </div>
+        </div>
+
+        {/* Lifestyle Section */}
+        <div className="bg-white rounded-[16px] p-8 border border-[#3A86FF]/25 shadow-sm flex flex-col gap-8">
+           <h2 className="text-xl font-bold text-[#1F2D2E]">Lifestyle Context</h2>
+           
+           <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+              <div className="flex flex-col gap-6">
+                 <div className="flex flex-col gap-3">
+                    <label className="text-sm font-bold text-[#1F2D2E]">Stress Level (1-10)</label>
+                    <input 
+                      type="range" 
+                      name="stress_level"
+                      min="1" max="10"
+                      value={formData.stress_level}
+                      onChange={handleInputChange}
+                      className="w-full accent-[#0FA4A9]"
+                    />
+                    <div className="flex justify-between text-[10px] text-[#94A3B8] font-bold">
+                       <span>LOW</span>
+                       <span className="text-[#0FA4A9] text-sm">{formData.stress_level}</span>
+                       <span>HIGH</span>
                     </div>
                  </div>
-                 <div className="grid grid-cols-2 gap-6">
+
+                 <div className="flex flex-col gap-3">
+                    <label className="text-sm font-bold text-[#1F2D2E]">Daily Steps</label>
+                    <input 
+                      type="number" 
+                      name="daily_step"
+                      value={formData.daily_step}
+                      onChange={handleInputChange}
+                      className="w-full bg-white border border-gray-200 rounded-[12px] py-4 px-6 text-sm outline-none"
+                    />
+                 </div>
+
+                 <div className="flex flex-col gap-3">
+                    <label className="text-sm font-bold text-[#1F2D2E]">Sleep Hours</label>
+                    <input 
+                      type="number" 
+                      name="sleep_hour"
+                      step="0.5"
+                      value={formData.sleep_hour}
+                      onChange={handleInputChange}
+                      className="w-full bg-white border border-gray-200 rounded-[12px] py-4 px-6 text-sm outline-none"
+                    />
+                 </div>
+              </div>
+
+              <div className="flex flex-col gap-6">
+                 <div className="flex flex-col gap-3">
+                    <label className="text-sm font-bold text-[#1F2D2E]">Overall Diet Quality</label>
+                    <input 
+                      type="text" 
+                      name="overall_diet_quality" 
+                      value={formData.overall_diet_quality} 
+                      onChange={handleInputChange} 
+                      placeholder="e.g. good"
+                      className="w-full bg-white border border-gray-200 rounded-[12px] py-4 px-6 text-sm outline-none"
+                    />
+                 </div>
+
+                 <div className="flex flex-col gap-3">
+                    <label className="text-sm font-bold text-[#1F2D2E]">Workout (sessions/week)</label>
+                    <input 
+                      type="text" 
+                      name="workout_week" 
+                      value={formData.workout_week} 
+                      onChange={handleInputChange} 
+                      placeholder="e.g. 3"
+                      className="w-full bg-white border border-gray-200 rounded-[12px] py-4 px-6 text-sm outline-none"
+                    />
+                 </div>
+
+                 <div className="grid grid-cols-2 gap-4">
                     <div className="flex flex-col gap-3">
-                       <label className="text-xs text-[#5F6F73] font-bold uppercase tracking-widest">HEIGHT (CM)</label>
-                       <input 
-                         type="text" 
-                         defaultValue="178"
-                         className="w-full bg-white border border-gray-200 rounded-[12px] py-4 px-6 text-sm md:text-base outline-none"
-                       />
+                       <label className="text-xs font-bold text-[#1F2D2E]">Smoking</label>
+                       <div className="flex bg-gray-50 p-1 rounded-xl">
+                          <button onClick={() => setFormData(p => ({...p, smoking_status: "0"}))} className={cn("flex-1 py-2 rounded-lg text-xs font-bold", formData.smoking_status === "0" ? "bg-white text-[#0FA4A9] shadow-sm" : "text-[#94A3B8]")}>No</button>
+                          <button onClick={() => setFormData(p => ({...p, smoking_status: "1"}))} className={cn("flex-1 py-2 rounded-lg text-xs font-bold", formData.smoking_status === "1" ? "bg-white text-red-500 shadow-sm" : "text-[#94A3B8]")}>Yes</button>
+                       </div>
                     </div>
                     <div className="flex flex-col gap-3">
-                       <label className="text-xs text-[#5F6F73] font-bold uppercase tracking-widest">WEIGHT (KG)</label>
-                       <input 
-                         type="text" 
-                         defaultValue="74"
-                         className="w-full bg-white border border-gray-200 rounded-[12px] py-4 px-6 text-sm md:text-base outline-none"
-                       />
+                       <label className="text-xs font-bold text-[#1F2D2E]">Alcohol</label>
+                       <div className="flex bg-gray-50 p-1 rounded-xl">
+                          <button onClick={() => setFormData(p => ({...p, alcohol_consumption: "0"}))} className={cn("flex-1 py-2 rounded-lg text-xs font-bold", formData.alcohol_consumption === "0" ? "bg-white text-[#0FA4A9] shadow-sm" : "text-[#94A3B8]")}>No</button>
+                          <button onClick={() => setFormData(p => ({...p, alcohol_consumption: "1"}))} className={cn("flex-1 py-2 rounded-lg text-xs font-bold", formData.alcohol_consumption === "1" ? "bg-white text-red-500 shadow-sm" : "text-[#94A3B8]")}>Yes</button>
+                       </div>
                     </div>
                  </div>
               </div>
            </div>
         </div>
 
+        {/* Wellness Characteristics */}
         <div className="bg-white rounded-[16px] p-8 border border-[#3A86FF]/25 shadow-sm flex flex-col gap-8">
-           <h2 className="text-xl font-bold text-[#1F2D2E]">Lifestyle Context (Optional)</h2>
-           
-           <div className="flex flex-col gap-6">
-              <div className="flex flex-col gap-3">
-                 <label className="text-sm font-bold text-[#1F2D2E]">Activity Level</label>
-                 <div className="grid grid-cols-3 gap-4">
-                    {["Low", "Moderate", "High"].map((item) => (
-                      <div 
-                        key={item} 
-                        className={cn(
-                          "py-4 border rounded-[12px] text-center font-bold text-sm cursor-pointer transition-all",
-                          item === "Moderate" ? "bg-[#EAFBF7] border-[#0FA4A9] text-[#0FA4A9]" : "bg-white border-gray-100 text-[#5F6F73] hover:bg-gray-50"
-                        )}
-                      >
-                        {item}
-                      </div>
-                    ))}
-                 </div>
-              </div>
+           <h2 className="text-xl font-bold text-[#1F2D2E]">Wellness Characteristics</h2>
+           <div className="flex flex-wrap gap-4">
+              {[
+                { label: "Athletic", key: "is_athletic" },
+                { label: "Toned", key: "toned" },
+                { label: "Lean", key: "lean" },
+                { label: "Muscular", key: "muscular" },
+                { label: "Curvy Fit", key: "curvy_fit" }
+              ].map((item) => (
+                <button 
+                  key={item.key} 
+                  onClick={() => toggleField(item.key)}
+                  className={cn(
+                    "px-6 py-3 rounded-xl font-bold text-sm transition-all border",
+                    (formData as any)[item.key] === 1 
+                      ? "bg-[#EAFBF7] border-[#0FA4A9] text-[#0FA4A9] shadow-sm" 
+                      : "bg-white border-gray-100 text-[#94A3B8] hover:bg-gray-50"
+                  )}
+                >
+                   {item.label}
+                </button>
+              ))}
+           </div>
+        </div>
 
-              <div className="flex flex-col gap-3">
-                 <label className="text-sm font-bold text-[#1F2D2E]">Primary Wellness Goal</label>
-                 <div className="relative">
-                   <select className="w-full bg-white border border-gray-200 rounded-[12px] py-4 px-6 text-sm md:text-base outline-none appearance-none">
-                     <option>General wellness</option>
-                     <option>Muscle gain</option>
-                     <option>Weight loss</option>
-                   </select>
-                   <ChevronDown size={20} className="absolute right-4 top-1/2 -translate-y-1/2 text-[#0FA4A9] pointer-events-none" />
-                 </div>
-              </div>
+        {/* Medical History Section */}
+        <div className="bg-white rounded-[16px] p-8 border border-[#3A86FF]/25 shadow-sm flex flex-col gap-8">
+           <h2 className="text-xl font-bold text-[#1F2D2E]">Medical History</h2>
+           
+           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-y-6 gap-x-8">
+              {[
+                 { label: "Diabetes", key: "diabetes" },
+                 { label: "High Blood Pressure", key: "high_blood_pressure" },
+                 { label: "High Cholesterol", key: "high_cholesterol" },
+                 { label: "Heart Disease", key: "heart_disease" },
+                 { label: "Asthma", key: "asthma" },
+                 { label: "Arthritis", key: "athritis" },
+                 { label: "Depression", key: "depression" },
+                 { label: "Anxiety", key: "anxiety" },
+                 { label: "Sleep Apnea", key: "sleep_apnea" },
+                 { label: "Thyroid Issue", key: "thyroid_issue" }
+              ].map((item) => (
+                <div key={item.key} className="flex items-center gap-3 group cursor-pointer" onClick={() => toggleField(item.key)}>
+                   <div className={cn(
+                      "w-6 h-6 rounded-lg border-2 flex items-center justify-center transition-all",
+                      (formData as any)[item.key] === 1 ? "bg-[#0FA4A9] border-[#0FA4A9]" : "border-gray-200 group-hover:border-[#0FA4A9]/50"
+                   )}>
+                      {(formData as any)[item.key] === 1 && <Check size={14} className="text-white" />}
+                   </div>
+                   <span className="text-sm font-semibold text-[#5F6F73]">{item.label}</span>
+                </div>
+              ))}
+           </div>
+
+           <div className="flex flex-col gap-3 mt-4">
+              <label className="text-sm font-bold text-[#1F2D2E]">Current Medication (Optional)</label>
+              <textarea 
+                name="current_medication"
+                value={formData.current_medication}
+                onChange={handleInputChange}
+                rows={3}
+                placeholder="List any medications you are currently taking..."
+                className="w-full bg-white border border-gray-200 rounded-[12px] p-6 text-sm outline-none resize-none"
+              />
            </div>
         </div>
 
         <div className="flex items-center gap-4">
-           <button className="flex-1 bg-[#0FA4A9] text-white py-4 rounded-[12px] font-bold text-base hover:bg-[#0d8e92] transition-all cursor-pointer shadow-lg shadow-[#0FA4A9]/20">
-             Save Changes
+           <button 
+             onClick={handleSubmit}
+             disabled={isSaving}
+             className="flex-1 bg-[#0FA4A9] text-white py-4 rounded-[12px] font-bold text-base hover:bg-[#0d8e92] transition-all cursor-pointer shadow-lg shadow-[#0FA4A9]/20 flex items-center justify-center gap-3 disabled:opacity-70 disabled:cursor-not-allowed"
+           >
+             {isSaving ? (
+               <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+             ) : "Save Changes & Update Insights"}
            </button>
            <button onClick={onBack} className="flex-1 bg-white border border-gray-100 text-[#5F6F73] py-4 rounded-[12px] font-bold text-base hover:bg-gray-50 transition-all cursor-pointer">
              Cancel

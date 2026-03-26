@@ -52,8 +52,8 @@ export const baseApi = createApi({
     "Notifications",
     "Partners",
     "Privacy",
+    "NotificationSettings",
     "BulkProduct",
   ],
-
   endpoints: () => ({}),
 });
