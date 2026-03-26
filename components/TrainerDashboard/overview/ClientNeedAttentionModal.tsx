@@ -4,19 +4,10 @@ import { X, AlertTriangle } from "lucide-react";
 import { useState } from "react";
 import ScheduleCheckinModal from "../calendar/ScheduleCheckinModal";
 import { useRouter } from "next/navigation";
-
-interface ClientNeedingAttention {
-  id: number;
-  name: string;
-  status: "need-attention" | "on-track" | "inactive";
-  turningRate: number;
-  reason: string;
-  lastActivity: string;
-  goal: string;
-}
+import { ClientTableItem } from "@/redux/features/api/TrainerDashboard/trainerOverviewApi";
 
 interface ClientDetailModalProps {
-  client: ClientNeedingAttention;
+  client: ClientTableItem;
   onClose: () => void;
 }
 
@@ -30,8 +21,8 @@ export default function ClientDetailModal({
   const handleSendMessage = () => {
     // message page e navigate koro
     router.push(
-      `/trainer-dashboard/messages?clientId=${client.id}&clientName=${encodeURIComponent(
-        client.name,
+      `/trainer-dashboard/messages?clientId=${client.user_id}&clientName=${encodeURIComponent(
+        client.user_name,
       )}`,
     );
     onClose(); 
@@ -56,7 +47,7 @@ export default function ClientDetailModal({
           <div className="grid grid-cols-2 gap-4">
             <div>
               <p className="text-sm text-gray-600 mb-1">Client Name</p>
-              <p className="text-lg font-bold text-gray-900">{client.name}</p>
+              <p className="text-lg font-bold text-gray-900">{client.user_name}</p>
             </div>
             <div>
               <p className="text-sm text-gray-600 mb-1">Goal</p>
@@ -65,65 +56,14 @@ export default function ClientDetailModal({
             <div>
               <p className="text-sm text-gray-600 mb-1">Status</p>
               <span className="inline-block px-3 py-1 rounded-full text-xs font-semibold bg-[#D3BB5B1A] text-[#D3BB5B]">
-                Need Attention
+                {client.status}
               </span>
             </div>
             <div>
               <p className="text-sm text-gray-600 mb-1">Last Activity</p>
               <p className="text-lg font-bold text-gray-900">
-                {client.lastActivity}
+                {client.activity}
               </p>
-            </div>
-          </div>
-
-          {/* Turning Rate */}
-          <div className="bg-gray-50 p-4 rounded-lg">
-            <div className="flex items-center gap-2 mb-3">
-              <AlertTriangle className="w-5 h-5 text-yellow-600" />
-              <p className="font-semibold text-gray-900">Engagement Status</p>
-            </div>
-            <div className="flex items-center gap-4">
-              <div className="flex-1">
-                <div className="h-3 bg-gray-200 rounded-full overflow-hidden">
-                  <div
-                    className={`h-full transition-all ${
-                      client.turningRate < 30
-                        ? "bg-green-500"
-                        : client.turningRate < 60
-                          ? "bg-yellow-500"
-                          : "bg-red-500"
-                    }`}
-                    style={{ width: `${client.turningRate}%` }}
-                  />
-                </div>
-              </div>
-              <div className="text-right">
-                <p
-                  className={`text-2xl font-bold ${
-                    client.turningRate < 30
-                      ? "text-green-600"
-                      : client.turningRate < 60
-                        ? "text-yellow-600"
-                        : "text-red-600"
-                  }`}
-                >
-                  {client.turningRate}%
-                </p>
-                <p className="text-xs text-gray-600">Turning away rate</p>
-              </div>
-            </div>
-          </div>
-
-          {/* Reason/Threshold */}
-          <div className="bg-red-50 border border-red-200 p-4 rounded-lg">
-            <div className="flex items-start gap-3">
-              <AlertTriangle className="w-5 h-5 text-red-600 shrink-0 mt-0.5" />
-              <div>
-                <p className="font-semibold text-red-900 mb-1">
-                  Reason for Attention
-                </p>
-                <p className="text-sm text-red-800">{client.reason}</p>
-              </div>
             </div>
           </div>
 
@@ -142,14 +82,6 @@ export default function ClientDetailModal({
                 <span>
                   Review their program and adjust if needed for better fit
                 </span>
-              </li>
-              <li className="flex items-start gap-2">
-                <span className="text-blue-600 font-bold">•</span>
-                <span>Schedule a priority check-in call this week</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <span className="text-blue-600 font-bold">•</span>
-                <span>Analyze barriers to compliance and provide support</span>
               </li>
             </ul>
           </div>

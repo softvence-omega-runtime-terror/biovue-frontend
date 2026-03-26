@@ -10,6 +10,8 @@ import { cn } from "@/lib/utils";
 const PaymentSuccessPage = () => {
   const { data, isLoading, isError } = useGetPaymentSummaryQuery();
 
+  console.log(data,"showpricing data ")
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-[#F9FAFB] flex flex-col items-center justify-center p-6">

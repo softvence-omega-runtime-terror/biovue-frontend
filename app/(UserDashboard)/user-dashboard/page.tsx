@@ -20,24 +20,30 @@ import {
   Loader2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useSelector } from "react-redux";
+import { selectCurrentUser } from "@/redux/features/slice/authSlice";
 import LogTodayModal from "@/components/dashboard/LogTodayModal";
 import ChangeSourceModal from "@/components/dashboard/ChangeSourceModal";
-import NotificationDropdown, {
-  MOCK_NOTIFICATIONS,
-} from "@/components/dashboard/NotificationDropdown";
+import NotificationBell from "@/components/dashboard/NotificationBell";
 import ChartsNutrition from "@/components/UserDashboard/Dashboard/ChartsNutrition";
 import { useGetCardDataQuery } from "@/redux/features/api/userDashboard/habit";
 import { useGetInsightsQuery } from "@/redux/features/api/userDashboard/insightsApi";
+import { useGetUserOverviewChartQuery } from "@/redux/features/api/userDashboard/dashboardApi";
 
 // --- Main Page ---
 const UserDashboard = () => {
+  const currentUser = useSelector(selectCurrentUser);
+  const userName = currentUser?.name || "User";
+
   const [showLogModal, setShowLogModal] = useState(false);
   const [showSourceModal, setShowSourceModal] = useState(false);
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
-  const [notifications, setNotifications] = useState(MOCK_NOTIFICATIONS);
   const [dataSource, setDataSource] = useState<"device" | "manual">("device");
+  const [days, setDays] = useState(7);
+  
   const { data: cardData, isLoading: isCardLoading } = useGetCardDataQuery();
   const { data: insightsData, isLoading: isInsightsLoading } = useGetInsightsQuery({});
+  const { data: chartResponse, isLoading: isChartLoading } = useGetUserOverviewChartQuery(days);
 
   const [habitData, setHabitData] = useState({
     weight: "",
@@ -65,6 +71,7 @@ const UserDashboard = () => {
   const rawData = cardData?.data;
   const summary = rawData?.summary;
   const healthOverview = rawData?.health_overview;
+  const chartData = chartResponse?.charts;
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -72,28 +79,7 @@ const UserDashboard = () => {
       <header className="sticky top-0 z-20 flex items-center justify-between py-4 bg-white border-b border-gray-100 px-6 w-full">
         <h1 className="text-xl font-semibold text-[#1F2D2E]">Dashboard</h1>
         <div className="flex items-center gap-4 ml-auto">
-          <div className="relative">
-            <button
-              onClick={() => setIsNotificationOpen(!isNotificationOpen)}
-              className="relative p-2 rounded-full bg-[#F4FBFA] hover:bg-gray-100 transition-colors cursor-pointer"
-              aria-label="Notifications"
-            >
-              <Bell size={20} className="text-[#5F6F73]" />
-              {notifications.some((n) => !n.isRead) && (
-                <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full border-2 border-white"></span>
-              )}
-            </button>
-            <NotificationDropdown
-              isOpen={isNotificationOpen}
-              onClose={() => setIsNotificationOpen(false)}
-              onMarkAllAsRead={() =>
-                setNotifications((prev) =>
-                  prev.map((n) => ({ ...n, isRead: true })),
-                )
-              }
-              notifications={notifications.filter((n) => !n.isRead)} // Show only unread or all based on preference, Image 2 seems to show unread, but let's just show all recent or unread. I'll pass all for now since there's only 5. Let's pass all.
-            />
-          </div>
+          <NotificationBell />
           <div className="flex items-center gap-3 pr-2">
             <Image
               src="/images/avatar.png"
@@ -117,7 +103,7 @@ const UserDashboard = () => {
         {/* Welcome Message */}
         <div className="bg-white rounded-xl p-4 md:p-6 border border-gray-100 shadow-[0_2px_12px_rgba(0,0,0,0.02)]">
           <h2 className="text-lg font-bold text-[#1F2D2E] mb-1">
-            Welcome, Shamim.airclub!
+            Welcome, {userName}!
           </h2>
           <p className="text-sm text-[#5F6F73]">
             Complete your setup to unlock future features
@@ -334,24 +320,29 @@ const UserDashboard = () => {
             <h2 className="text-xl font-bold text-[#1F2D2E]">
               Your Progress & Trends
             </h2>
-            <div className="flex p-1 bg-white border border-gray-100 rounded-lg">
-              {["Weekly", "Monthly", "Last 3 months"].map((t) => (
+            <div className="flex p-1 bg-white border border-gray-100 rounded-lg shadow-sm">
+              {[
+                { label: "Weekly", value: 7 },
+                { label: "Monthly", value: 30 },
+                { label: "Last 3 months", value: 90 }
+              ].map((t) => (
                 <button
-                  key={t}
+                  key={t.value}
+                  onClick={() => setDays(t.value)}
                   className={cn(
                     "px-4 py-1.5 text-xs font-semibold rounded-md transition-all cursor-pointer",
-                    t === "Weekly"
+                    days === t.value
                       ? "bg-[#E4EFFF] text-[#3A86FF]"
                       : "text-[#5F6F73] hover:text-[#1F2D2E]",
                   )}
                 >
-                  {t}
+                  {t.label}
                 </button>
               ))}
             </div>
           </div>
 
-          <ChartsNutrition />
+          <ChartsNutrition data={chartData} isLoading={isChartLoading} />
         </div>
 
         {/* Today's Focus - Dynamic Insights */}

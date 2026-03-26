@@ -197,7 +197,18 @@ const PricingPage = () => {
                       ? "See your future and track how your lifestyle is improving."
                       : "Build a complete picture of your future health with our advanced AI, real-world data sync, and long-term forecasting."
                   }
-                  features={plan.features.map(f => ({ text: f, included: true }))}
+                  features={plan.features.map(f => {
+                    
+                    const lockedFeatures = [
+                      "ai improvement suggestions",
+                      "health indicators",
+                      "recommended coaches & clinics",
+                      "achievement badges & progress reports",
+                    ];
+                    const isLocked = plan.name.toLowerCase().includes("free trial") && 
+                                    lockedFeatures.some(lf => f.toLowerCase().includes(lf));
+                    return { text: f, included: !isLocked };
+                  })}
                   cta={plan.name.toLowerCase().includes("free trial") ? `Start ${plan.duration}-Day Trial` : `Upgrade To ${plan.name}`}
                   active={false}
                   ctaColor="bg-[#0FA4A9]"
@@ -229,7 +240,35 @@ const PricingPage = () => {
                   price={plan.price === "0.00" || plan.price === 0 ? "Custom" : plan.price}
                   period={plan.price === "0.00" || plan.price === 0 ? "" : "/Month"}
                   subtext={plan.price !== "0.00" && plan.price !== 0 ? "7 days free trial" : ""}
-                  features={plan.features.map(f => ({ text: f, included: true }))}
+                  features={(() => {
+                    const overrideTexts = ["Dedicated account manager", "Quarterly business reviews"];
+                    const baseFeatures = plan.features
+                      .filter(f => !overrideTexts.some(ot => f.toLowerCase().includes(ot.toLowerCase())))
+                      .map(f => ({ text: f, included: true }));
+
+                    // Professional Plan specific card overrides
+                    if (plan.plan_type === "professional") {
+                      if (idx === 1) { // 2nd Professional Card
+                        return [...baseFeatures, { text: "Dedicated account manager", included: false, isNegative: true }];
+                      }
+                      if (idx === 2) { // 3rd Professional Card
+                        return [
+                          ...baseFeatures,
+                          { text: "Quarterly business reviews", included: false, isNegative: true },
+                          { text: "Dedicated account manager", included: false, isNegative: true }
+                        ];
+                      }
+                      if (plan.name.toLowerCase().includes("enterprise")) {
+                        return [
+                          ...baseFeatures,
+                          { text: "Dedicated account manager", included: true },
+                          { text: "Quarterly business reviews", included: true }
+                        ];
+                      }
+                    }
+                    
+                    return baseFeatures;
+                  })()}
                   cta={plan.name.toLowerCase().includes("enterprise") || plan.price === "0.00" || plan.price === 0 ? "Contact Via Mail" : "Start 7-Day Free Trial"}
                   active={false}
                   ctaColor="bg-[#0FA4A9]"
@@ -375,18 +414,16 @@ const PricingCard = ({
             <li key={i} className="flex items-start gap-3">
               <div className="mt-0.5 shrink-0 flex items-center justify-center">
                 {f.icon ? f.icon : (
-                   f.included ? (
+                   f.isNegative ? (
+                     <div className="w-[18px] h-[18px] flex items-center justify-center">
+                        <X size={16} className="text-[#94A3B8]" />
+                     </div>
+                   ) : f.included ? (
                      <div className="w-[18px] h-[18px] rounded-full bg-[#E4EFFF] flex items-center justify-center">
                        <Check size={12} strokeWidth={3} className="text-[#3A86FF]" />
                      </div>
                    ) : (
-                     f.isNegative ? (
-                       <div className="w-[18px] h-[18px] flex items-center justify-center">
-                          <span className="text-[#94A3B8] text-lg font-medium leading-none">×</span>
-                       </div>
-                     ) : (
-                       <Lock size={16} className="text-[#94A3B8] opacity-60" />
-                     )
+                     <Lock size={16} className="text-[#94A3B8] opacity-60" />
                    )
                 )}
               </div>

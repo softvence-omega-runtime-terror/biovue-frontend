@@ -102,26 +102,41 @@ export default function HabitProgressPage() {
   const habitId = params.habitId as string;
   const currentUser = useSelector(selectCurrentUser);
   const userId = currentUser?.id || currentUser?.user_id;
+  
+  const [view, setView] = useState<"trends" | "logging">("trends");
+  const [timeframe, setTimeframe] = useState("Weekly");
+  const [isLogModalOpen, setIsLogModalOpen] = useState(false);
 
   const { data: habitData, isLoading: isHabitLoading } = useGetHabitsQuery(userId, { skip: !userId });
+
+  const timeframeToDays = (tf: string) => {
+    switch (tf) {
+      case "Weekly": return 7;
+      case "Monthly": return 30;
+      case "Last 3 months": return 90;
+      default: return 7;
+    }
+  };
+
+  const days = timeframeToDays(timeframe);
   
-  const { data: sleepReport, isLoading: isSleepLoading } = useGetSleepReportQuery(undefined, {
+  const { data: sleepReport, isLoading: isSleepLoading } = useGetSleepReportQuery(days, {
     skip: habitId !== 'sleep'
   });
 
-  const { data: nutritionReport, isLoading: isNutritionLoading } = useGetNutritionReportQuery(undefined, {
+  const { data: nutritionReport, isLoading: isNutritionLoading } = useGetNutritionReportQuery(days, {
     skip: habitId !== 'nutrition'
   });
 
-  const { data: activityReport, isLoading: isActivityLoading } = useGetActivityReportQuery(undefined, {
+  const { data: activityReport, isLoading: isActivityLoading } = useGetActivityReportQuery(days, {
     skip: habitId !== 'activity'
   });
 
-  const { data: hydrationReport, isLoading: isHydrationLoading } = useGetHydrationReportQuery(undefined, {
+  const { data: hydrationReport, isLoading: isHydrationLoading } = useGetHydrationReportQuery(days, {
     skip: habitId !== 'hydration'
   });
 
-  const { data: stressReport, isLoading: isStressLoading } = useGetStressReportQuery(undefined, {
+  const { data: stressReport, isLoading: isStressLoading } = useGetStressReportQuery(days, {
     skip: habitId !== 'stress'
   });
 
@@ -228,9 +243,6 @@ export default function HabitProgressPage() {
         mood: item.mood
       })) : MOCK_DATA;
 
-  const [view, setView] = useState<"trends" | "logging">("trends");
-  const [timeframe, setTimeframe] = useState("Weekly");
-  const [isLogModalOpen, setIsLogModalOpen] = useState(false);
 
   const handleLogClick = () => {
     if (habitId === "stress") {

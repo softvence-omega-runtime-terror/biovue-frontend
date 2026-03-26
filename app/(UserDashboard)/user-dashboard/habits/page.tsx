@@ -59,6 +59,7 @@ export default function HabitsPage() {
   const { data: cardData, isLoading: isLoadingCards } = useGetCardDataQuery();
   const { data: habitData, isLoading: isLoadingHabits } = useGetHabitsQuery(userId, { skip: !userId });
   const [updateHabits, { isLoading: isUpdating }] = useUpdateHabitsMutation();
+  
 
   console.log(cardData, "carddata frontend page ");
   console.log(habitData, "habitData - insights");
@@ -152,7 +153,7 @@ export default function HabitsPage() {
             className="flex items-center gap-2 px-4 py-2 bg-[#0FA4A9] text-white rounded-lg text-sm font-medium hover:bg-opacity-90 transition-all disabled:opacity-50 cursor-pointer"
           >
             <RefreshCw size={16} className={cn(isUpdating && "animate-spin")} />
-            {isUpdating ? "Updating..." : "Refresh Insights"}
+            {isUpdating ? "Updating..." : "Refresh Habits"}
           </button>
         </div>
 

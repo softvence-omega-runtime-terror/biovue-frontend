@@ -5,6 +5,8 @@ import { Frown, Meh, Smile, X, ArrowLeft, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { usePostStressLogMutation } from "@/redux/features/api/userDashboard/stresslog";
 import { toast } from "sonner";
+import { useSelector } from "react-redux";
+import { selectCurrentUser } from "@/redux/features/slice/authSlice";
 
 interface LogStressViewProps {
   onSave: () => void;
@@ -26,13 +28,15 @@ export default function LogStressView({ onSave, onBack }: LogStressViewProps) {
   const [stressLevel, setStressLevel] = useState(5);
   const [selectedMood, setSelectedMood] = useState("normal");
   const [description, setDescription] = useState("");
+  const currentUser = useSelector(selectCurrentUser);
+  const userId = currentUser?.id || currentUser?.user_id;
   
   const [postStressLog, { isLoading: isPosting }] = usePostStressLogMutation();
 
   const handleSubmit = async () => {
     try {
       const payload = {
-        user_id: 3, // Consistency with other logs
+        user_id: userId || 3, // Consistency with other logs
         stress_level: stressLevel,
         mood: selectedMood,
         description: description,
@@ -50,10 +54,23 @@ export default function LogStressView({ onSave, onBack }: LogStressViewProps) {
       }
     } catch (err: any) {
       console.error("Error logging stress:", err);
-      if (err.status === 400 || err.data?.message?.toLowerCase().includes("already logged")) {
+      
+      const errorData = err.data || {};
+      const errorMessage = (errorData.message || "").toLowerCase();
+      const exception = (errorData.exception || "").toLowerCase();
+      
+      if (
+        err.status === 409 || 
+        err.status === 500 ||
+        exception.includes("uniqueconstraintviolationexception") || 
+        errorMessage.includes("duplicate entry") || 
+        errorMessage.includes("already logged")
+      ) {
         toast.error("You have already logged data for today.");
+      } else if (err.status === 400) {
+        toast.error(errorData.message || "Invalid data. Please check your inputs.");
       } else {
-        toast.error("An error occurred while logging stress data.");
+        toast.error("An error occurred while logging stress data. Please try again.");
       }
     }
   };
