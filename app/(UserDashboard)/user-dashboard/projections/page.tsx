@@ -334,7 +334,7 @@ const ProjectionsPage = () => {
       {/* Right Column */}
       <div className="space-y-6">
         <div className="bg-white rounded-[24px] overflow-hidden border border-[#3A86FF]/20 flex flex-col items-center p-12 text-center shadow-sm">
-          <div className="relative w-64 h-80 rounded-2xl overflow-hidden mb-6 bg-gray-50 border border-gray-100 shadow-inner">
+          <div className="relative w-80 h-[450px] rounded-2xl overflow-hidden mb-6 bg-gray-50 border border-gray-100 shadow-inner">
             {imagePreview ? (
               <Image
                 src={imagePreview}
@@ -344,9 +344,13 @@ const ProjectionsPage = () => {
                 sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
               />
             ) : (
-              <div className="w-full h-full flex items-center justify-center bg-gray-100">
-                <User size={120} className="text-gray-300" />
-              </div>
+              <Image
+                src="/images/projection-img.jpg"
+                alt="Baseline"
+                fill
+                className="object-cover opacity-80"
+                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+              />
             )}
           </div>
           <h3 className="font-bold text-[#041228] uppercase tracking-wider mb-4">
@@ -355,8 +359,8 @@ const ProjectionsPage = () => {
               : "VERIFIED BASELINE PHOTO"}
           </h3>
           <label className="flex items-center gap-2 text-[#3A86FF] font-medium hover:text-[#2a6fd9] transition-all cursor-pointer">
-            <RotateCcw size={18} />
-            {imagePreview ? "Replace Photo" : "Upload Photo"}
+            {imagePreview ? <RotateCcw size={18} /> : <Upload size={18} />}
+            {imagePreview ? "Replace Photo" : "Upload Your Photo"}
             <input
               type="file"
               className="hidden"
