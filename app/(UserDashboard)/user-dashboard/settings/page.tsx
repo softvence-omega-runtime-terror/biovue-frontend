@@ -1,18 +1,26 @@
 "use client";
 
 import React, { useState } from "react";
+import { useSelector } from "react-redux";
+import { selectCurrentUser } from "@/redux/features/slice/authSlice";
+import {
+  useGetNotificationSettingsQuery,
+  useUpdateNotificationSettingsMutation
+} from "@/redux/features/api/userDashboard/notificationApi";
+import { useGetPlansQuery } from "@/redux/features/api/paymentApi";
+import { toast } from "sonner";
 import Image from "next/image";
-import { 
-  ArrowLeft, 
-  User, 
-  CreditCard, 
-  Smartphone, 
-  Plus, 
-  Info, 
-  Bell, 
-  ShieldCheck, 
-  Download, 
-  Trash2, 
+import {
+  ArrowLeft,
+  User,
+  CreditCard,
+  Smartphone,
+  Plus,
+  Info,
+  Bell,
+  ShieldCheck,
+  Download,
+  Trash2,
   LogOut,
   Calendar,
   ChevronDown,
@@ -27,9 +35,12 @@ type ViewState = "overview" | "profile" | "subscription";
 // --- Main Page ---
 const SettingsPage = () => {
   const [view, setView] = useState<ViewState>("overview");
+  const currentUser = useSelector(selectCurrentUser);
 
-  if (view === "profile") return <ProfileEditView onBack={() => setView("overview")} />;
-  if (view === "subscription") return <SubscriptionView onBack={() => setView("overview")} />;
+  // Notifications API
+
+  if (view === "profile") return <ProfileEditView onBack={() => setView("overview")} currentUser={currentUser} />;
+  if (view === "subscription") return <SubscriptionView onBack={() => setView("overview")} currentUser={currentUser} />;
 
   return (
     <div className="flex flex-col gap-10 p-6 md:p-8 w-full min-h-screen pb-24">
@@ -266,7 +277,7 @@ const SettingsPage = () => {
 
 // --- Sub-components (Views) ---
 
-const ProfileEditView = ({ onBack }: { onBack: () => void }) => {
+const ProfileEditView = ({ onBack, currentUser }: { onBack: () => void, currentUser: any }) => {
   return (
     <div className="flex flex-col gap-8 p-6 md:p-8 w-full min-h-screen pb-24">
        <button 
@@ -397,7 +408,17 @@ const ProfileEditView = ({ onBack }: { onBack: () => void }) => {
   );
 };
 
-const SubscriptionView = ({ onBack }: { onBack: () => void }) => {
+const SubscriptionView = ({ onBack, currentUser }: { onBack: () => void, currentUser: any }) => {
+  const [billingCycle, setBillingCycle] = useState<"monthly" | "yearly">("monthly");
+  
+  const { data: plansData, isLoading: isLoadingPlans } = useGetPlansQuery({
+    billing: billingCycle,
+    type: currentUser?.role || "individual"
+  });
+
+  const plans = plansData?.data || [];
+  const currentPlanId = currentUser?.plan_id;
+
   return (
     <div className="flex flex-col gap-8 p-6 md:p-8 w-full min-h-screen pb-24">
        <button 
@@ -419,19 +440,28 @@ const SubscriptionView = ({ onBack }: { onBack: () => void }) => {
               <div className="flex items-start justify-between">
                  <div className="flex flex-col gap-1">
                     <span className="text-xs font-bold uppercase tracking-widest opacity-80">Current Plan</span>
-                    <h2 className="text-3xl font-extrabold">Premium</h2>
+                    <h2 className="text-3xl font-extrabold">{currentUser?.plan_name || "Free Trial"}</h2>
                  </div>
                  <div className="flex flex-col items-end gap-2">
-                    <span className="text-xs font-bold opacity-80 uppercase tracking-widest">Monthly Billing</span>
+                    <span className="text-xs font-bold opacity-80 uppercase tracking-widest">
+                      {currentUser?.plan_duration ? `${currentUser.plan_duration} Days Left` : "No Active Plan"}
+                    </span>
                     <div className="bg-white/20 backdrop-blur-md px-4 py-1.5 rounded-full flex items-center gap-2">
-                       <div className="w-2 h-2 rounded-full bg-[#4ADE80]" />
-                       <span className="text-[10px] font-extrabold uppercase tracking-widest">Active</span>
+                       <div className={cn(
+                          "w-2 h-2 rounded-full",
+                          currentUser?.plan_id ? "bg-[#4ADE80]" : "bg-gray-400"
+                       )} />
+                       <span className="text-[10px] font-extrabold uppercase tracking-widest">
+                          {currentUser?.plan_id ? "Active" : "Inactive"}
+                       </span>
                     </div>
                  </div>
               </div>
               <div className="h-px bg-white/20 w-full" />
               <div className="flex items-center justify-between">
-                 <span className="text-xs font-bold opacity-80">Next Billing: Mar 15, 2024</span>
+                 <span className="text-xs font-bold opacity-80">
+                   Plan: {currentUser?.plan_name || "None"}
+                 </span>
                  <button className="text-[10px] font-extrabold uppercase tracking-widest border border-white/40 px-4 py-1.5 rounded-lg hover:bg-white/10 transition-all">Cancel Subscription</button>
               </div>
            </div>
@@ -446,73 +476,92 @@ const SubscriptionView = ({ onBack }: { onBack: () => void }) => {
               <p className="text-[#5F6F73] text-sm font-medium">Save up to 15% with annual billing</p>
            </div>
            <div className="flex text-sm font-bold items-center gap-4">
-              <span className="text-[#94A3B8] font-bold">Monthly</span>
-              <span className="text-[#0FA4A9] underline underline-offset-4">Annual</span>
+              <span 
+                onClick={() => setBillingCycle("monthly")}
+                className={cn(
+                  "cursor-pointer transition-all",
+                  billingCycle === "monthly" ? "text-[#0FA4A9] underline underline-offset-4" : "text-[#94A3B8]"
+                )}
+              >
+                Monthly
+              </span>
+              <span 
+                onClick={() => setBillingCycle("yearly")}
+                className={cn(
+                  "cursor-pointer transition-all",
+                  billingCycle === "yearly" ? "text-[#0FA4A9] underline underline-offset-4" : "text-[#94A3B8]"
+                )}
+              >
+                Annual
+              </span>
            </div>
         </div>
 
         {/* Plan Tiers */}
         <div className="flex flex-col gap-4">
-           {/* Free */}
-           <div className="bg-white rounded-[16px] p-6 border border-[#3A86FF]/25 shadow-sm flex items-center justify-between">
-              <div className="flex items-center gap-6">
-                 <div className="w-12 h-12 bg-[#E4EFFF] rounded-xl flex items-center justify-center text-[#3A86FF]">
-                    <User size={24} />
-                 </div>
-                 <div className="flex flex-col gap-1">
-                    <h4 className="text-xl font-bold text-[#1F2D2E]">Free</h4>
-                    <span className="text-xs text-[#5F6F73] font-medium">3 Projection / month</span>
-                 </div>
-              </div>
-              <div className="flex flex-col items-end gap-1">
-                 <span className="text-2xl font-extrabold text-[#1F2D2E]">
-                   $0<span className="text-sm font-medium text-[#94A3B8]">/yr</span>
-                 </span>
-                 <span className="text-[10px] font-bold text-[#94A3B8] uppercase tracking-widest">No coach access</span>
-              </div>
-           </div>
-
-           {/* Plus */}
-           <div className="bg-white rounded-[16px] p-6 border border-[#3A86FF]/25 shadow-sm flex items-center justify-between">
-              <div className="flex items-center gap-6">
-                 <div className="w-12 h-12 bg-[#E4EFFF] rounded-xl flex items-center justify-center text-[#3A86FF]">
-                    <User size={24} />
-                 </div>
-                 <div className="flex flex-col gap-1">
-                    <h4 className="text-xl font-bold text-[#1F2D2E]">Plus</h4>
-                    <span className="text-xs text-[#5F6F73] font-medium">10 Projection / month</span>
-                 </div>
-              </div>
-              <div className="flex flex-col items-end gap-1">
-                 <span className="text-2xl font-extrabold text-[#1F2D2E]">
-                   $314<span className="text-sm font-medium text-[#94A3B8]">/yr</span>
-                 </span>
-                 <span className="text-[10px] font-bold text-[#94A3B8] uppercase tracking-widest">Limited messaging</span>
-              </div>
-           </div>
-
-           {/* Premium (Selected) */}
-           <div className="bg-[#EAFBF7] rounded-[16px] p-6 border-2 border-[#0FA4A9] shadow-sm flex items-center justify-between ring-4 ring-[#0FA4A9]/5">
-              <div className="flex items-center gap-6">
-                 <div className="w-12 h-12 bg-[#0FA4A9] rounded-xl flex items-center justify-center text-white">
-                    <Crown size={24} />
-                 </div>
-                 <div className="flex flex-col gap-1">
-                    <h4 className="text-xl font-bold text-[#1F2D2E]">Premium</h4>
-                    <span className="text-xs text-[#0FA4A9] font-bold">Unlimited Projection</span>
-                 </div>
-              </div>
-              <div className="flex flex-col items-end gap-1">
-                 <span className="text-2xl font-extrabold text-[#1F2D2E]">
-                   $378<span className="text-sm font-medium text-[#94A3B8]">/yr</span>
-                 </span>
-                 <span className="text-[10px] font-bold text-[#0FA4A9] uppercase tracking-widest">Full Coach Access</span>
-              </div>
-           </div>
+           {isLoadingPlans ? (
+             <div className="py-20 flex items-center justify-center">
+                <div className="w-8 h-8 border-4 border-[#0FA4A9] border-t-transparent rounded-full animate-spin" />
+             </div>
+           ) : plans.length === 0 ? (
+             <div className="py-12 bg-white rounded-2xl border border-gray-100 text-center text-gray-500 font-medium">
+                No plans available for this cycle.
+             </div>
+           ) : (
+             plans.map((plan: any) => {
+               const isActive = Number(currentPlanId) === Number(plan.id);
+               return (
+                <div 
+                  key={plan.id}
+                  className={cn(
+                    "rounded-[16px] p-6 border transition-all duration-300",
+                    isActive 
+                      ? "bg-[#EAFBF7] border-2 border-[#0FA4A9] shadow-sm ring-4 ring-[#0FA4A9]/5" 
+                      : "bg-white border-[#3A86FF]/25 shadow-sm hover:border-[#0FA4A9]/50"
+                  )}
+                >
+                  <div className="flex items-center justify-between gap-4">
+                    <div className="flex items-center gap-6">
+                      <div className={cn(
+                        "w-12 h-12 rounded-xl flex items-center justify-center",
+                        isActive ? "bg-[#0FA4A9] text-white" : "bg-[#E4EFFF] text-[#3A86FF]"
+                      )}>
+                        {plan.name === "Premium" || plan.name === "Plus" ? <Crown size={24} /> : <User size={24} />}
+                      </div>
+                      <div className="flex flex-col gap-1">
+                        <h4 className="text-xl font-bold text-[#1F2D2E]">{plan.name}</h4>
+                        <div className="flex flex-col gap-1 mt-1">
+                           {plan.features.slice(0, 2).map((feature: string, i: number) => (
+                             <span key={i} className={cn(
+                               "text-[11px] font-medium flex items-center gap-1.5",
+                               isActive ? "text-[#0FA4A9]" : "text-[#5F6F73]"
+                             )}>
+                               <div className={cn("w-1 h-1 rounded-full", isActive ? "bg-[#0FA4A9]" : "bg-gray-300")} />
+                               {feature}
+                             </span>
+                           ))}
+                        </div>
+                      </div>
+                    </div>
+                    <div className="flex flex-col items-end gap-1">
+                      <span className="text-2xl font-extrabold text-[#1F2D2E]">
+                        ${plan.price}<span className="text-sm font-medium text-[#94A3B8]">/{plan.billing_cycle === 'monthly' ? 'mo' : 'yr'}</span>
+                      </span>
+                      {isActive && (
+                        <span className="text-[10px] font-bold text-[#0FA4A9] uppercase tracking-widest flex items-center gap-1">
+                          <Check size={10} /> Active Plan
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+               );
+             })
+           )}
         </div>
 
         <div className="flex items-center gap-4">
-           <button className="flex-[2] bg-primary text-white py-4 rounded-[12px] font-bold text-base hover:bg-[#0d8e92] transition-all cursor-pointer shadow-lg shadow-[#0FA4A9]/20">
+           <button className="flex-[2] bg-[#0FA4A9] text-white py-4 rounded-[12px] font-bold text-base hover:bg-[#0d8e92] transition-all cursor-pointer shadow-lg shadow-[#0FA4A9]/20">
              Confirm Changes
            </button>
            <button onClick={onBack} className="flex-1 bg-white border border-gray-100 text-[#5F6F73] py-4 rounded-[12px] font-bold text-base hover:bg-gray-50 transition-all cursor-pointer">
