@@ -13,7 +13,6 @@ import {
   ChevronUp,
   Mail,
   ArrowRight,
-  PhoneCallIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -27,6 +26,7 @@ const HelpPage = () => {
         "Learn the basics of using BioVue and setting up your profile.",
       icon: Book,
       color: "bg-blue-50 text-blue-600",
+      buttonText: "Sign Up to Get Started",
     },
     {
       title: "My Account",
@@ -34,18 +34,21 @@ const HelpPage = () => {
         "Manage your subscription, personal details, and preferences.",
       icon: User,
       color: "bg-teal-50 text-teal-600",
+      buttonText: "See Your Account",
     },
     {
       title: "Trainer Dashboard",
       description: "How to use our powerful tools for managing your clients.",
       icon: Layout,
       color: "bg-purple-50 text-purple-600",
+      buttonText: "Dashboard View",
     },
     {
       title: "Billing & Payments",
       description: "Information about invoicing, payments, and plan upgrades.",
       icon: CreditCard,
       color: "bg-amber-50 text-amber-600",
+      buttonText: "See Pricing",
     },
   ];
 
@@ -118,7 +121,7 @@ const HelpPage = () => {
                   {cat.description}
                 </p>
                 <div className="flex items-center text-[#0fa4a9] font-bold text-sm tracking-wide gap-2">
-                  EXPLORE ARTICLES
+                  {cat.buttonText}
                   <ArrowRight size={16} />
                 </div>
               </div>
@@ -182,20 +185,16 @@ const HelpPage = () => {
             </p>
 
             <div className="flex flex-col md:flex-row items-center justify-center gap-6 relative z-10">
-              <button className="bg-[#0fa4a9] text-white px-8 py-4 rounded-xl font-bold flex items-center gap-3 hover:bg-[#0d8d91] transition-all cursor-pointer group shadow-lg shadow-[#0fa4a9]/20">
-                <PhoneCallIcon
-                  size={20}
-                  className="group-hover:scale-110 transition-transform"
-                />
-                Call for help
-              </button>
-              <button className="bg-white/10 text-white border border-white/20 px-8 py-4 rounded-xl font-bold flex items-center gap-3 hover:bg-white/20 transition-all cursor-pointer group">
+              <a
+                href="mailto:BioVueSupport@gmail.com?subject=Support Request&body=Hi BioVue Team,"
+                className="bg-[#0fa4a9] text-white px-8 py-4 rounded-xl font-bold flex items-center gap-3 hover:bg-[#0d8d91] transition-all cursor-pointer group shadow-lg shadow-[#0fa4a9]/20"
+              >
                 <Mail
                   size={20}
                   className="group-hover:scale-110 transition-transform"
                 />
                 Email Us Directly
-              </button>
+              </a>
             </div>
           </div>
         </section>

@@ -80,7 +80,7 @@ function SubscriptionPlansContent() {
     <div className="min-h-screen font-inter pb-10">
       <div className="mx-auto">
         {/* Header */}
-        {/* <div className="mb-6 flex justify-end items-center">
+        <div className="mb-6 flex justify-end items-center">
           <button
             onClick={() => setShowAddModal(true)}
             className="flex cursor-pointer items-center gap-2 px-6 py-2.5 bg-[#0D9488] text-white rounded-xl hover:bg-[#0F766E] transition-all shadow-lg active:scale-95"
@@ -88,7 +88,7 @@ function SubscriptionPlansContent() {
             <Plus size={18} />
             <span className="font-semibold">Add New Plan</span>
           </button>
-        </div> */}
+        </div> 
 
         <div className="mb-8 flex justify-between items-end">
           <div>

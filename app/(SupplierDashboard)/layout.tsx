@@ -22,6 +22,7 @@ import { useRouter } from "next/navigation";
 import { useLogoutMutation } from "@/redux/features/api/auth/authApi";
 import { logout } from "@/redux/features/slice/authSlice";
 import { useAppDispatch } from "@/redux/store/hooks";
+import ProtectedRoute from "@/components/auth/ProtectedRoute";
 
 const MENU_ITEMS = [
   { icon: LayoutGrid, label: "Dashboard", href: "/supplier-dashboard" },
@@ -74,6 +75,7 @@ export default function SupplierDashboardLayout({
   };
 
   return (
+    <ProtectedRoute allowedRoles={["professional"]} allowedProfessions={["supplement_supplier"]}>
     <div className="flex h-screen bg-[#F3F8FF] overflow-hidden">
       {/* Sidebar */}
       <aside
@@ -83,15 +85,17 @@ export default function SupplierDashboardLayout({
         )}
       >
         {/* Sidebar Logo */}
-        <div className="h-32 flex items-center px-10">
-          <Image
-            src="/images/logo.png"
-            alt="BioVue Logo"
-            width={160}
-            height={60}
-            className={cn("object-contain", !isSidebarOpen && "hidden")}
-            priority
-          />
+        <div className="h-24 flex items-center px-10 py-10">
+          <Link href="/" className="block cursor-pointer">
+            <Image
+              src="/images/logo.png"
+              alt="BioVue Logo"
+              width={100}
+              height={38}
+              className={cn("object-contain", !isSidebarOpen && "hidden")}
+              priority
+            />
+          </Link>
         </div>
 
         {/* Sidebar Menu */}
@@ -173,5 +177,6 @@ export default function SupplierDashboardLayout({
         <main className="flex-1 overflow-y-auto p-8">{children}</main>
       </div>
     </div>
+    </ProtectedRoute>
   );
 }

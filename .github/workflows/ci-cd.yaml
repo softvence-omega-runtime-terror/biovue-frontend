@@ -13,11 +13,6 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
-
-      - uses: oven-sh/setup-bun@v2
-        with:
-          bun-version: latest
-
       - name: Install make 
         run: sudo apt-get install make
       - name: Docker hub login
@@ -52,4 +47,6 @@ jobs:
           host: ${{ secrets.VPS_IP }}
           username: ${{ secrets.VPS_USER }}
           password: ${{ secrets.VPS_PASSWORD }}
-          script: make deploy
+          script: |
+            cd ~/frontend
+            make deploy

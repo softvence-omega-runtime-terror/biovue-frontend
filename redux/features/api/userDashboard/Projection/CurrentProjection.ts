@@ -38,7 +38,7 @@ export const projectionApiEndpoints = projectionApi.injectEndpoints({
           }
         });
         return {
-          url: "/projection/current-lifestyle",
+          url: "/projection/current-lifestyle/",
           method: "POST",
           body: formData,
         };

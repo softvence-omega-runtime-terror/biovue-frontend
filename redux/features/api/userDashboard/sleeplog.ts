@@ -14,8 +14,8 @@ export const sleepLogApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["SleepLog", "Habit"],
     }),
-    getSleepReport: builder.query<any, void>({
-      query: () => "/sleep-report",
+    getSleepReport: builder.query<any, number | void>({
+      query: (days) => (days ? `/sleep-report?days=${days}` : "/sleep-report"),
       providesTags: ["SleepLog"],
     }),
   }),

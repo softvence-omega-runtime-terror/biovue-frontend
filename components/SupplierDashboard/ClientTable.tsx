@@ -2,13 +2,25 @@
 
 import { useState } from "react";
 import Image from "next/image";
-import { Search, Sparkles, Mail, User as UserIcon, Calendar } from "lucide-react";
+import {
+  Search,
+  Sparkles,
+  Mail,
+  User as UserIcon,
+  Calendar,
+  Target,
+} from "lucide-react";
 import { User } from "@/redux/features/api/SupplierDashboard/AllUsers";
 import SupplementMatchModal from "./SupplementMatchModal";
+import TargetGoalsModal from "./TargetGoalsModal";
 
 const getSafeImageSrc = (src: string | null | undefined) => {
   if (!src) return null;
-  if (src.startsWith("/") || src.startsWith("http://") || src.startsWith("https://")) {
+  if (
+    src.startsWith("/") ||
+    src.startsWith("http://") ||
+    src.startsWith("https://")
+  ) {
     try {
       if (src.startsWith("http")) {
         new URL(src);
@@ -31,6 +43,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 
+// clients er table
 interface ClientTableProps {
   users: User[];
 }
@@ -39,11 +52,12 @@ export default function ClientTable({ users }: ClientTableProps) {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isTargetGoalsModalOpen, setIsTargetGoalsModalOpen] = useState(false);
 
   const filteredUsers = users.filter(
     (user) =>
       user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      user.email.toLowerCase().includes(searchTerm.toLowerCase())
+      user.email.toLowerCase().includes(searchTerm.toLowerCase()),
   );
 
   const handleFindMatch = (user: User) => {
@@ -51,19 +65,29 @@ export default function ClientTable({ users }: ClientTableProps) {
     setIsModalOpen(true);
   };
 
+  const handleViewGoals = (user: User) => {
+    setSelectedUser(user);
+    setIsTargetGoalsModalOpen(true);
+  };
+
   return (
     <div className="bg-white rounded-[40px] border border-[#D9E6FF] shadow-sm overflow-hidden">
       {/* Table Header / Toolbar */}
       <div className="px-10 py-8 border-b border-[#F8FBFA] flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div>
-          <h2 className="text-2xl font-bold text-[#041228] mb-1 tracking-tight">Client Directory</h2>
+          <h2 className="text-2xl font-bold text-[#041228] mb-1 tracking-tight">
+            Client Directory
+          </h2>
           <p className="text-sm text-[#94A3B8] font-medium uppercase tracking-widest">
             {users.length} Total Users
           </p>
         </div>
-        
+
         <div className="relative w-full md:w-80 group">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-[#94A3B8] group-focus-within:text-[#0FA4A9] transition-colors" size={20} />
+          <Search
+            className="absolute left-4 top-1/2 -translate-y-1/2 text-[#94A3B8] group-focus-within:text-[#0FA4A9] transition-colors"
+            size={20}
+          />
           <input
             type="text"
             placeholder="Search by name or email..."
@@ -78,17 +102,33 @@ export default function ClientTable({ users }: ClientTableProps) {
         <Table className="w-full">
           <TableHeader>
             <TableRow className="bg-[#F8FBFA]/50 border-b border-[#F8FBFA] hover:bg-transparent">
-              <TableHead className="px-10 py-6 text-xs font-black text-[#94A3B8] uppercase tracking-[0.2em]">Profile</TableHead>
-              <TableHead className="px-10 py-6 text-xs font-black text-[#94A3B8] uppercase tracking-[0.2em]">User Details</TableHead>
-              <TableHead className="px-10 py-6 text-xs font-black text-[#94A3B8] uppercase tracking-[0.2em]">Classification</TableHead>
-              <TableHead className="px-10 py-6 text-xs font-black text-[#94A3B8] uppercase tracking-[0.2em]">Joined Date</TableHead>
-              <TableHead className="px-10 py-6 text-xs font-black text-[#94A3B8] uppercase tracking-[0.2em] text-center">Action</TableHead>
+              <TableHead className="px-10 py-6 text-xs font-black text-[#94A3B8] uppercase tracking-[0.2em]">
+                Profile
+              </TableHead>
+              <TableHead className="px-10 py-6 text-xs font-black text-[#94A3B8] uppercase tracking-[0.2em]">
+                User Details
+              </TableHead>
+              <TableHead className="px-10 py-6 text-xs font-black text-[#94A3B8] uppercase tracking-[0.2em]">
+                Classification
+              </TableHead>
+              <TableHead className="px-10 py-6 text-xs font-black text-[#94A3B8] uppercase tracking-[0.2em]">
+                Target Goals
+              </TableHead>
+              <TableHead className="px-10 py-6 text-xs font-black text-[#94A3B8] uppercase tracking-[0.2em]">
+                Joined Date
+              </TableHead>
+              <TableHead className="px-10 py-6 text-xs font-black text-[#94A3B8] uppercase tracking-[0.2em] text-center">
+                Action
+              </TableHead>
             </TableRow>
           </TableHeader>
           <TableBody className="divide-y divide-[#F8FBFA]">
             {filteredUsers.length > 0 ? (
               filteredUsers.map((user) => (
-                <TableRow key={user.id} className="hover:bg-[#F8FBFA]/30 transition-all border-b border-[#F8FBFA]">
+                <TableRow
+                  key={user.id}
+                  className="hover:bg-[#F8FBFA]/30 transition-all border-b border-[#F8FBFA]"
+                >
                   <TableCell className="px-10 py-6">
                     <div className="w-14 h-14 rounded-2xl bg-linear-to-br from-[#E4F0FF] to-[#D9E6FF] overflow-hidden flex items-center justify-center border-2 border-white shadow-sm">
                       {getSafeImageSrc(user.profile_image) ? (
@@ -100,16 +140,24 @@ export default function ClientTable({ users }: ClientTableProps) {
                           className="object-cover h-full w-full"
                         />
                       ) : (
-                        <UserIcon size={24} className="text-[#3A86FF]" strokeWidth={1.5} />
+                        <UserIcon
+                          size={24}
+                          className="text-[#3A86FF]"
+                          strokeWidth={1.5}
+                        />
                       )}
                     </div>
                   </TableCell>
                   <TableCell className="px-10 py-6">
                     <div className="flex flex-col">
-                      <span className="text-lg font-bold text-[#041228] mb-1">{user.name}</span>
+                      <span className="text-lg font-bold text-[#041228] mb-1">
+                        {user.name}
+                      </span>
                       <div className="flex items-center gap-2 text-[#94A3B8]">
                         <Mail size={14} />
-                        <span className="text-sm font-medium">{user.email}</span>
+                        <span className="text-sm font-medium">
+                          {user.email}
+                        </span>
                       </div>
                     </div>
                   </TableCell>
@@ -124,6 +172,15 @@ export default function ClientTable({ users }: ClientTableProps) {
                         </span>
                       )}
                     </div>
+                  </TableCell>
+                  <TableCell className="px-10 py-6">
+                    <Button
+                      onClick={() => handleViewGoals(user)}
+                      className="bg-[#3A86FF]/10 hover:bg-[#3A86FF] text-[#3A86FF] hover:text-white border border-[#3A86FF]/20 rounded-xl px-4 py-1.5 h-auto text-[11px] font-bold flex items-center gap-2 transition-all cursor-pointer"
+                    >
+                      <Target size={14} />
+                      View Goals
+                    </Button>
                   </TableCell>
                   <TableCell className="px-10 py-6">
                     <div className="flex items-center gap-2 text-[#5F6F73]">
@@ -142,7 +199,10 @@ export default function ClientTable({ users }: ClientTableProps) {
                       onClick={() => handleFindMatch(user)}
                       className="bg-white hover:bg-[#0FA4A9] text-[#0FA4A9] hover:text-white border-2 border-[#0FA4A9]/20 hover:border-[#0FA4A9] rounded-2xl px-6 py-2 h-auto text-sm font-bold flex items-center gap-2 mx-auto transition-all group active:scale-95 cursor-pointer shadow-sm hover:shadow-md"
                     >
-                      <Sparkles size={16} className="group-hover:animate-pulse" />
+                      <Sparkles
+                        size={16}
+                        className="group-hover:animate-pulse"
+                      />
                       Find Match
                     </Button>
                   </TableCell>
@@ -153,7 +213,9 @@ export default function ClientTable({ users }: ClientTableProps) {
                 <TableCell colSpan={5} className="h-64 text-center">
                   <div className="flex flex-col items-center justify-center text-[#94A3B8]">
                     <Search size={40} className="mb-4 opacity-20" />
-                    <p className="text-lg font-medium">No users found matching your search</p>
+                    <p className="text-lg font-medium">
+                      No users found matching your search
+                    </p>
                   </div>
                 </TableCell>
               </TableRow>
@@ -167,6 +229,12 @@ export default function ClientTable({ users }: ClientTableProps) {
       <SupplementMatchModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
+        user={selectedUser}
+      />
+
+      <TargetGoalsModal
+        isOpen={isTargetGoalsModalOpen}
+        onClose={() => setIsTargetGoalsModalOpen(false)}
         user={selectedUser}
       />
     </div>

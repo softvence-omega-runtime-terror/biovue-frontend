@@ -12,6 +12,8 @@ import {
   Scale,
   Loader2
 } from "lucide-react";
+import { useSelector } from "react-redux";
+import { selectCurrentUser } from "@/redux/features/slice/authSlice";
 
 import { usePostSleepLogMutation } from "@/redux/features/api/userDashboard/sleeplog";
 import { usePostActivityLogMutation } from "@/redux/features/api/userDashboard/activitylog";
@@ -26,6 +28,9 @@ interface LogHabitModalProps {
 
 export default function LogHabitModal({ isOpen, onClose, habitType }: LogHabitModalProps) {
   const [source, setSource] = useState<"device" | "manual">("device");
+  const currentUser = useSelector(selectCurrentUser);
+  const userId = currentUser?.id || currentUser?.user_id;
+
   const [postSleepLog, { isLoading: isSleepPosting }] = usePostSleepLogMutation();
   const [postActivityLog, { isLoading: isActivityPosting }] = usePostActivityLogMutation();
   const [postHydrationLog, { isLoading: isHydrationPosting }] = usePostHydrationLogMutation();
@@ -60,7 +65,7 @@ export default function LogHabitModal({ isOpen, onClose, habitType }: LogHabitMo
 
     try {
       const payload = {
-        user_id: 3,
+        user_id: userId || 3,
         weight: Number(formData.weight),
         daily_steps: Number(formData.daily_steps),
         sleep_hours: Number(formData.sleep_hours),
@@ -83,7 +88,7 @@ export default function LogHabitModal({ isOpen, onClose, habitType }: LogHabitMo
         response = await postHydrationLog(payload).unwrap();
       }
 
-      if (response.success || response.status === "success") {
+      if (response.success !== false && (response.success || response.status === "success" || response.id || response.sleep_hours !== undefined || Object.keys(response).length > 0)) {
         toast.success(`${habitType} data logged successfully!`);
         onClose();
       } else {
@@ -91,10 +96,23 @@ export default function LogHabitModal({ isOpen, onClose, habitType }: LogHabitMo
       }
     } catch (err: any) {
       console.error(`Error logging ${type}:`, err);
-      if (err.status === 400 || err.data?.message?.toLowerCase().includes("already logged")) {
+      
+      const errorData = err.data || {};
+      const errorMessage = (errorData.message || "").toLowerCase();
+      const exception = (errorData.exception || "").toLowerCase();
+      
+      if (
+        err.status === 409 || // Conflict
+        err.status === 500 || // Internal Server Error (UniqueConstraintViolation)
+        exception.includes("uniqueconstraintviolationexception") || 
+        errorMessage.includes("duplicate entry") || 
+        errorMessage.includes("already logged")
+      ) {
         toast.error("You have already logged data for today.");
+      } else if (err.status === 400) {
+        toast.error(errorData.message || "Invalid data. Please check your inputs.");
       } else {
-        toast.error(`An error occurred while logging ${type} data. Please check console.`);
+        toast.error(`An error occurred while logging ${type} data. Please try again.`);
       }
     }
   };
