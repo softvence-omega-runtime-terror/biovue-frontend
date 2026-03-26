@@ -85,15 +85,17 @@ export default function SupplierDashboardLayout({
         )}
       >
         {/* Sidebar Logo */}
-        <div className="h-32 flex items-center px-10">
-          <Image
-            src="/images/logo.png"
-            alt="BioVue Logo"
-            width={160}
-            height={60}
-            className={cn("object-contain", !isSidebarOpen && "hidden")}
-            priority
-          />
+        <div className="h-24 flex items-center px-10 py-10">
+          <Link href="/" className="block cursor-pointer">
+            <Image
+              src="/images/logo.png"
+              alt="BioVue Logo"
+              width={100}
+              height={38}
+              className={cn("object-contain", !isSidebarOpen && "hidden")}
+              priority
+            />
+          </Link>
         </div>
 
         {/* Sidebar Menu */}

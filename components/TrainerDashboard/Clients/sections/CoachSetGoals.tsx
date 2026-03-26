@@ -5,10 +5,23 @@ import { Calendar, CheckCircle2, Loader2, Save } from "lucide-react";
 import { ClientDetails } from "../../overview/data";
 import { useEffect, useState } from "react";
 import {
-  useCreateTargetGoalMutation,
+  useCreateOrUpdateTargetGoalMutation,
   useGetTargetGoalQuery,
 } from "@/redux/features/api/TrainerDashboard/Clients/TargetGoal/PostTargetGoal";
 import { toast } from "sonner";
+
+const supplementOptions = [
+  { id: "protein", label: "Protein" },
+  { id: "creatine", label: "Creatine" },
+  { id: "multivitamin", label: "Multivitamin" },
+  { id: "omega3", label: "Omega-3" },
+  { id: "electrolytes", label: "Electrolytes" },
+  { id: "vitaminD", label: "Vitamin D" },
+  { id: "magnesium", label: "Magnesium" },
+  { id: "other", label: "Other" },
+  { id: "aminoAcids", label: "Amino Acids (BCAAs/Glutamine)" },
+  { id: "preWorkout", label: "Pre-Workout" },
+];
 
 interface CoachSetGoalsProps {
   goals: ClientDetails["coachSetGoals"];
@@ -31,18 +44,32 @@ export default function CoachSetGoals({
   const [sleepTarget, setSleepTarget] = useState<string>(
     goals?.sleepTargetHours?.toString() ?? "",
   );
+  const [selectedSupplements, setSelectedSupplements] = useState<string[]>([]);
 
-  const [createTargetGoal, { isLoading }] = useCreateTargetGoalMutation();
-  const { data: goalData, isLoading: goalLoading } = useGetTargetGoalQuery();
+  const [createTargetGoal, { isLoading }] =
+    useCreateOrUpdateTargetGoalMutation();
+  const { data: goalData, isLoading: goalLoading } = useGetTargetGoalQuery(
+    clientDetails.id,
+  );
 
   useEffect(() => {
-    if (goalData?.data) {
-      setTargetWeight(goalData.data.target_weight?.toString() ?? "");
-      setWeeklyWorkoutGoal(goalData.data.weekly_workout_goal?.toString() ?? "");
-      setDailyStepGoal(goalData.data.daily_step_goal?.toString() ?? "");
-      setSleepTarget(goalData.data.sleep_target?.toString() ?? "");
+    if (goalData && goalData.length > 0) {
+      const latestGoal = goalData[0]; // get-goal returns latest first
+      setTargetWeight(latestGoal.target_weight?.toString() ?? "");
+      setWeeklyWorkoutGoal(latestGoal.weekly_workout_goal?.toString() ?? "");
+      setDailyStepGoal(latestGoal.daily_step_goal?.toString() ?? "");
+      setSleepTarget(latestGoal.sleep_target?.toString() ?? "");
+      setSelectedSupplements(latestGoal.supplement_recommendation ?? []);
     }
   }, [goalData]);
+
+  const handleSupplementChange = (label: string, isChecked: boolean) => {
+    if (isChecked) {
+      setSelectedSupplements((prev) => [...prev, label]);
+    } else {
+      setSelectedSupplements((prev) => prev.filter((s) => s !== label));
+    }
+  };
 
   const handleSave = async () => {
     try {
@@ -58,6 +85,7 @@ export default function CoachSetGoals({
         weekly_workout_goal: parseInt(weeklyWorkoutGoal),
         daily_step_goal: parseInt(dailyStepGoal),
         sleep_target: parseFloat(sleepTarget),
+        supplement_recommendation: selectedSupplements,
         start_date: startDate,
         end_date: endDate,
       };
@@ -159,6 +187,33 @@ export default function CoachSetGoals({
                 className="w-full mt-5 px-4 py-3 bg-white border border-[#E5E7EB] rounded-lg focus:ring-2 focus:ring-[#0D9488] focus:border-transparent outline-none transition-all placeholder:text-[#9AAEB2]"
                 placeholder="8"
               />
+            </div>
+          </div>
+
+          {/* Supplement Recommendations */}
+          <div className="mt-10 pt-10 border-t border-[#E5E7EB]">
+            <h4 className="font-medium text-lg text-gray-900 mb-6">
+              Supplement Recommendations (Optional)
+            </h4>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {supplementOptions.map((supplement) => (
+                <label
+                  key={supplement.id}
+                  className="flex items-center gap-3 p-4 border border-gray-100 rounded-xl cursor-pointer hover:bg-gray-50 transition-all group"
+                >
+                  <input
+                    type="checkbox"
+                    checked={selectedSupplements.includes(supplement.label)}
+                    onChange={(e) =>
+                      handleSupplementChange(supplement.label, e.target.checked)
+                    }
+                    className="w-5 h-5 border border-gray-300 rounded-md text-[#0D9488] focus:ring-[#0D9488] transition-all cursor-pointer"
+                  />
+                  <span className="text-sm font-medium text-[#111827] group-hover:text-[#0D9488] transition-colors">
+                    {supplement.label}
+                  </span>
+                </label>
+              ))}
             </div>
           </div>
         </CardContent>
