@@ -32,10 +32,6 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 # env files
-.env
-.env.local
-.env.development
-.env.production
 
 # vercel
 .vercel
@@ -46,3 +42,4 @@ next-env.d.ts
 .env*.local
 temp_auto_push.bat
 temp_interactive_push.bat
+config.bat

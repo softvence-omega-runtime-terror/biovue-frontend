@@ -19,6 +19,8 @@ import {
 import { cn } from "@/lib/utils";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import NotificationBell from "@/components/dashboard/NotificationBell";
+import ProfileDropdown from "@/components/dashboard/ProfileDropdown";
 import { useLogoutMutation } from "@/redux/features/api/auth/authApi";
 import { logout } from "@/redux/features/slice/authSlice";
 import { useAppDispatch } from "@/redux/store/hooks";
@@ -155,20 +157,9 @@ export default function SupplierDashboardLayout({
           </div>
 
           <div className="flex items-center gap-6">
-            <button className="relative p-2.5 text-[#041228] hover:bg-[#F5F5F5] rounded-xl transition-colors cursor-pointer">
-              <Bell size={24} strokeWidth={1.5} />
-              <span className="absolute top-2.5 right-2.5 w-2.5 h-2.5 bg-[#E54335] rounded-full border-2 border-white"></span>
-            </button>
+            <NotificationBell iconSize={24} />
             <div className="flex items-center gap-3 pl-2">
-              <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-[#E4EFFF] shadow-sm">
-                <Image
-                  src="/images/avatar.png"
-                  alt="Supplier"
-                  width={48}
-                  height={48}
-                  className="object-cover"
-                />
-              </div>
+              <ProfileDropdown roleLabel="Supplier" settingsHref="/supplier-dashboard/settings" />
             </div>
           </div>
         </header>
@@ -180,3 +171,4 @@ export default function SupplierDashboardLayout({
     </ProtectedRoute>
   );
 }
+
