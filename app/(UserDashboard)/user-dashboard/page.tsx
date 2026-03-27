@@ -25,6 +25,7 @@ import { selectCurrentUser } from "@/redux/features/slice/authSlice";
 import LogTodayModal from "@/components/dashboard/LogTodayModal";
 import ChangeSourceModal from "@/components/dashboard/ChangeSourceModal";
 import NotificationBell from "@/components/dashboard/NotificationBell";
+import ProfileDropdown from "@/components/dashboard/ProfileDropdown";
 import ChartsNutrition from "@/components/UserDashboard/Dashboard/ChartsNutrition";
 import { useGetCardDataQuery } from "@/redux/features/api/userDashboard/habit";
 import { useGetInsightsQuery } from "@/redux/features/api/userDashboard/insightsApi";
@@ -81,13 +82,7 @@ const UserDashboard = () => {
         <div className="flex items-center gap-4 ml-auto">
           <NotificationBell />
           <div className="flex items-center gap-3 pr-2">
-            <Image
-              src="/images/avatar.png"
-              alt="User Profile"
-              width={40}
-              height={40}
-              className="rounded-full border-2 border-[#F4FBFA] cursor-pointer"
-            />
+            <ProfileDropdown roleLabel="User" settingsHref="/user-dashboard/settings" />
           </div>
           <Link href="/user-dashboard/upgrade">
             <button className="flex items-center gap-2 bg-[#0FA4A9] text-white px-4 py-2 rounded-lg font-medium hover:bg-opacity-90 transition-all text-sm cursor-pointer">
