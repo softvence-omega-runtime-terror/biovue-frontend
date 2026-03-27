@@ -2,13 +2,13 @@
 
 import React, { useState, useEffect } from "react";
 import SettingsSection from "./SettingsSection";
-import Toggle from "./Toggle";
 import { 
   useGetNotificationSettingsQuery, 
   useUpdateNotificationSettingsMutation 
 } from "@/redux/features/api/userDashboard/notificationApi";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 export default function NotificationSettings() {
   const { data: notificationSettingsData, isLoading: isLoadingSettings } = useGetNotificationSettingsQuery();
@@ -27,7 +27,7 @@ export default function NotificationSettings() {
     if (!localSettings) return;
 
     const currentValue = localSettings[key];
-    const newValue = currentValue === 1 ? 0 : 1;
+    const newValue = currentValue ? 0 : 1;
 
     // Optimistically update local state
     setLocalSettings((prev: any) => ({
@@ -54,55 +54,55 @@ export default function NotificationSettings() {
     { 
       label: "Client Messages", 
       sub: "Instant alerts when your clients write to you", 
-      active: localSettings?.client_messages === 1,
-      key: "client_messages"
+      active: !!localSettings?.coach_messages,
+      key: "coach_messages"
     },
     { 
       label: "Goal Updates", 
       sub: "Alerts when a client updates, edits, or completes their goals.", 
-      active: localSettings?.goal_updates === 1,
+      active: !!localSettings?.goal_updates,
       key: "goal_updates"
     },
     { 
       label: "Check-in & Reminder Alerts", 
       sub: "Reminders for scheduled client check-ins or missed logs.", 
-      active: localSettings?.check_in_reminder_alerts === 1,
+      active: !!localSettings?.check_in_reminder_alerts,
       key: "check_in_reminder_alerts"
     },
     { 
       label: "AI Insights & Recommendations", 
       sub: "Notifications when new AI-generated insights or suggestions are available.", 
-      active: localSettings?.ai_insights === 1,
+      active: !!localSettings?.ai_insights,
       key: "ai_insights"
     },
     { 
       label: "Subscription & Account Updates", 
       sub: "Billing reminders, plan changes, and important account notices.", 
-      active: localSettings?.subscription_updates === 1,
+      active: !!localSettings?.subscription_updates,
       key: "subscription_updates"
     },
     { 
       label: "Missed Check-in Alerts", 
       sub: "Alerts when clients miss their scheduled check-ins.", 
-      active: localSettings?.missed_checkin_alerts === 1,
+      active: !!localSettings?.missed_checkin_alerts,
       key: "missed_checkin_alerts"
     },
     { 
       label: "Program Milestone Updates", 
       sub: "Notifications about program progress and milestones.", 
-      active: localSettings?.program_milestone_updates === 1,
+      active: !!localSettings?.program_milestone_updates,
       key: "program_milestone_updates"
     },
     { 
       label: "Weekly Summary Email", 
       sub: "Receive a weekly summary of client progress and engagement.", 
-      active: localSettings?.weekly_summary_email === 1,
+      active: !!localSettings?.weekly_summary_email,
       key: "weekly_summary_email"
     },
     { 
       label: "Auto Remind Missed Check-ins", 
       sub: "Automatically send reminders to clients when they miss a check-in.", 
-      active: localSettings?.auto_remind_missed_checkins === 1,
+      active: !!localSettings?.auto_remind_missed_checkins,
       key: "auto_remind_missed_checkins"
     },
   ];
@@ -130,9 +130,22 @@ export default function NotificationSettings() {
             <div key={item.key} className="py-6 flex items-center justify-between">
               <div className="max-w-[80%]">
                 <h4 className="text-[15px] font-bold text-[#1E293B]">{item.label}</h4>
-                <p className="text-[13px] text-[#94A3B8] font-medium mt-1">{item.sub}</p>
+                <p className="text-[13px] text-[#94A3B8] font-medium mt-1 leading-relaxed">{item.sub}</p>
               </div>
-              <Toggle enabled={item.active} onChange={() => handleToggle(item.key)} />
+              
+              {/* Smooth Toggle like User Dashboard - Improved with Translate for maximum smoothness */}
+              <div 
+                onClick={() => handleToggle(item.key)}
+                className={cn(
+                  "w-11 h-6 rounded-full p-1 cursor-pointer transition-colors duration-300 ease-in-out shrink-0",
+                  item.active ? "bg-[#0FA4A9]" : "bg-gray-200"
+                )}
+              >
+                <div className={cn(
+                  "w-4 h-4 bg-white rounded-full shadow-sm transform transition-transform duration-300 ease-in-out",
+                  item.active ? "translate-x-5" : "translate-x-0"
+                )} />
+              </div>
             </div>
           ))}
         </div>

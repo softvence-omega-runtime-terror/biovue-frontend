@@ -1,22 +1,26 @@
 "use client";
 
 import NotificationBell from "../dashboard/NotificationBell";
-import Image from "next/image";
+import ProfileDropdown from "../dashboard/ProfileDropdown";
 
 export default function TrainerNavbar() {
   return (
-    <header className="ml-6 py-5 bg-white  px-6 flex items-center justify-between">
-      <h1 className="text-sm font-semibold text-gray-700">Dashboard</h1>
+    <header className="ml-6 py-4 bg-white px-8 flex items-center justify-between shadow-sm border-b border-gray-100 z-30 sticky top-0">
+      <div className="flex flex-col">
+        <h1 className="text-lg font-bold text-[#1F2D2E]">Dashboard</h1>
+        <p className="text-[11px] text-[#94A3B8] font-medium uppercase tracking-wider">Trainer Management</p>
+      </div>
 
-      <div className="flex items-center gap-4">
-        <NotificationBell iconSize={20} />
+      <div className="flex items-center gap-6">
+        <NotificationBell iconSize={22} />
+        
+        {/* Divider */}
+        <div className="h-8 w-[1px] bg-gray-100 hidden sm:block"></div>
 
-        <Image
-          src="/images/avatar.png"
-          alt="Admin"
-          width={36}
-          height={36}
-          className="rounded-full"
+        {/* Unified Profile Dropdown */}
+        <ProfileDropdown 
+          roleLabel="Trainer" 
+          settingsHref="/trainer-dashboard/settings" 
         />
       </div>
     </header>
