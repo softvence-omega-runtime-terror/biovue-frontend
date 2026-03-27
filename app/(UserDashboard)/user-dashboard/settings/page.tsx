@@ -228,13 +228,12 @@ const SettingsPage = () => {
       </section>
 
       {/* Data & Integrations */}
-      <section className="flex flex-col gap-6">
+      {/* <section className="flex flex-col gap-6">
         <div className="flex flex-col gap-1">
           <h2 className="text-xl font-bold text-[#1F2D2E]">Data & Integrations</h2>
         </div>
 
         <div className="flex flex-col gap-8">
-          {/* Input Preference */}
           <div className="flex flex-col gap-4">
             <h3 className="text-[10px] font-bold text-[#5F6F73] uppercase tracking-widest">DATA INPUT PREFERENCE</h3>
             <div className="grid grid-cols-2 gap-4">
@@ -251,11 +250,10 @@ const SettingsPage = () => {
             </div>
           </div>
 
-          {/* Connected Devices */}
           <div className="flex flex-col gap-4">
             <h3 className="text-[10px] font-bold text-[#5F6F73] uppercase tracking-widest">CONNECTED DEVICES</h3>
             <div className="flex flex-col gap-3">
-              {/* Device Item */}
+      
               <div className="bg-white rounded-[16px] p-6 border border-gray-50 shadow-[0_2px_12px_rgba(0,0,0,0.02)] flex items-center justify-between">
                 <div className="flex items-center gap-4">
                   <div className="w-10 h-10 rounded-xl bg-[#F8FAFB] flex items-center justify-center text-[#94A3B8]">
@@ -275,7 +273,6 @@ const SettingsPage = () => {
                 <button className="text-[#94A3B8] text-xs font-bold hover:text-red-500 transition-colors">Disconnect</button>
               </div>
 
-              {/* Browse Devices */}
               {["Google Fit", "My FitnessPal", "Apple health"].map((device, idx) => (
                 <div key={idx} className="bg-[#E4FBF7] rounded-[16px] p-6 border border-[#0FA4A9]/10 shadow-[0_2px_12px_rgba(0,0,0,0.02)] flex items-center justify-between">
                   <div className="flex items-center gap-4">
@@ -291,7 +288,7 @@ const SettingsPage = () => {
                 </div>
               ))}
 
-              {/* Connect New */}
+          
               <button className="w-full py-6 border-2 border-dashed border-gray-100 rounded-[16px] flex items-center justify-center gap-2 text-[#94A3B8] hover:bg-gray-50/50 transition-all group">
                 <Plus size={18} className="group-hover:scale-110 transition-transform" />
                 <span className="text-sm font-bold">Connect new device</span>
@@ -299,7 +296,6 @@ const SettingsPage = () => {
             </div>
           </div>
 
-          {/* Data Note */}
           <div className="bg-[#F8FAFB] rounded-[12px] p-4 flex items-center gap-3">
              <Info size={16} className="text-[#94A3B8]" />
              <p className="text-[10px] text-[#94A3B8] font-medium italic">
@@ -307,7 +303,7 @@ const SettingsPage = () => {
              </p>
           </div>
         </div>
-      </section>
+      </section> */}
 
       {/* Notifications Section */}
       <section className="flex flex-col gap-6">
@@ -392,10 +388,10 @@ const SettingsPage = () => {
       </section>
 
       {/* Privacy & Security Section */}
-      <section className="flex flex-col gap-6">
+      {/* <section className="flex flex-col gap-6">
         <h2 className="text-xl font-bold text-[#1F2D2E]">Privacy & Security</h2>
         <div className="bg-white rounded-[16px] border border-[#3A86FF]/25 shadow-sm overflow-hidden">
-          {/* Data visibility */}
+        
           <div className="p-8 flex items-start gap-6 border-b border-gray-50 hover:bg-gray-50/50 transition-colors">
             <div className="w-12 h-12 rounded-xl bg-[#E4EFFF] flex items-center justify-center text-[#3A86FF] shrink-0">
                <ShieldCheck size={24} />
@@ -408,7 +404,6 @@ const SettingsPage = () => {
             </div>
           </div>
 
-          {/* Download Data */}
           <div className="p-8 flex items-center justify-between border-b border-gray-50 hover:bg-gray-50/50 transition-colors">
             <div className="flex items-center gap-6">
               <div className="w-12 h-12 rounded-xl bg-gray-100 flex items-center justify-center text-[#1F2D2E] shrink-0">
@@ -422,7 +417,7 @@ const SettingsPage = () => {
             <button className="text-[#0FA4A9] text-xs font-bold hover:underline">Export</button>
           </div>
 
-          {/* Delete Account */}
+        
           <div className="p-8 flex items-center justify-between">
             <div className="flex items-center gap-6">
               <div className="w-12 h-12 rounded-xl bg-red-50 flex items-center justify-center text-red-500 shrink-0">
@@ -442,14 +437,14 @@ const SettingsPage = () => {
           </div>
         </div>
 
-        {/* Compliant Storage */}
+       
         <div className="bg-[#F8FAFB] rounded-[16px] py-4 flex items-center justify-center gap-3">
            <Info size={16} className="text-[#94A3B8]" />
            <span className="text-[10px] text-[#5F6F73] font-bold uppercase tracking-widest">
              END-TO-END ENCRYPTED • HIPAA COMPLIANT STORAGE
            </span>
         </div>
-      </section>
+      </section> */}
     </div>
   );
 };
