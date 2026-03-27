@@ -4,6 +4,7 @@ import React, { useState, useEffect, useMemo, useRef } from "react";
 import Image from "next/image";
 import { Search, Send, MoreVertical, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import Avatar from "@/components/common/Avatar";
 import {
   useGetConversationsQuery,
   useGetMessagesByUserIdQuery,
@@ -180,22 +181,11 @@ const NutritionistMessagesPage = () => {
                   )}
                 >
                   <div className="relative flex-shrink-0">
-                    <div className="w-12 h-12 rounded-full overflow-hidden bg-gray-100 border border-gray-200">
-                      <Image
-                        src={
-                          contact.avatar ||
-                          `https://ui-avatars.com/api/?name=${contact.name}&background=0D9488&color=fff`
-                        }
-                        alt={contact.name}
-                        width={48}
-                        height={48}
-                        className="object-cover w-full h-full"
-                        onError={(e) => {
-                          (e.target as HTMLImageElement).src =
-                            `https://ui-avatars.com/api/?name=${contact.name}&background=0D9488&color=fff`;
-                        }}
-                      />
-                    </div>
+                    <Avatar
+                      src={contact.avatar}
+                      name={contact.name}
+                      size="lg"
+                    />
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex justify-between items-start mb-1">
@@ -223,22 +213,11 @@ const NutritionistMessagesPage = () => {
               {/* Chat Header */}
               <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between shadow-sm z-10 w-full">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full overflow-hidden bg-gray-100 border border-gray-200">
-                    <Image
-                      src={
-                        activeContact.avatar ||
-                        `https://ui-avatars.com/api/?name=${activeContact.name}&background=0D9488&color=fff`
-                      }
-                      alt={activeContact.name}
-                      className="object-cover w-full h-full"
-                      width={40}
-                      height={40}
-                      onError={(e) => {
-                        (e.target as HTMLImageElement).src =
-                          `https://ui-avatars.com/api/?name=${activeContact.name}&background=0D9488&color=fff`;
-                      }}
-                    />
-                  </div>
+                  <Avatar
+                    src={activeContact.avatar}
+                    name={activeContact.name}
+                    size="md"
+                  />
                   <div className="flex flex-col">
                     <h2 className="text-sm font-bold text-[#1F2D2E]">
                       {activeContact.name}
