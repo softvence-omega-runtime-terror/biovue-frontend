@@ -1,9 +1,15 @@
 "use client";
 
 import Image from "next/image";
-import { X, Sparkles, CheckCircle2, Send } from "lucide-react";
+import { useEffect } from "react";
+import { X, Sparkles, CheckCircle2, Send, Loader2, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { User } from "@/redux/features/api/SupplierDashboard/AllUsers";
+import { useLazyGetSavedMatchQuery, MatchedProduct, useFindMatchMutation } from "@/redux/features/api/SupplierDashboard/FindMatch";
+import { useSendMessageMutation } from "@/redux/features/api/userDashboard/messagesApi";
+import { useSelector } from "react-redux";
+import { selectCurrentUser } from "@/redux/features/slice/authSlice";
+import { toast } from "sonner";
 
 const getSafeImageSrc = (src: string | null | undefined) => {
   if (!src) return null;
@@ -20,38 +26,6 @@ const getSafeImageSrc = (src: string | null | undefined) => {
   return null;
 };
 
-interface Supplement {
-  id: number;
-  name: string;
-  category: string;
-  matchScore: number;
-  reason: string;
-}
-
-const MOCK_SUPPLEMENTS: Supplement[] = [
-  {
-    id: 1,
-    name: "Pure Whey Isolate",
-    category: "Protein",
-    matchScore: 98,
-    reason: "Based on recovery goals and high protein requirement.",
-  },
-  {
-    id: 2,
-    name: "Omega-3 Fish Oil",
-    category: "Essential Fats",
-    matchScore: 92,
-    reason: "Recommended for joint health and anti-inflammatory benefits.",
-  },
-  {
-    id: 3,
-    name: "Pre-Workout Elite",
-    category: "Performance",
-    matchScore: 85,
-    reason: "Matches stated energy needs for high-intensity training.",
-  },
-];
-
 interface SupplementMatchModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -63,8 +37,94 @@ export default function SupplementMatchModal({
   onClose,
   user,
 }: SupplementMatchModalProps) {
+  const currentUser = useSelector(selectCurrentUser);
+  const supplier_id = currentUser?.id;
+
+  const [triggerGet, { data: matchData, isLoading: isMatchLoading, isFetching: isMatchFetching }] = useLazyGetSavedMatchQuery();
+  const [findMatch, { isLoading: isMatching }] = useFindMatchMutation();
+  const [sendMessage, { isLoading: isSending }] = useSendMessageMutation();
+
+  useEffect(() => {
+    if (isOpen && user && supplier_id) {
+      triggerGet({
+        user_id: user.id.toString(),
+        supplier_id: supplier_id.toString(),
+      });
+    }
+  }, [isOpen, user, supplier_id, triggerGet]);
+
   if (!isOpen || !user) return null;
 
+  const handleRunAnalysis = async () => {
+    if (!supplier_id) {
+      toast.error("Supplier ID not found.");
+      return;
+    }
+    try {
+      await findMatch({
+        user_id: user.id.toString(),
+        supplier_id: supplier_id.toString(),
+      }).unwrap();
+      toast.success("AI Analysis completed and matches updated!");
+      triggerGet({
+        user_id: user.id.toString(),
+        supplier_id: supplier_id.toString(),
+      });
+    } catch (error) {
+      console.error("AI Analysis failed:", error);
+      toast.error("Failed to run AI Analysis. Please try again.");
+    }
+  };
+
+  // const handleSuggestToUser = async (supp: MatchedProduct) => {
+  //   try {
+  //     const message = `I recommend ${supp.name} for you. \n\nReason: ${supp.match_reason}\n\nBenefits: ${supp.health_benefits.join(", ")}\n\nYou can view it here: ${supp.redirect_url}`;
+      
+  //     await sendMessage({
+  //       receiver_id: user.id,
+  //       message: message,
+  //     }).unwrap();
+      
+  //     toast.success(`Suggestion for ${supp.name} sent to ${user.name}`);
+  //   } catch (error) {
+  //     console.error("Failed to send suggestion:", error);
+  //     toast.error("Failed to send suggestion. Please check if messaging is available.");
+  //   }
+  // };
+const handleSuggestToUser = async (supp: MatchedProduct) => {
+  if (!supplier_id) {
+    toast.error("Supplier ID missing");
+    return;
+  }
+
+  try {
+    // ✅ Ensure AI data exists (optional safety)
+    if (!matchData?.matched_products?.length) {
+      await findMatch({
+        user_id: user.id.toString(),
+        supplier_id: supplier_id.toString(),
+      }).unwrap();
+    }
+
+    const message = `I recommend ${supp.name} for you.
+
+Reason: ${supp.match_reason}
+
+Benefits: ${supp.health_benefits.join(", ")}
+
+View: ${supp.redirect_url}`;
+
+    await sendMessage({
+      receiver_id: user.id,
+      message,
+    }).unwrap();
+
+    toast.success(`Suggestion sent to ${user.name}`);
+  } catch (error) {
+    console.error(error);
+    toast.error("Failed to send suggestion");
+  }
+};
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4 animate-in fade-in duration-200">
       <div className="w-full max-w-2xl bg-white rounded-[40px] shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300">
@@ -105,57 +165,107 @@ export default function SupplementMatchModal({
 
         {/* Content */}
         <div className="p-8">
-          <div className="flex items-center gap-2 mb-6 text-[#0FA4A9]">
-            <Sparkles size={20} fill="currentColor" />
-            <h3 className="text-lg font-bold uppercase tracking-wider">
-              Suggested Matches
-            </h3>
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center gap-2 text-[#0FA4A9]">
+              <Sparkles size={20} fill="currentColor" />
+              <h3 className="text-lg font-bold uppercase tracking-wider">
+                {isMatchLoading || isMatchFetching ? "Fetching..." : isMatching ? "Analysing..." : "Suggested Matches"}
+              </h3>
+            </div>
+            {matchData?.matched_products && matchData.matched_products.length > 0 && (
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                disabled={isMatching || isMatchFetching}
+                onClick={handleRunAnalysis}
+                className="text-[#0FA4A9] hover:text-[#0FA4A9] hover:bg-[#0FA4A9]/10 rounded-xl px-4 flex items-center gap-2 font-bold transition-all cursor-pointer"
+              >
+                <RefreshCw size={16} className={isMatching ? "animate-spin" : ""} />
+                Regenerate AI
+              </Button>
+            )}
           </div>
 
           <div className="space-y-4 max-h-100 overflow-y-auto pr-2 custom-scrollbar">
-            {MOCK_SUPPLEMENTS.map((supp) => (
-              <div
-                key={supp.id}
-                className="group relative p-6 bg-[#F8FBFA] rounded-3xl border border-[#D9E6FF] hover:border-[#0FA4A9] transition-all hover:shadow-md"
-              >
-                <div className="flex items-start justify-between">
-                  <div>
-                    <div className="flex items-center gap-3 mb-2">
-                      <h4 className="text-lg font-bold text-[#041228]">
-                        {supp.name}
-                      </h4>
-                      <span className="px-3 py-1 bg-white border border-[#D9E6FF] rounded-full text-xs font-bold text-[#94A3B8]">
-                        {supp.category}
-                      </span>
-                    </div>
-                    <p className="text-sm text-[#5F6F73] mb-4 leading-relaxed line-clamp-2">
-                      {supp.reason}
-                    </p>
-                  </div>
-                  <div className="text-right">
-                    <div className="text-2xl font-black text-[#0FA4A9] mb-1">
-                      {supp.matchScore}%
-                    </div>
-                    <div className="text-[10px] uppercase font-bold text-[#94A3B8] tracking-widest">
-                      Match Score
-                    </div>
-                  </div>
-                </div>
-
-                <div className="flex items-center justify-between mt-2 pt-4 border-t border-[#D9E6FF]/50">
-                  <div className="flex items-center gap-2 text-[#22C55E]">
-                    <CheckCircle2 size={16} />
-                    <span className="text-xs font-bold uppercase tracking-wide">
-                      In Stock
-                    </span>
-                  </div>
-                  <Button className="bg-[#0FA4A9] hover:bg-[#0D9488] text-white rounded-xl px-6 h-9 flex items-center gap-2 transition-all cursor-pointer">
-                    <Send size={16} />
-                    Suggest to User
-                  </Button>
+            {isMatchLoading || (isMatching && !matchData?.matched_products) ? (
+              <div className="flex flex-col items-center justify-center py-20 gap-4 text-center">
+                <Loader2 className="w-12 h-12 text-[#0FA4A9] animate-spin" />
+                <div>
+                  <p className="text-[#041228] font-bold text-lg mb-1">
+                    {isMatching ? "AI Intelligence at Work" : "Retrieving Matches"}
+                  </p>
+                  <p className="text-[#94A3B8] text-sm">Analyzing profile and product inventory...</p>
                 </div>
               </div>
-            ))}
+            ) : matchData?.matched_products && matchData.matched_products.length > 0 ? (
+              matchData.matched_products.map((supp: MatchedProduct) => (
+                <div
+                  key={supp.product_id}
+                  className="group relative p-6 bg-[#F8FBFA] rounded-3xl border border-[#D9E6FF] hover:border-[#0FA4A9] transition-all hover:shadow-md"
+                >
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-3 mb-2">
+                        <h4 className="text-lg font-bold text-[#041228]">
+                          {supp.name}
+                        </h4>
+                        <span className="px-3 py-1 bg-white border border-[#D9E6FF] rounded-full text-xs font-bold text-[#94A3B8]">
+                          {supp.category}
+                        </span>
+                      </div>
+                      <p className="text-sm text-[#5F6F73] mb-4 leading-relaxed line-clamp-2">
+                        {supp.match_reason}
+                      </p>
+                    </div>
+                    <div className="text-right ml-4">
+                      <div className="text-2xl font-black text-[#0FA4A9] mb-1">
+                        {Math.round(supp.match_score)}%
+                      </div>
+                      <div className="text-[10px] uppercase font-bold text-[#94A3B8] tracking-widest">
+                        Match Score
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-between mt-2 pt-4 border-t border-[#D9E6FF]/50">
+                    <div className="flex items-center gap-2 text-[#22C55E]">
+                      <CheckCircle2 size={16} />
+                      <span className="text-xs font-bold uppercase tracking-wide">
+                        In Stock
+                      </span>
+                    </div>
+                    <Button 
+                      disabled={isSending}
+                      onClick={() => handleSuggestToUser(supp)}
+                      className="bg-[#0FA4A9] hover:bg-[#0D9488] text-white rounded-xl px-6 h-9 flex items-center gap-2 transition-all cursor-pointer disabled:opacity-50"
+                    >
+                      {isSending ? <Loader2 size={16} className="animate-spin" /> : <Send size={16} />}
+                      Suggest to User
+                    </Button>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div className="flex flex-col items-center justify-center py-20 text-center gap-6">
+                <div className="p-6 bg-[#F8FBFA] rounded-full border-2 border-dashed border-[#D9E6FF]">
+                  <Sparkles size={40} className="text-[#94A3B8]" />
+                </div>
+                <div>
+                  <h4 className="text-xl font-bold text-[#041228] mb-2">No AI Matches Found</h4>
+                  <p className="text-[#94A3B8] max-w-xs mx-auto text-sm font-medium">
+                    We haven&apos;t analyzed this user&apos;s profile yet. Click below to run the AI matching engine.
+                  </p>
+                </div>
+                <Button 
+                  disabled={isMatching}
+                  onClick={handleRunAnalysis}
+                  className="bg-[#0FA4A9] hover:bg-[#0D9488] text-white rounded-2xl px-10 py-6 h-auto text-sm font-bold flex items-center gap-3 transition-all hover:shadow-lg active:scale-95 cursor-pointer shadow-md"
+                >
+                  {isMatching ? <Loader2 className="w-5 h-5 animate-spin" /> : <Sparkles className="w-5 h-5 fill-white" />}
+                  Run AI Magic
+                </Button>
+              </div>
+            )}
           </div>
         </div>
 
