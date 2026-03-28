@@ -13,10 +13,13 @@ import {
   RefreshCcw,
   Calendar,
   ArrowRight,
+  Loader2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useGetInsightsQuery, useGetFutureInsightsQuery } from "@/redux/features/api/userDashboard/insightsApi";
-import { Loader2 } from "lucide-react";
+import { useGetAiCurrentInsightsQuery, useGetAiFutureInsightsQuery, useUpdateAiCurrentInsightsMutation, useUpdateAiFutureInsightsMutation } from "@/redux/features/api/userDashboard/Projection/AIInsightsAPI";
+import { useSelector } from "react-redux";
+import { selectCurrentUser } from "@/redux/features/slice/authSlice";
+import { toast } from "sonner";
 
 // Mock data removed in favor of API integration
 
@@ -24,8 +27,33 @@ export default function InsightsPage() {
   const [activeTab, setActiveTab] = useState<"5-year" | "current">("current");
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const { data: insightsData, isLoading: isLoadingInsights } = useGetInsightsQuery({});
-  const { data: futureInsightsData, isLoading: isLoadingFuture } = useGetFutureInsightsQuery({});
+  const currentUser = useSelector(selectCurrentUser);
+  const userId = currentUser?.id || currentUser?.user_id;
+
+  const { data: insightsData, isLoading: isLoadingInsights } = useGetAiCurrentInsightsQuery(userId, { skip: !userId });
+  const { data: futureInsightsData, isLoading: isLoadingFuture } = useGetAiFutureInsightsQuery(userId, { skip: !userId });
+
+  const [updateCurrentInsights, { isLoading: isUpdatingCurrent }] = useUpdateAiCurrentInsightsMutation();
+  const [updateFutureInsights, { isLoading: isUpdatingFuture }] = useUpdateAiFutureInsightsMutation();
+
+  const isUpdating = isUpdatingCurrent || isUpdatingFuture;
+
+  const handleRefreshInsights = async () => {
+    if (!userId) {
+      toast.error("User ID not found");
+      return;
+    }
+    try {
+      await Promise.all([
+        updateCurrentInsights({ user_id: userId }).unwrap(),
+        updateFutureInsights({ user_id: userId, timeframe: "5 years" }).unwrap()
+      ]);
+      toast.success("Insights refreshed successfully");
+    } catch (error) {
+      toast.error("Failed to refresh insights");
+      console.error("Refresh Insights Error", error);
+    }
+  };
 
   const getCategoryStyles = (category: string) => {
     const cat = category?.toUpperCase() || "GENERAL";
@@ -54,8 +82,8 @@ export default function InsightsPage() {
     return <Scale size={20} className="text-[#1F2D2E]" />;
   };
 
-  const currentInsights = insightsData?.data || [];
-  const futureInsights = futureInsightsData?.data || [];
+  const currentInsights = insightsData?.insights || insightsData?.data || [];
+  const futureInsights = futureInsightsData?.insights || futureInsightsData?.data || [];
   const isLoading = activeTab === "current" ? isLoadingInsights : isLoadingFuture;
 
   return (
@@ -89,13 +117,24 @@ export default function InsightsPage() {
          
         </div>
 
-        <button
-          onClick={() => setIsModalOpen(true)}
-          className="flex items-center gap-1.5 text-xs font-semibold hover:underline text-[#5F6F73] hover:text-[#1F2D2E] transition-colors cursor-pointer"
-        >
-          View Remain Projection Limits
-          <Info size={16} />
-        </button>
+        <div className="flex items-center gap-4">
+          <button
+            onClick={handleRefreshInsights}
+            disabled={isUpdating}
+            className="flex items-center gap-2 px-3 py-1.5 bg-[#E6F6F6] text-[#0FA4A9] border border-[#BDE8E8] rounded-md text-xs font-semibold hover:bg-[#d0f0f0] transition-colors cursor-pointer disabled:opacity-50"
+          >
+            <RefreshCcw size={14} className={cn(isUpdating && "animate-spin")} />
+            {isUpdating ? "Refreshing..." : "Refresh Insights"}
+          </button>
+          
+          <button
+            onClick={() => setIsModalOpen(true)}
+            className="flex items-center gap-1.5 text-xs font-semibold hover:underline text-[#5F6F73] hover:text-[#1F2D2E] transition-colors cursor-pointer"
+          >
+            View Remain Projection Limits
+            <Info size={16} />
+          </button>
+        </div>
       </div>
 
       <AnimatePresence mode="wait">

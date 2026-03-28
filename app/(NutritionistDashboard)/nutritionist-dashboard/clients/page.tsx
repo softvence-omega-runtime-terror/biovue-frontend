@@ -25,7 +25,7 @@ export default function NutritionistClientsPage() {
       setError(null);
       console.log(`Fetching suggestions for nutritionist ID: ${user.id}`);
       try {
-        const response = await fetch(`https://biovue-ai.onrender.com/api/v1/recommend/users/nutritionist/${user.id}`, {
+        const response = await fetch(`https://ai.biovuedigitalwellness.com/api/v1/recommend/users/nutritionist/${user.id}`, {
           method: 'GET',
           headers: {
             'accept': 'application/json'
