@@ -30,6 +30,11 @@ import { useGetLatestProjectionQuery } from "@/redux/features/api/userDashboard/
 import { useSaveCurrentProjectionMutation } from "@/redux/features/api/userDashboard/Projection/SaveCurrentProjection";
 import { useSaveFutureGoalMutation } from "@/redux/features/api/userDashboard/Projection/SaveFutureGoal";
 import { useGetFutureGoalProjectionQuery } from "@/redux/features/api/userDashboard/Projection/GetFutureGoal";
+import { 
+  useCombinedProjectionMutation,
+  CombinedProjectionResponse,
+  IndividualProjection 
+} from "@/redux/features/api/userDashboard/Projection/CombinedProjection";
 
 type Step = "input" | "loading" | "results";
 type TimeHorizon = "6 months" | "1 year" | "5 years";
@@ -41,20 +46,15 @@ const ProjectionsPage = () => {
   const [quality, setQuality] = useState<"fast" | "ultra">("fast");
   const [projectionImage, setProjectionImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
-  const [currentProjectionData, setCurrentProjectionData] =
-    useState<ProjectionResponse | null>(null);
-  const [futureProjectionData, setFutureProjectionData] =
-    useState<ProjectionResponse | null>(null);
+  const [combinedProjectionData, setCombinedProjectionData] =
+    useState<CombinedProjectionResponse | null>(null);
 
 
   
 
   const user = useAppSelector(selectCurrentUser);
-  const [currentLifestyleProjection, { isLoading: isCurrentLoading }] =
-    useCurrentLifestyleProjectionMutation();
-
-  const [createFutureGoal, { isLoading: isFutureLoading }] =
-    useCreateFutureGoalMutation();
+  const [combinedProjection, { isLoading: isCombinedLoading }] =
+    useCombinedProjectionMutation();
 
   const [saveCurrentProjection, { isLoading: isSaveLoading }] =
     useSaveCurrentProjectionMutation();
@@ -143,26 +143,15 @@ const ProjectionsPage = () => {
     setStep("loading");
 
     try {
-      const [currentRes, futureRes] = await Promise.all([
-        currentLifestyleProjection({
-          user_id: user.id.toString(),
-          image: projectionImage as File,
-          duration: timeHorizon,
-          resolution: resolution.toUpperCase(),
-          tier: quality,
-        }).unwrap(),
-        createFutureGoal({
-          user_id: user.id.toString(),
-          image: projectionImage as File,
-          duration: timeHorizon,
-          resolution: resolution.toUpperCase(),
-          tier: quality,
-          use_default_goal: true,
-        }).unwrap(),
-      ]);
+      const response = await combinedProjection({
+        user_id: user.id.toString(),
+        image: projectionImage as File,
+        duration: timeHorizon,
+        resolution: resolution.toUpperCase(),
+        use_default_goal: true,
+      }).unwrap();
 
-      setCurrentProjectionData(currentRes);
-      setFutureProjectionData(futureRes);
+      setCombinedProjectionData(response);
 
       toast.success("Projections generated successfully!");
       setStep("results");
@@ -377,15 +366,13 @@ const ProjectionsPage = () => {
         <button
           onClick={handleGenerate}
           disabled={
-            isCurrentLoading ||
-            isFutureLoading ||
+            isCombinedLoading ||
             isSaveLoading ||
             isSaveFutureLoading
           }
           className="w-full bg-[#0FA4A9] text-white py-5 rounded-xl font-bold flex items-center justify-center gap-3 hover:bg-[#0d8d91] transition-all group cursor-pointer shadow-lg shadow-[#0FA4A9]/20 disabled:opacity-50"
         >
-          {isCurrentLoading ||
-          isFutureLoading ||
+          {isCombinedLoading ||
           isSaveLoading ||
           isSaveFutureLoading
             ? "Generating..."
@@ -423,46 +410,51 @@ const ProjectionsPage = () => {
   );
 
   const renderResultsStep = () => {
-    if (!currentProjectionData || !futureProjectionData) return null;
+    if (!combinedProjectionData) return null;
 
-    const renderProjectionCard = (projection: ProjectionResponse, isFuture: boolean) => {
-      const expectedChanges: string[] = (() => {
-        if (!projection?.expected_changes) return [];
-        if (Array.isArray(projection.expected_changes))
-          return projection.expected_changes;
-        try {
-          const parsed = JSON.parse(projection.expected_changes as any);
-          return Array.isArray(parsed) ? parsed : [];
-        } catch (e) {
-          if (typeof projection.expected_changes === "string") {
-            return [projection.expected_changes];
+    const renderProjectionCard = (projection: IndividualProjection, isFuture: boolean) => {
+      const expectedChanges: string[] = Array.isArray(projection?.expected_changes) 
+        ? projection.expected_changes 
+        : [];
+
+      let goalTitle = `Achieving your goal in ${combinedProjectionData.timeframe}`;
+      if (isFuture) {
+        goalTitle = `Achieving your goal: Reach muscular physique in ${combinedProjectionData.timeframe}`; // Fallback
+        if (user?.profile?.weight && projection?.est_weight) {
+          const currentWeight = parseFloat(user.profile.weight);
+          const futureWeightStr = projection.est_weight.toLowerCase().replace(/[^0-9.]/g, '');
+          const futureWeight = parseFloat(futureWeightStr);
+          if (!isNaN(currentWeight) && !isNaN(futureWeight)) {
+            const diff = currentWeight - futureWeight;
+            if (diff > 0) {
+              goalTitle = `Achieving your goal: Lose ${Math.round(diff)} lbs and reach muscular physique in ${combinedProjectionData.timeframe}`;
+            } else if (diff < 0) {
+              goalTitle = `Achieving your goal: Gain ${Math.round(Math.abs(diff))} lbs and reach muscular physique in ${combinedProjectionData.timeframe}`;
+            } else {
+              goalTitle = `Achieving your goal: Maintain weight and reach muscular physique in ${combinedProjectionData.timeframe}`;
+            }
           }
-          return [];
         }
-      })();
+      }
 
       return (
         <div className="bg-white rounded-[24px] border border-[#3A86FF]/10 shadow-sm overflow-hidden flex flex-col">
           <div className="p-8 text-center space-y-6 flex-1">
             <h3 className="text-[#8B5CF6] font-bold text-lg min-h-[56px] flex items-center justify-center">
               {isFuture
-                ? `Achieving your goal: Lose 40 lbs and reach muscular physique in ${projection.timeframe}`
-                : `If you continue your current lifestyle without changes for ${projection.timeframe}`}
+                ? goalTitle
+                : `If you continue your current lifestyle without changes for ${combinedProjectionData.timeframe}`}
             </h3>
-            <div className="relative w-full aspect-[4/3.2] rounded-2xl overflow-hidden bg-gray-50 shadow-inner">
+            <div className="w-full rounded-2xl overflow-hidden bg-gray-50 shadow-inner border border-gray-100">
               {projection?.projection_url ? (
-                <Image
+                <img
                   key={projection.projection_url}
                   src={getFullProjectionUrl(projection.projection_url)}
                   alt="Projection Result"
-                  fill
-                  unoptimized={true}
-                  priority={true}
-                  className="object-cover"
-                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                  className="w-full h-auto object-contain"
                 />
               ) : (
-                <div className="w-full h-full flex items-center justify-center bg-gray-100">
+                <div className="w-full aspect-[3/4] flex items-center justify-center bg-gray-100">
                   <User size={80} className="text-gray-300" />
                 </div>
               )}
@@ -472,7 +464,7 @@ const ProjectionsPage = () => {
               {[
                 {
                   label: "Timeframe",
-                  value: projection?.timeframe,
+                  value: combinedProjectionData.timeframe,
                   icon: Calendar,
                   color: "text-[#8B5CF6]",
                   bg: "bg-[#F3E8FF]",
@@ -542,13 +534,13 @@ const ProjectionsPage = () => {
             Projection Results
           </h1>
           <p className="text-gray-500">
-            Visualizing your trajectory over the next {currentProjectionData.timeframe}.
+            Visualizing your trajectory over the next {combinedProjectionData.timeframe}.
           </p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-6xl mx-auto">
-          {renderProjectionCard(currentProjectionData, false)}
-          {renderProjectionCard(futureProjectionData, true)}
+          {renderProjectionCard(combinedProjectionData.projections.current_lifestyle, false)}
+          {renderProjectionCard(combinedProjectionData.projections.future_goal, true)}
         </div>
 
         {/* Results Actions */}
