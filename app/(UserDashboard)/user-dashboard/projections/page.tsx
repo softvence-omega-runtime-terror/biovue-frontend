@@ -35,6 +35,11 @@ import {
   CombinedProjectionResponse,
   IndividualProjection 
 } from "@/redux/features/api/userDashboard/Projection/CombinedProjection";
+import { 
+  useUpdateAiCurrentInsightsMutation, 
+  useUpdateAiFutureInsightsMutation 
+} from "@/redux/features/api/userDashboard/Projection/AIInsightsAPI";
+import { useRouter } from "next/navigation";
 
 type Step = "input" | "loading" | "results";
 type TimeHorizon = "6 months" | "1 year" | "5 years";
@@ -53,8 +58,13 @@ const ProjectionsPage = () => {
   
 
   const user = useAppSelector(selectCurrentUser);
+  const router = useRouter();
+
   const [combinedProjection, { isLoading: isCombinedLoading }] =
     useCombinedProjectionMutation();
+
+  const [updateCurrentInsights, { isLoading: isUpdatingCurrent }] = useUpdateAiCurrentInsightsMutation();
+  const [updateFutureInsights, { isLoading: isUpdatingFuture }] = useUpdateAiFutureInsightsMutation();
 
   const [saveCurrentProjection, { isLoading: isSaveLoading }] =
     useSaveCurrentProjectionMutation();
@@ -128,6 +138,24 @@ const ProjectionsPage = () => {
 
     return () => clearInterval(textInterval);
   }, [step]);
+
+  const handleNavigateWithInsights = async (path: string) => {
+    if (!user?.id) {
+      router.push(path);
+      return;
+    }
+    
+    try {
+      await Promise.all([
+        updateCurrentInsights({ user_id: user.id.toString() }).unwrap(),
+        updateFutureInsights({ user_id: user.id.toString(), timeframe: timeHorizon }).unwrap()
+      ]);
+    } catch (e) {
+      console.error("Failed to update insights prior to navigation", e);
+    }
+    
+    router.push(path);
+  };
 
   const handleGenerate = async () => {
     if (!user?.id) {
@@ -555,16 +583,21 @@ const ProjectionsPage = () => {
         </div>
 
         <div className="flex flex-col md:flex-row items-center justify-center gap-6">
-          <button className="bg-[#0FA4A9] text-white px-8 py-4 rounded-xl font-bold flex items-center gap-2 hover:bg-[#0d8d91] transition-all cursor-pointer w-full md:w-auto shadow-lg shadow-[#0FA4A9]/20">
-            View insights based on this projection
+          <button 
+            disabled={isUpdatingCurrent || isUpdatingFuture}
+            onClick={() => handleNavigateWithInsights("/user-dashboard/insights")}
+            className="bg-[#0FA4A9] text-white px-8 py-4 rounded-xl font-bold flex items-center gap-2 hover:bg-[#0d8d91] transition-all cursor-pointer w-full md:w-auto shadow-lg shadow-[#0FA4A9]/20 disabled:opacity-50"
+          >
+            {(isUpdatingCurrent || isUpdatingFuture) ? "Generating Insights..." : "View insights based on this projection"}
             <ArrowRight size={20} />
           </button>
           <button
-            onClick={() => setStep("input")}
-            className="bg-white border border-gray-200 text-[#041228] px-8 py-4 rounded-xl font-bold flex items-center gap-2 hover:bg-gray-50 transition-all cursor-pointer w-full md:w-auto"
+            disabled={isUpdatingCurrent || isUpdatingFuture}
+            onClick={() => handleNavigateWithInsights("/user-dashboard")}
+            className="bg-white border border-gray-200 text-[#041228] px-8 py-4 rounded-xl font-bold flex items-center gap-2 hover:bg-gray-50 transition-all cursor-pointer w-full md:w-auto disabled:opacity-50"
           >
             <ArrowLeft size={20} />
-            Return to Dashboard
+            {(isUpdatingCurrent || isUpdatingFuture) ? "Saving..." : "Return to Dashboard"}
           </button>
         </div>
       </div>
