@@ -45,7 +45,7 @@ export default function SupplierClientPage() {
     );
   }
 
-  const users = data ?? [];
+  const users = data?.data ?? [];
 
   return (
     <div className="mx-auto animate-in fade-in slide-in-from-bottom-4 duration-700">

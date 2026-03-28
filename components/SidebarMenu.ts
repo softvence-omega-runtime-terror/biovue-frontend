@@ -68,7 +68,6 @@ export const SIDEBAR_MENU: SidebarMenu = {
     },
     { label: "Clients", icon: Users, href: "/nutritionist-dashboard/clients" },
     { label: "Messages", icon: Mail, href: "/nutritionist-dashboard/messages" },
-    { label: "Settings", icon: Settings, href: "/nutritionist-dashboard/settings" },
   ],
 
   admin: [

@@ -15,13 +15,10 @@ import {
   User,
   Search,
   Users,
-  Mail,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import NotificationBell from "@/components/dashboard/NotificationBell";
-import ProfileDropdown from "@/components/dashboard/ProfileDropdown";
 import { useLogoutMutation } from "@/redux/features/api/auth/authApi";
 import { logout } from "@/redux/features/slice/authSlice";
 import { useAppDispatch } from "@/redux/store/hooks";
@@ -36,7 +33,6 @@ const MENU_ITEMS = [
     href: "/supplier-dashboard/add-product",
   },
   { icon: Users, label: "Client", href: "/supplier-dashboard/client" },
-  { icon: Mail, label: "Messages", href: "/supplier-dashboard/messages" },
   { icon: Settings, label: "Settings", href: "/supplier-dashboard/settings" },
 ];
 
@@ -63,7 +59,6 @@ export default function SupplierDashboardLayout({
     if (path === "/supplier-dashboard/products") return "My Products";
     if (path === "/supplier-dashboard/add-product") return "Add New Product";
     if (path === "/supplier-dashboard/client") return "Client";
-    if (path === "/supplier-dashboard/messages") return "Messages";
     if (path === "/supplier-dashboard/settings") return "Settings";
     return "Dashboard";
   };
@@ -160,9 +155,20 @@ export default function SupplierDashboardLayout({
           </div>
 
           <div className="flex items-center gap-6">
-            <NotificationBell iconSize={24} />
+            <button className="relative p-2.5 text-[#041228] hover:bg-[#F5F5F5] rounded-xl transition-colors cursor-pointer">
+              <Bell size={24} strokeWidth={1.5} />
+              <span className="absolute top-2.5 right-2.5 w-2.5 h-2.5 bg-[#E54335] rounded-full border-2 border-white"></span>
+            </button>
             <div className="flex items-center gap-3 pl-2">
-              <ProfileDropdown roleLabel="Supplier" settingsHref="/supplier-dashboard/settings" />
+              <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-[#E4EFFF] shadow-sm">
+                <Image
+                  src="/images/avatar.png"
+                  alt="Supplier"
+                  width={48}
+                  height={48}
+                  className="object-cover"
+                />
+              </div>
             </div>
           </div>
         </header>
@@ -174,4 +180,3 @@ export default function SupplierDashboardLayout({
     </ProtectedRoute>
   );
 }
-
