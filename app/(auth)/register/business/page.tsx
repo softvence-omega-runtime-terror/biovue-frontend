@@ -50,7 +50,7 @@ const BusinessRegister = () => {
       email: formData.email,
       password: formData.password,
       password_confirmation: formData.confirmPassword,
-      role: "professional",
+      role: "individual", // Keeping role as individual per payload example
       terms_accepted: formData.acceptTerms,
       user_type: "professional",
       profession_type: formData.professionType,

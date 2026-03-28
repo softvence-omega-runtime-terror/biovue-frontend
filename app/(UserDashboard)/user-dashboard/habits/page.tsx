@@ -13,7 +13,8 @@ import {
   ArrowRight,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useGetCardDataQuery, useGetHabitsQuery, useUpdateHabitsMutation } from "@/redux/features/api/userDashboard/habit";
+import { useGetCardDataQuery } from "@/redux/features/api/userDashboard/habit";
+import { useGetAiSavedHabitsQuery, useUpdateAiHabitsMutation } from "@/redux/features/api/userDashboard/Projection/AIHabitsAPI";
 import { Loader2, Activity as ActivityIcon, RefreshCw } from "lucide-react";
 import { useSelector } from "react-redux";
 import { selectCurrentUser } from "@/redux/features/slice/authSlice";
@@ -57,8 +58,8 @@ export default function HabitsPage() {
   const userId = currentUser?.id || currentUser?.user_id;
 
   const { data: cardData, isLoading: isLoadingCards } = useGetCardDataQuery();
-  const { data: habitData, isLoading: isLoadingHabits } = useGetHabitsQuery(userId, { skip: !userId });
-  const [updateHabits, { isLoading: isUpdating }] = useUpdateHabitsMutation();
+  const { data: habitData, isLoading: isLoadingHabits } = useGetAiSavedHabitsQuery(userId, { skip: !userId });
+  const [updateHabits, { isLoading: isUpdating }] = useUpdateAiHabitsMutation();
   
 
   console.log(cardData, "carddata frontend page ");
@@ -71,9 +72,9 @@ export default function HabitsPage() {
     }
     try {
       await updateHabits({ user_id: userId }).unwrap();
-      toast.success("Insights updated successfully");
+      toast.success("Habits updated successfully");
     } catch (err) {
-      toast.error("Failed to update insights");
+      toast.error("Failed to update habits");
       console.error(err);
     }
   };
@@ -100,8 +101,8 @@ export default function HabitsPage() {
         return {
           ...metric,
           status: insight.status.replace("_", " ").toLowerCase().split(" ").map((s: string) => s.charAt(0).toUpperCase() + s.slice(1)).join(" "),
-          // We can't really map insights to avg/ratio yet as they don't exist in new API
-          // but we keep the old ones if available
+          biovue_insights: insight.biovue_insights,
+          why_this_matters: insight.why_this_matters,
         };
       }
       return metric;

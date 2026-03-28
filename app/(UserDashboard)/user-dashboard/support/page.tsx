@@ -856,17 +856,17 @@ const SupportPage = () => {
               </div>
 
               {/* Health upload Widget with Padding */}
-              <div className="mb-10 w-full flex justify-start">
+              {/* <div className="mb-10 w-full flex justify-start">
                 <div className="w-full max-w-md bg-white rounded-2xl shadow-md border border-gray-100 p-6 flex flex-col items-center gap-4">
                   <h2 className="text-lg font-semibold text-center text-[#1F2D2E]">
                     Upload your latest health update
-                  </h2>
+                  </h2> */}
                   {/* <p className="text-sm text-gray-500 text-center">
                     Helps us provide better insights and recommendations.
                   </p> */}
 
                   {/* Image Preview / Dropzone */}
-                  <div className="relative w-32 h-32 rounded-2xl overflow-hidden border-2 border-dashed border-gray-200 shadow-sm bg-gray-50 group transition-transform hover:scale-105">
+                  {/* <div className="relative w-32 h-32 rounded-2xl overflow-hidden border-2 border-dashed border-gray-200 shadow-sm bg-gray-50 group transition-transform hover:scale-105">
                     {isUploading ? (
                       <div className="absolute inset-0 flex items-center justify-center bg-white/60 z-10">
                         <Loader2 className="animate-spin text-[#0FA4A9]" size={24} />
@@ -898,10 +898,10 @@ const SupportPage = () => {
                         )}
                       </>
                     )}
-                  </div>
+                  </div> */}
 
                   {/* Upload Button */}
-                  <input
+                  {/* <input
                     type="file"
                     id="health-upload-banner"
                     className="hidden"
@@ -916,7 +916,7 @@ const SupportPage = () => {
                     {isUploading ? "Uploading..." : healthImage ? "Change Image" : "Upload Image"}
                   </label>
                 </div>
-              </div>
+              </div> */}
             </div>
 
 
