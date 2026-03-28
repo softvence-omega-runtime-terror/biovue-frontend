@@ -1,26 +1,22 @@
 "use client";
 
 import NotificationBell from "../dashboard/NotificationBell";
-import ProfileDropdown from "../dashboard/ProfileDropdown";
+import Image from "next/image";
 
 export default function NutritionistNavbar() {
   return (
-    <header className="ml-6 py-4 bg-white px-8 flex items-center justify-between shadow-sm border-b border-gray-100 z-30 sticky top-0">
-      <div className="flex flex-col">
-        <h1 className="text-lg font-bold text-[#1F2D2E]">Dashboard</h1>
-        <p className="text-[11px] text-[#94A3B8] font-medium uppercase tracking-wider">Nutrition Management</p>
-      </div>
+    <header className="ml-6 py-5 bg-white px-6 flex items-center justify-between shadow-sm border-b border-gray-100">
+      <h1 className="text-sm font-semibold text-gray-700">Dashboard</h1>
 
-      <div className="flex items-center gap-6">
-        <NotificationBell iconSize={22} />
-        
-        {/* Divider */}
-        <div className="h-8 w-[1px] bg-gray-100 hidden sm:block"></div>
+      <div className="flex items-center gap-4">
+        <NotificationBell iconSize={20} />
 
-        {/* Unified Profile Dropdown */}
-        <ProfileDropdown 
-          roleLabel="Nutritionist" 
-          settingsHref="/nutritionist-dashboard/settings" 
+        <Image
+          src="/images/avatar.png"
+          alt="Nutritionist"
+          width={36}
+          height={36}
+          className="rounded-full shadow-sm"
         />
       </div>
     </header>

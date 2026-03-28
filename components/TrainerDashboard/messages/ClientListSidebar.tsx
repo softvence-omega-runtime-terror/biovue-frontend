@@ -2,7 +2,7 @@
 
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Search } from "lucide-react";
-import Avatar from "@/components/common/Avatar";
+import Image from "next/image";
 import { useGetConnectedClientsQuery } from "@/redux/features/api/TrainerDashboard/Clients/YourClients";
 import { useMemo } from "react";
 
@@ -28,8 +28,8 @@ export default function ClientsListSidebar({
     return connectedClientsData.data.map((client) => ({
       id: client.id.toString(),
       name: client.name,
-      avatar: client.image_url || null,
-      lastMessage: "Connected",
+      avatar: client.image_url || "/images/user.png",
+      lastMessage: "Connected", // Placeholder since we don't have the last message from this API
       timestamp: "",
     }));
   }, [connectedClientsData]);
@@ -79,12 +79,14 @@ export default function ClientsListSidebar({
                     )}
 
                     {/* Avatar */}
-                    <Avatar
-                      src={client.avatar}
-                      name={client.name}
-                      size="lg"
-                      className="shrink-0"
-                    />
+                    <div className="relative w-12 h-12 shrink-0">
+                      <Image
+                        src={client.avatar}
+                        alt={client.name}
+                        fill
+                        className="rounded-full object-cover border border-[#E5E7EB]"
+                      />
+                    </div>
 
                     {/* Info */}
                     <div className="flex-1 min-w-0 flex flex-col justify-center">

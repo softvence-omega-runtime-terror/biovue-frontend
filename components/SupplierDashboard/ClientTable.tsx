@@ -43,16 +43,28 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 
+import {
+  useFindMatchMutation,
+} from "@/redux/features/api/SupplierDashboard/FindMatch";
+import { useSelector } from "react-redux";
+import { selectCurrentUser } from "@/redux/features/slice/authSlice";
+import { toast } from "sonner";
+
 // clients er table
 interface ClientTableProps {
   users: User[];
 }
 
 export default function ClientTable({ users }: ClientTableProps) {
+  const currentUser = useSelector(selectCurrentUser);
+  const supplier_id = currentUser?.id;
+
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isTargetGoalsModalOpen, setIsTargetGoalsModalOpen] = useState(false);
+
+  const [findMatch, { isLoading: isMatching }] = useFindMatchMutation();
 
   const filteredUsers = users.filter(
     (user) =>
@@ -60,11 +72,28 @@ export default function ClientTable({ users }: ClientTableProps) {
       user.email.toLowerCase().includes(searchTerm.toLowerCase()),
   );
 
-  const handleFindMatch = (user: User) => {
+  const handleFindMatch = async (user: User) => {
     setSelectedUser(user);
-    setIsModalOpen(true);
-  };
 
+    if (!supplier_id) {
+      toast.error("Supplier ID not found. Please log in again.");
+      return;
+    }
+
+    try {
+      // ✅ Step 1: Run AI (POST)
+      await findMatch({
+        user_id: user.id.toString(),
+        supplier_id: supplier_id.toString(),
+      }).unwrap();
+
+      // ✅ Step 2: Open modal AFTER AI done
+      setIsModalOpen(true);
+    } catch (error) {
+      console.error("Match finding failed:", error);
+      toast.error("Failed to find matches. Please try again.");
+    }
+  };
   const handleViewGoals = (user: User) => {
     setSelectedUser(user);
     setIsTargetGoalsModalOpen(true);
@@ -196,14 +225,15 @@ export default function ClientTable({ users }: ClientTableProps) {
                   </TableCell>
                   <TableCell className="px-10 py-6 text-center">
                     <Button
+                      disabled={isMatching}
                       onClick={() => handleFindMatch(user)}
-                      className="bg-white hover:bg-[#0FA4A9] text-[#0FA4A9] hover:text-white border-2 border-[#0FA4A9]/20 hover:border-[#0FA4A9] rounded-2xl px-6 py-2 h-auto text-sm font-bold flex items-center gap-2 mx-auto transition-all group active:scale-95 cursor-pointer shadow-sm hover:shadow-md"
+                      className="bg-white hover:bg-[#0FA4A9] text-[#0FA4A9] hover:text-white border-2 border-[#0FA4A9]/20 hover:border-[#0FA4A9] rounded-2xl px-6 py-2 h-auto text-sm font-bold flex items-center gap-2 mx-auto transition-all group active:scale-95 cursor-pointer shadow-sm hover:shadow-md disabled:opacity-50"
                     >
                       <Sparkles
                         size={16}
-                        className="group-hover:animate-pulse"
+                        className={isMatching ? "animate-spin" : "group-hover:animate-pulse"}
                       />
-                      Find Match
+                      {isMatching ? "Analysing..." : "Find Match"}
                     </Button>
                   </TableCell>
                 </TableRow>
