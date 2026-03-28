@@ -68,9 +68,9 @@ export default function ProjectionGallery() {
     return null; // Don't show the gallery section if there are no projections yet
   }
 
-  // Sort projections chronologically (oldest first) so SI starts from 1 for the earliest entry
+  // Sort projections chronologically (newest first) so the most recently generated one is at the top
   const projections = [...rawProjections].sort(
-    (a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+    (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
   );
 
   return (
@@ -97,7 +97,7 @@ export default function ProjectionGallery() {
                 const thumbnailUrl = proj.source_image || proj.projections?.current_lifestyle?.projection_url;
                 return (
                   <tr key={proj.projection_id} className="hover:bg-gray-50/50 transition-colors">
-                    <td className="px-6 py-4 text-sm text-[#041228] font-medium">#{data?.total_count ? data.total_count - idx : projections.length - idx}</td>
+                    <td className="px-6 py-4 text-sm text-[#041228] font-medium">{idx + 1}</td>
                     <td className="px-6 py-4 text-sm text-[#5F6F73]">
                       {proj.created_at ? formatDate(proj.created_at) : "N/A"}
                     </td>
