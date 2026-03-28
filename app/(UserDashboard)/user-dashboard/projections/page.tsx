@@ -40,6 +40,7 @@ import {
   useUpdateAiFutureInsightsMutation 
 } from "@/redux/features/api/userDashboard/Projection/AIInsightsAPI";
 import { useRouter } from "next/navigation";
+import ProjectionGallery from "@/components/dashboard/ProjectionGallery";
 
 type Step = "input" | "loading" | "results";
 type TimeHorizon = "6 months" | "1 year" | "5 years";
@@ -633,6 +634,8 @@ const ProjectionsPage = () => {
           </p>
         </div>
       )}
+
+      <ProjectionGallery />
     </div>
   );
 };
