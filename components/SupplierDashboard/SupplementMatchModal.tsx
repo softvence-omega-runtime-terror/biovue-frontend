@@ -76,55 +76,35 @@ export default function SupplementMatchModal({
     }
   };
 
-  // const handleSuggestToUser = async (supp: MatchedProduct) => {
-  //   try {
-  //     const message = `I recommend ${supp.name} for you. \n\nReason: ${supp.match_reason}\n\nBenefits: ${supp.health_benefits.join(", ")}\n\nYou can view it here: ${supp.redirect_url}`;
-      
-  //     await sendMessage({
-  //       receiver_id: user.id,
-  //       message: message,
-  //     }).unwrap();
-      
-  //     toast.success(`Suggestion for ${supp.name} sent to ${user.name}`);
-  //   } catch (error) {
-  //     console.error("Failed to send suggestion:", error);
-  //     toast.error("Failed to send suggestion. Please check if messaging is available.");
-  //   }
-  // };
-const handleSuggestToUser = async (supp: MatchedProduct) => {
-  if (!supplier_id) {
-    toast.error("Supplier ID missing");
-    return;
-  }
-
-  try {
-    // ✅ Ensure AI data exists (optional safety)
-    if (!matchData?.matched_products?.length) {
-      await findMatch({
-        user_id: user.id.toString(),
-        supplier_id: supplier_id.toString(),
-      }).unwrap();
+  const handleSuggestToUser = async (supp: MatchedProduct) => {
+    if (!supplier_id) {
+      toast.error("Supplier ID missing");
+      return;
     }
 
-    const message = `I recommend ${supp.name} for you.
+    try {
+      // ✅ Ensure AI data exists (optional safety)
+      if (!matchData?.matched_products?.length) {
+        await findMatch({
+          user_id: user.id.toString(),
+          supplier_id: supplier_id.toString(),
+        }).unwrap();
+      }
 
-Reason: ${supp.match_reason}
+      const message = `I recommend ${supp.name} for you.\n\nReason: ${supp.match_reason}\n\nBenefits: ${supp.health_benefits.join(", ")}\n\nView: ${supp.redirect_url}`;
 
-Benefits: ${supp.health_benefits.join(", ")}
+      await sendMessage({
+        receiver_id: user.id,
+        message,
+      }).unwrap();
 
-View: ${supp.redirect_url}`;
+      toast.success(`Suggestion sent to ${user.name}`);
+    } catch (error) {
+      console.error(error);
+      toast.error("Failed to send suggestion");
+    }
+  };
 
-    await sendMessage({
-      receiver_id: user.id,
-      message,
-    }).unwrap();
-
-    toast.success(`Suggestion sent to ${user.name}`);
-  } catch (error) {
-    console.error(error);
-    toast.error("Failed to send suggestion");
-  }
-};
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4 animate-in fade-in duration-200">
       <div className="w-full max-w-2xl bg-white rounded-[40px] shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300">

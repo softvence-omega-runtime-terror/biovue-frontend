@@ -72,48 +72,28 @@ export default function ClientTable({ users }: ClientTableProps) {
       user.email.toLowerCase().includes(searchTerm.toLowerCase()),
   );
 
-  // const handleFindMatch = async (user: User) => {
-  //   setSelectedUser(user);
-  //   if (!supplier_id) {
-  //     toast.error("Supplier ID not found. Please log in again.");
-  //     return;
-  //   }
+  const handleFindMatch = async (user: User) => {
+    setSelectedUser(user);
 
-  //   try {
-  //     await findMatch({
-  //       user_id: user.id.toString(),
-  //       supplier_id: supplier_id.toString(),
-  //     }).unwrap();
-      
-  //     setIsModalOpen(true);
-  //   } catch (error) {
-  //     console.error("Match finding failed:", error);
-  //     toast.error("Failed to find matches. Please try again.");
-  //   }
-  // };
-const handleFindMatch = async (user: User) => {
-  setSelectedUser(user);
+    if (!supplier_id) {
+      toast.error("Supplier ID not found. Please log in again.");
+      return;
+    }
 
-  if (!supplier_id) {
-    toast.error("Supplier ID not found. Please log in again.");
-    return;
-  }
+    try {
+      // ✅ Step 1: Run AI (POST)
+      await findMatch({
+        user_id: user.id.toString(),
+        supplier_id: supplier_id.toString(),
+      }).unwrap();
 
-  try {
-    // ✅ Step 1: Run AI (POST)
-    await findMatch({
-      user_id: user.id.toString(),
-      supplier_id: supplier_id.toString(),
-    }).unwrap();
-
-    // ✅ Step 2: Open modal AFTER AI done
-    setIsModalOpen(true);
-
-  } catch (error) {
-    console.error("Match finding failed:", error);
-    toast.error("Failed to find matches. Please try again.");
-  }
-};
+      // ✅ Step 2: Open modal AFTER AI done
+      setIsModalOpen(true);
+    } catch (error) {
+      console.error("Match finding failed:", error);
+      toast.error("Failed to find matches. Please try again.");
+    }
+  };
   const handleViewGoals = (user: User) => {
     setSelectedUser(user);
     setIsTargetGoalsModalOpen(true);
