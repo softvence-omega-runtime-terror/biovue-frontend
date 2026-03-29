@@ -107,6 +107,30 @@ export default function SupplementMatchModal({
     }
   };
 
+  const handleSuggestAll = async () => {
+    if (!matchData?.matched_products?.length || !user || !supplier_id) return;
+
+    try {
+      const allSupps = matchData.matched_products;
+      const intro = `I have analyzed your profile and found ${allSupps.length} supplement matches for you:\n\n`;
+      const details = allSupps.map((supp, index) => 
+        `${index + 1}. ${supp.name}\nReason: ${supp.match_reason}\nBenefits: ${supp.health_benefits.join(", ")}\nView: ${supp.redirect_url}`
+      ).join("\n\n---\n\n");
+      
+      const message = intro + details;
+
+      await sendMessage({
+        receiver_id: user.id,
+        message,
+      }).unwrap();
+
+      toast.success(`All suggestions sent to ${user.name}`);
+    } catch (error) {
+      console.error(error);
+      toast.error("Failed to send all suggestions");
+    }
+  };
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4 animate-in fade-in duration-200">
       <div className="w-full max-w-2xl bg-white rounded-[40px] shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300">
@@ -167,6 +191,17 @@ export default function SupplementMatchModal({
               </Button>
             )}
           </div>
+
+          {matchData?.matched_products && matchData.matched_products.length > 2 && (
+            <Button
+              onClick={handleSuggestAll}
+              disabled={isSending}
+              className="w-full mb-6 bg-[#0FA4A9]/10 hover:bg-[#0FA4A9] text-[#0FA4A9] hover:text-white border border-[#0FA4A9]/20 rounded-2xl py-6 h-auto font-bold flex items-center justify-center gap-3 transition-all cursor-pointer group"
+            >
+              <Send size={18} className="group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
+              {isSending ? "Sending All..." : `Send All ${matchData.matched_products.length} Suggestions at Once`}
+            </Button>
+          )}
 
           <div className="space-y-4 max-h-100 overflow-y-auto pr-2 custom-scrollbar">
             {isMatchLoading || (isMatching && !matchData?.matched_products) ? (
