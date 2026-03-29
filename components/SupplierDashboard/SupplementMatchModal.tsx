@@ -64,6 +64,7 @@ export default function SupplementMatchModal({
       await findMatch({
         user_id: user.id.toString(),
         supplier_id: supplier_id.toString(),
+        user_data: user,
       }).unwrap();
       toast.success("AI Analysis completed and matches updated!");
       triggerGet({
@@ -88,6 +89,7 @@ export default function SupplementMatchModal({
         await findMatch({
           user_id: user.id.toString(),
           supplier_id: supplier_id.toString(),
+          user_data: user,
         }).unwrap();
       }
 

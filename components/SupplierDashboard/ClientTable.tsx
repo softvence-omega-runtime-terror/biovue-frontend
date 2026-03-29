@@ -85,6 +85,7 @@ export default function ClientTable({ users }: ClientTableProps) {
       await findMatch({
         user_id: user.id.toString(),
         supplier_id: supplier_id.toString(),
+        user_data: user,
       }).unwrap();
 
       // ✅ Step 2: Open modal AFTER AI done
