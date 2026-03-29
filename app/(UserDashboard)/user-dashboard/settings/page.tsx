@@ -253,12 +253,12 @@ const SettingsPage = () => {
         </div>
 
         {/* Compliant Storage */}
-        <div className="bg-[#F8FAFB] rounded-[16px] py-4 flex items-center justify-center gap-3">
+        {/* <div className="bg-[#F8FAFB] rounded-[16px] py-4 flex items-center justify-center gap-3">
            <Info size={16} className="text-[#94A3B8]" />
            <span className="text-[10px] text-[#5F6F73] font-bold uppercase tracking-widest">
              END-TO-END ENCRYPTED • HIPAA COMPLIANT STORAGE
            </span>
-        </div>
+        </div> */}
       </section>
     </div>
   );
