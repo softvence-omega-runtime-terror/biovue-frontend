@@ -1,4 +1,4 @@
-import { Cable, Fingerprint, LucideIcon } from "lucide-react";
+import { Cable, Fingerprint, ImageDownIcon, LucideIcon } from "lucide-react";
 import {
   LayoutGrid,
   TrendingUp,
@@ -40,6 +40,7 @@ export const SIDEBAR_MENU: SidebarMenu = {
       icon: TrendingUp,
       href: "/user-dashboard/projections",
     },
+    { label: "Projection Galary", icon: ImageDownIcon, href: "/user-dashboard/projection-galary" },
     { label: "Insights", icon: Brain, href: "/user-dashboard/insights" },
     { label: "Habits", icon: Repeat, href: "/user-dashboard/habits" },
     { label: "Support", icon: HeartHandshake, href: "/user-dashboard/support" },
@@ -68,7 +69,6 @@ export const SIDEBAR_MENU: SidebarMenu = {
     },
     { label: "Clients", icon: Users, href: "/nutritionist-dashboard/clients" },
     { label: "Messages", icon: Mail, href: "/nutritionist-dashboard/messages" },
-    { label: "Settings", icon: Settings, href: "/nutritionist-dashboard/settings" },
   ],
 
   admin: [

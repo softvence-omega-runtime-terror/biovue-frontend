@@ -3,7 +3,6 @@
 import React from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { MessageCircle, Sparkles, Dumbbell, Clock, CheckCircle2, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -52,17 +51,6 @@ interface NotificationDropdownProps {
 import { Bell } from "lucide-react";
 
 export default function NotificationDropdown({ isOpen, onClose, onMarkAllAsRead, onMarkSingleAsRead, onDeleteSingleNotification, notifications }: NotificationDropdownProps) {
-  const pathname = usePathname();
-  
-  // Determine notification history link based on dashboard context
-  const getHistoryLink = () => {
-    if (pathname?.includes("/trainer-dashboard")) return "/trainer-dashboard/notifications";
-    if (pathname?.includes("/admin-dashboard")) return "/admin-dashboard/notifications";
-    if (pathname?.includes("/nutritionist-dashboard")) return "/nutritionist-dashboard/notifications";
-    if (pathname?.includes("/supplier-dashboard")) return "/supplier-dashboard/notifications";
-    return "/user-dashboard/notifications";
-  };
-
   return (
     <AnimatePresence>
       {isOpen && (
@@ -161,7 +149,7 @@ export default function NotificationDropdown({ isOpen, onClose, onMarkAllAsRead,
             {/* Footer */}
             <div className="p-4 border-t border-gray-100 bg-[#F9FAFB] flex justify-center">
               <Link
-                href={getHistoryLink()}
+                href="/user-dashboard/notifications"
                 onClick={onClose}
                 className="text-[#0FA4A9] font-medium hover:underline"
               >

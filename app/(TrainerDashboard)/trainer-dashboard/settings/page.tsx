@@ -21,9 +21,9 @@ export default function SettingsPage() {
       <div className=" space-y-10">
         <ProfilePreferences />
         <NotificationSettings />
-        {/* <RemindersAutomation />
+        <RemindersAutomation />
         <ClientVisibility />
-        <MessagingPreferences /> */}
+        <MessagingPreferences />
         <AccountPrivacy />
       </div>
     </div>

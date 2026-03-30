@@ -635,7 +635,7 @@ const ProjectionsPage = () => {
         </div>
       )}
 
-      <ProjectionGallery />
+      {/* <ProjectionGallery /> */}
     </div>
   );
 };

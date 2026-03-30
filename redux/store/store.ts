@@ -1,6 +1,7 @@
 import { baseApi } from '../features/api/baseApi'
 import { projectionApi } from '../features/api/userDashboard/Projection/projectionApi'
 import { configureStore } from '@reduxjs/toolkit'
+import { AiApi } from '../features/api/SupplierDashboard/AiApi'
 import authReducer from '../features/slice/authSlice'
 
 export const makeStore = () => {
@@ -8,10 +9,11 @@ export const makeStore = () => {
     reducer: {
       [baseApi.reducerPath]: baseApi.reducer,
       [projectionApi.reducerPath]: projectionApi.reducer,
+      [AiApi.reducerPath]: AiApi.reducer,
       auth: authReducer,
     },
     middleware: (getDefaultMiddleware) =>
-      getDefaultMiddleware().concat(baseApi.middleware, projectionApi.middleware),
+      getDefaultMiddleware().concat(baseApi.middleware, projectionApi.middleware, AiApi.middleware),
   })
 }
 

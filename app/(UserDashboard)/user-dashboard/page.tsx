@@ -25,7 +25,6 @@ import { selectCurrentUser } from "@/redux/features/slice/authSlice";
 import LogTodayModal from "@/components/dashboard/LogTodayModal";
 import ChangeSourceModal from "@/components/dashboard/ChangeSourceModal";
 import NotificationBell from "@/components/dashboard/NotificationBell";
-import ProfileDropdown from "@/components/dashboard/ProfileDropdown";
 import ChartsNutrition from "@/components/UserDashboard/Dashboard/ChartsNutrition";
 import { useGetCardDataQuery } from "@/redux/features/api/userDashboard/habit";
 import { useGetInsightsQuery } from "@/redux/features/api/userDashboard/insightsApi";
@@ -82,7 +81,13 @@ const UserDashboard = () => {
         <div className="flex items-center gap-4 ml-auto">
           <NotificationBell />
           <div className="flex items-center gap-3 pr-2">
-            <ProfileDropdown roleLabel="User" settingsHref="/user-dashboard/settings" />
+            <Image
+              src="/images/avatar.png"
+              alt="User Profile"
+              width={40}
+              height={40}
+              className="rounded-full border-2 border-[#F4FBFA] cursor-pointer"
+            />
           </div>
           <Link href="/user-dashboard/upgrade">
             <button className="flex items-center gap-2 bg-[#0FA4A9] text-white px-4 py-2 rounded-lg font-medium hover:bg-opacity-90 transition-all text-sm cursor-pointer">
@@ -211,13 +216,13 @@ const UserDashboard = () => {
           <h2 className="text-xl font-bold text-[#1F2D2E]">
             Current Health Overview
           </h2>
-          {/* <button
+          <button
             onClick={() => setShowLogModal(true)}
             className="flex items-center gap-2 bg-[#0FA4A9] text-white px-4 py-2 rounded-lg font-medium hover:bg-opacity-90 transition-all text-sm group cursor-pointer"
           >
             <Plus size={18} />
             Log today&apos;s data
-          </button> */}
+          </button>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

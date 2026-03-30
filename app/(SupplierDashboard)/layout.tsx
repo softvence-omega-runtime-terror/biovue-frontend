@@ -15,6 +15,7 @@ import {
   User,
   Search,
   Users,
+  Mail,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
@@ -34,7 +35,8 @@ const MENU_ITEMS = [
     label: "Add New Product",
     href: "/supplier-dashboard/add-product",
   },
-  { icon: Users, label: "Client", href: "/supplier-dashboard/client" },
+  { icon: Users, label: "Clients", href: "/supplier-dashboard/clients" },
+  { icon: Mail, label: "Messages", href: "/supplier-dashboard/messages" },
   { icon: Settings, label: "Settings", href: "/supplier-dashboard/settings" },
 ];
 
@@ -60,7 +62,8 @@ export default function SupplierDashboardLayout({
     if (path === "/supplier-dashboard") return "Dashboard";
     if (path === "/supplier-dashboard/products") return "My Products";
     if (path === "/supplier-dashboard/add-product") return "Add New Product";
-    if (path === "/supplier-dashboard/client") return "Client";
+    if (path === "/supplier-dashboard/clients") return "Clients";
+    if (path === "/supplier-dashboard/messages") return "Messages";
     if (path === "/supplier-dashboard/settings") return "Settings";
     return "Dashboard";
   };
@@ -159,7 +162,10 @@ export default function SupplierDashboardLayout({
           <div className="flex items-center gap-6">
             <NotificationBell iconSize={24} />
             <div className="flex items-center gap-3 pl-2">
-              <ProfileDropdown roleLabel="Supplier" settingsHref="/supplier-dashboard/settings" />
+              <ProfileDropdown
+                roleLabel="Supplier"
+                settingsHref="/supplier-dashboard/settings"
+              />
             </div>
           </div>
         </header>
@@ -171,4 +177,3 @@ export default function SupplierDashboardLayout({
     </ProtectedRoute>
   );
 }
-
