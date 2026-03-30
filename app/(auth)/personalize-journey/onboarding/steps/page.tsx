@@ -347,7 +347,7 @@ const OnboardingStepsPage = () => {
                 </h2>
               </div>
               <p className="text-gray-400 text-[15px] mb-10 ml-12">
-                We'll use this to personalize your experience
+                We&apos;ll use this to personalize your experience
               </p>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-8 mb-12">
@@ -844,7 +844,7 @@ const OnboardingStepsPage = () => {
                   Current Medications (Optional)
                 </h3>
                 <p className="text-gray-400 text-[14px] mb-2">
-                  List any prescriptions or supplements you're currently taking.
+                  List any prescriptions or supplements you&apos;re currently taking.
                 </p>
                 <textarea
                   value={formData.currentMedications}
