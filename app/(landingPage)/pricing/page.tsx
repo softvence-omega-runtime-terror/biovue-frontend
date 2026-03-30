@@ -342,7 +342,7 @@ const PricingPage = () => {
                       : plan.price
                   }
                   period={
-                    plan.price === "0.00" || plan.price === 0 ? "" : "/Month"
+                    plan.price === "0.00" || plan.price === 0 ? "" : "/Half Annual"
                   }
                   subtext={
                     plan.price !== "0.00" && plan.price !== 0
@@ -411,6 +411,12 @@ const PricingPage = () => {
                     plan.price === "0.00" ||
                     plan.price === 0
                       ? "Contact Via Mail"
+                      : idx === 0
+                      ? "Buy Now"
+                      : idx === 1
+                      ? "Update to Tier 2"
+                      : idx === 2
+                      ? "Update to Tier 3"
                       : "Start 7-Day Free Trial"
                   }
                   active={false}
