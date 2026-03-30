@@ -223,7 +223,7 @@ const PricingPage = () => {
           {/* Professional Plans Section */}
           <section className="container mx-auto px-6 mb-24">
             <div className="text-center mb-12">
-              <h2 style={{ color: 'var(--Primary-color, #3A86FF)', textAlign: 'center', fontFamily: 'Roboto', fontSize: '34px', fontStyle: 'normal', fontWeight: 400, lineHeight: '24px' }} className="mb-2">Professional Plan</h2>
+              <h2 style={{ color: 'var(--Primary-color, #3A86FF)', textAlign: 'center', fontFamily: 'Roboto', fontSize: '28px', fontStyle: 'normal', fontWeight: 400, lineHeight: '24px' }} className="mb-2">Professional Plan</h2>
               <p className="text-[#041228] text-center font-['Roboto'] text-[24px] font-normal leading-[24px] my-6">
                 6 month minimum commitment required.
               </p>
@@ -238,7 +238,7 @@ const PricingPage = () => {
                   title={plan.name}
                   capacity={plan.member_limit ? `Up to ${plan.member_limit} clients` : "Unlimited clients"}
                   price={plan.price === "0.00" || plan.price === 0 ? "Custom" : plan.price}
-                  period={plan.price === "0.00" || plan.price === 0 ? "" : "/Month"}
+                  period={plan.price === "0.00" || plan.price === 0 ? "" : "/Half Annual"}
                   subtext={plan.price !== "0.00" && plan.price !== 0 ? "7 days free trial" : ""}
                   features={(() => {
                     const overrideTexts = ["Dedicated account manager", "Quarterly business reviews"];
@@ -269,7 +269,7 @@ const PricingPage = () => {
                     
                     return baseFeatures;
                   })()}
-                  cta={plan.name.toLowerCase().includes("enterprise") || plan.price === "0.00" || plan.price === 0 ? "Contact Via Mail" : "Start 7-Day Free Trial"}
+                  cta={plan.name.toLowerCase().includes("enterprise") || plan.price === "0.00" || plan.price === 0 ? "Contact Via Mail" : idx === 0 ? "Buy Now" : idx === 1 ? "Update to Tier 2" : idx === 2 ? "Update to Tier 3" : "Start 7-Day Free Trial"}
                   active={false}
                   ctaColor="bg-[#0FA4A9]"
                   onSelect={() => handlePlanSelection(plan)}
