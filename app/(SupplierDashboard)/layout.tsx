@@ -35,7 +35,7 @@ const MENU_ITEMS = [
     label: "Add New Product",
     href: "/supplier-dashboard/add-product",
   },
-  { icon: Users, label: "Client", href: "/supplier-dashboard/client" },
+  { icon: Users, label: "Clients", href: "/supplier-dashboard/clients" },
   { icon: Mail, label: "Messages", href: "/supplier-dashboard/messages" },
   { icon: Settings, label: "Settings", href: "/supplier-dashboard/settings" },
 ];
@@ -62,7 +62,7 @@ export default function SupplierDashboardLayout({
     if (path === "/supplier-dashboard") return "Dashboard";
     if (path === "/supplier-dashboard/products") return "My Products";
     if (path === "/supplier-dashboard/add-product") return "Add New Product";
-    if (path === "/supplier-dashboard/client") return "Client";
+    if (path === "/supplier-dashboard/clients") return "Clients";
     if (path === "/supplier-dashboard/messages") return "Messages";
     if (path === "/supplier-dashboard/settings") return "Settings";
     return "Dashboard";

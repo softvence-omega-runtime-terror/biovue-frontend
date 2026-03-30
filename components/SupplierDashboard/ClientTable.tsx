@@ -63,6 +63,7 @@ export default function ClientTable({ users }: ClientTableProps) {
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isTargetGoalsModalOpen, setIsTargetGoalsModalOpen] = useState(false);
+  const [matchingUserId, setMatchingUserId] = useState<number | null>(null);
 
   const [findMatch, { isLoading: isMatching }] = useFindMatchMutation();
 
@@ -73,10 +74,12 @@ export default function ClientTable({ users }: ClientTableProps) {
   );
 
   const handleFindMatch = async (user: User) => {
+    setMatchingUserId(user.id);
     setSelectedUser(user);
 
     if (!supplier_id) {
       toast.error("Supplier ID not found. Please log in again.");
+      setMatchingUserId(null);
       return;
     }
 
@@ -85,6 +88,7 @@ export default function ClientTable({ users }: ClientTableProps) {
       await findMatch({
         user_id: user.id.toString(),
         supplier_id: supplier_id.toString(),
+        user_data: user,
       }).unwrap();
 
       // ✅ Step 2: Open modal AFTER AI done
@@ -92,6 +96,8 @@ export default function ClientTable({ users }: ClientTableProps) {
     } catch (error) {
       console.error("Match finding failed:", error);
       toast.error("Failed to find matches. Please try again.");
+    } finally {
+      setMatchingUserId(null);
     }
   };
   const handleViewGoals = (user: User) => {
@@ -225,15 +231,15 @@ export default function ClientTable({ users }: ClientTableProps) {
                   </TableCell>
                   <TableCell className="px-10 py-6 text-center">
                     <Button
-                      disabled={isMatching}
+                      disabled={isMatching || matchingUserId === user.id}
                       onClick={() => handleFindMatch(user)}
                       className="bg-white hover:bg-[#0FA4A9] text-[#0FA4A9] hover:text-white border-2 border-[#0FA4A9]/20 hover:border-[#0FA4A9] rounded-2xl px-6 py-2 h-auto text-sm font-bold flex items-center gap-2 mx-auto transition-all group active:scale-95 cursor-pointer shadow-sm hover:shadow-md disabled:opacity-50"
                     >
                       <Sparkles
                         size={16}
-                        className={isMatching ? "animate-spin" : "group-hover:animate-pulse"}
+                        className={matchingUserId === user.id ? "animate-spin" : "group-hover:animate-pulse"}
                       />
-                      {isMatching ? "Analysing..." : "Find Match"}
+                      {matchingUserId === user.id ? "Analysing..." : "Find Match"}
                     </Button>
                   </TableCell>
                 </TableRow>

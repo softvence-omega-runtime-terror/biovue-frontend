@@ -33,6 +33,7 @@ export interface FindMatchResponse {
 export interface FindMatchRequest {
   user_id: string;
   supplier_id: string;
+  user_data?: any;
 }
 
 export const findMatchApi = AiApi.injectEndpoints({
@@ -41,7 +42,11 @@ export const findMatchApi = AiApi.injectEndpoints({
       query: (body) => ({
         url: "/recommend/users/find-match/",
         method: "POST",
-        body,
+        body: {
+          user_id: body.user_id,
+          supplier_id: body.supplier_id,
+          user_data: body.user_data,
+        },
       }),
 
       invalidatesTags: ["FindMatch"],
