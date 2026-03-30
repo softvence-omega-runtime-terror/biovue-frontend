@@ -132,8 +132,10 @@ const OnboardingStepsPage = () => {
       }
 
       // Always send metric to backend
-      apiData.append("height", finalHeight.toFixed(1)); // cm
-      apiData.append("weight", finalWeight.toFixed(1)); // kg
+      // apiData.append("height", finalHeight.toFixed(1)); // cm
+      apiData.append("height", Math.round(finalHeight).toString());
+      // apiData.append("weight", finalWeight.toFixed(1)); // kg
+      apiData.append("weight", Math.round(finalWeight).toString());
       apiData.append("body_fat", formData.bodyFat || "0");
       apiData.append("location", formData.location);
       apiData.append("agreed_terms", agreed ? "1" : "0");
