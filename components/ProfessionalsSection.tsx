@@ -2,16 +2,17 @@
 import React from "react";
 import { motion } from "framer-motion";
 import { ArrowRight } from "lucide-react";
+import { useRouter } from "next/navigation";
 const ProfessionalsSection = () => {
+  const router = useRouter();
   return (
-    <section 
+    <section
       style={{ backgroundColor: "#F7FBFB" }}
       className="py-24 relative overflow-hidden"
     >
       <div className="container mx-auto px-4 md:px-8">
         {/* Main Content Box with Custom Corner Borders */}
         <div className="pros-container relative  rounded-xl py-16 px-10 md:py-24 md:px-20 shadow-[0_2px_40px_rgba(0,0,0,0.02)] border-none">
-          
           <style>{`
             .pros-container {
               position: relative;
@@ -74,7 +75,14 @@ const ProfessionalsSection = () => {
               transition={{ delay: 0.2 }}
               className="text-sm md:text-[15px] leading-relaxed text-[#5F6F73] mb-12 max-w-4xl mx-auto"
             >
-              Power your coaching with AI-driven insights that bring each client's health journey to life. Help clients clearly see their progress and connect data-backed insights to the training and nutrition strategies you recommend. Track performance and habits in real time, adjust programs effortlessly, and personalize plans to match individual goals. Strengthen client confidence, accountability, and retention with clear, measurable outcomes that show results, not guesswork.
+              Power your coaching with AI-driven insights that bring each
+              client&apos;s health journey to life. Help clients clearly see
+              their progress and connect data-backed insights to the training
+              and nutrition strategies you recommend. Track performance and
+              habits in real time, adjust programs effortlessly, and personalize
+              plans to match individual goals. Strengthen client confidence,
+              accountability, and retention with clear, measurable outcomes that
+              show results, not guesswork.
             </motion.p>
 
             {/* Action Buttons */}
@@ -85,12 +93,21 @@ const ProfessionalsSection = () => {
               transition={{ delay: 0.3 }}
               className="flex flex-col sm:flex-row items-center justify-center gap-6"
             >
-              <button className="bg-[#0FA4A9] hover:bg-[#0D8E92] text-white px-8 py-4 rounded-xl font-bold flex items-center gap-2 transition-all shadow-lg shadow-teal-500/10 group cursor-pointer hover:scale-105 active:scale-95">
+              <button
+                onClick={() => router.push("/register")}
+                className="bg-[#0FA4A9] hover:bg-[#0D8E92] text-white px-8 py-4 rounded-xl font-bold flex items-center gap-2 transition-all shadow-lg shadow-teal-500/10 group cursor-pointer hover:scale-105 active:scale-95"
+              >
                 Get Start for Free
-                <ArrowRight size={24} className="group-hover:translate-x-1 transition-transform bg-white rounded-full p-1 text-black" />
+                <ArrowRight
+                  size={24}
+                  className="group-hover:translate-x-1 transition-transform bg-white rounded-full p-1 text-black"
+                />
               </button>
-              
-              <button className="bg-white hover:bg-gray-50 text-[#1A1C1E] px-8 py-4 rounded-xl font-bold border border-gray-100 shadow-[0_2px_15px_rgba(0,0,0,0.04)] transition-all cursor-pointer hover:scale-105 active:scale-95">
+
+              <button
+                onClick={() => router.push("/pricing")}
+                className="bg-white hover:bg-gray-50 text-[#1A1C1E] px-8 py-4 rounded-xl font-bold border border-gray-100 shadow-[0_2px_15px_rgba(0,0,0,0.04)] transition-all cursor-pointer hover:scale-105 active:scale-95"
+              >
                 View Pricing
               </button>
             </motion.div>
