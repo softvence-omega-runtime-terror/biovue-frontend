@@ -75,7 +75,38 @@ const OnboardingStepsPage = () => {
   const [fetchFutureInsights] = useFetchFutureInsightsMutation();
   const router = useRouter();
   const user = useSelector(selectCurrentUser);
+  const [unitSystem, setUnitSystem] = useState<"imperial" | "metric">(
+    "imperial",
+  );
+  const cmToInches = (cm: number) => cm / 2.54;
+  const inchesToCm = (inch: number) => inch * 2.54;
 
+  const kgToLbs = (kg: number) => kg * 2.20462;
+  const lbsToKg = (lbs: number) => lbs / 2.20462;
+  const handleUnitChange = (newUnit: "imperial" | "metric") => {
+    if (newUnit === unitSystem) return;
+
+    let newHeight = Number(formData.height);
+    let newWeight = Number(formData.weight);
+
+    if (newUnit === "metric") {
+      // imperial → metric
+      newHeight = inchesToCm(newHeight);
+      newWeight = lbsToKg(newWeight);
+    } else {
+      // metric → imperial
+      newHeight = cmToInches(newHeight);
+      newWeight = kgToLbs(newWeight);
+    }
+
+    setFormData({
+      ...formData,
+      height: newHeight.toFixed(1),
+      weight: newWeight.toFixed(1),
+    });
+
+    setUnitSystem(newUnit);
+  };
   console.log(user, "user");
 
   const handleSubmit = async () => {
@@ -89,8 +120,20 @@ const OnboardingStepsPage = () => {
         "sex",
         formData.sex.charAt(0).toUpperCase() + formData.sex.slice(1),
       ); // Normalize to "Male"/"Female"
-      apiData.append("height", formData.height);
-      apiData.append("weight", formData.weight);
+      // apiData.append("height", formData.height);
+      // apiData.append("weight", formData.weight);
+      // Normalize to metric before sending
+      let finalHeight = Number(formData.height);
+      let finalWeight = Number(formData.weight);
+
+      if (unitSystem === "imperial") {
+        finalHeight = inchesToCm(finalHeight);
+        finalWeight = lbsToKg(finalWeight);
+      }
+
+      // Always send metric to backend
+      apiData.append("height", finalHeight.toFixed(1)); // cm
+      apiData.append("weight", finalWeight.toFixed(1)); // kg
       apiData.append("body_fat", formData.bodyFat || "0");
       apiData.append("location", formData.location);
       apiData.append("agreed_terms", agreed ? "1" : "0");
@@ -338,7 +381,7 @@ const OnboardingStepsPage = () => {
 
           {step === 2 && (
             <div className="bg-white rounded-2xl p-6 md:p-8 border border-[rgba(58,134,255,0.25)] shadow-sm">
-              <div className="flex items-center gap-3 mb-2">
+              {/* <div className="flex items-center gap-3 mb-2">
                 <div className="w-10 h-10 bg-[#E8F1FF] rounded-xl flex items-center justify-center text-[#3A86FF]">
                   <BookOpen size={22} />
                 </div>
@@ -347,8 +390,51 @@ const OnboardingStepsPage = () => {
                 </h2>
               </div>
               <p className="text-gray-400 text-[15px] mb-10 ml-12">
-                We'll use this to personalize your experience
-              </p>
+                We&apos;ll use this to personalize your experience
+              </p> */}
+              <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-10">
+                {/* Left: Title */}
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-[#E8F1FF] rounded-xl flex items-center justify-center text-[#3A86FF]">
+                    <BookOpen size={22} />
+                  </div>
+                  <div>
+                    <h2 className="text-[#041228] text-2xl font-bold">
+                      Tell Us a Bit About You
+                    </h2>
+                    <p className="text-gray-400 text-[14px]">
+                      We’ll use this to personalize your experience
+                    </p>
+                  </div>
+                </div>
+
+                {/* Right: Toggle */}
+                <div className="flex justify-start md:justify-end">
+                  <div className="flex bg-[#F1F5F9] rounded-xl p-1 shadow-sm border border-gray-100">
+                    <button
+                      onClick={() => handleUnitChange("imperial")}
+                      className={`px-4 py-2 rounded-lg text-xs md:text-sm font-semibold transition-all ${
+                        unitSystem === "imperial"
+                          ? "bg-white shadow text-[#041228]"
+                          : "text-gray-400 hover:text-[#041228]"
+                      }`}
+                    >
+                      Imperial
+                    </button>
+
+                    <button
+                      onClick={() => handleUnitChange("metric")}
+                      className={`px-4 py-2 rounded-lg text-xs md:text-sm font-semibold transition-all ${
+                        unitSystem === "metric"
+                          ? "bg-white shadow text-[#041228]"
+                          : "text-gray-400 hover:text-[#041228]"
+                      }`}
+                    >
+                      Metric
+                    </button>
+                  </div>
+                </div>
+              </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-8 mb-12">
                 {/* Age */}
@@ -403,8 +489,7 @@ const OnboardingStepsPage = () => {
                       className="flex-1 bg-[#F8FAFF] border border-gray-100 rounded-xl py-4 px-5 text-gray-700 font-medium"
                     />
                     <select className="w-32 bg-[#F8FAFB] border border-gray-100 rounded-xl py-4 px-5 text-gray-500 font-medium">
-                      <option>Cm</option>
-                      <option>Inch</option>
+                      <option>{unitSystem === "metric" ? "cm" : "inch"}</option>
                     </select>
                   </div>
                 </div>
@@ -424,9 +509,9 @@ const OnboardingStepsPage = () => {
                       }
                       className="flex-1 bg-[#F8FAFF] border border-gray-100 rounded-xl py-4 px-5 text-gray-700 font-medium"
                     />
-                    <div className="w-32 bg-[#F8FAFB] border border-gray-100 rounded-xl py-4 px-5 text-gray-300 font-medium flex items-center justify-center">
-                      lbs
-                    </div>
+                    <select className="w-32 bg-[#F8FAFB] border border-gray-100 rounded-xl py-4 px-5 text-gray-500 font-medium">
+                      <option>{unitSystem === "metric" ? "kg" : "lbs"}</option>
+                    </select>
                   </div>
                 </div>
 
@@ -844,7 +929,8 @@ const OnboardingStepsPage = () => {
                   Current Medications (Optional)
                 </h3>
                 <p className="text-gray-400 text-[14px] mb-2">
-                  List any prescriptions or supplements you're currently taking.
+                  List any prescriptions or supplements you&apos;re currently
+                  taking.
                 </p>
                 <textarea
                   value={formData.currentMedications}
