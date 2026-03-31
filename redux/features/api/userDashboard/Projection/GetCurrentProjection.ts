@@ -1,44 +1,37 @@
-"use client";
-
 import { baseApi } from "../../baseApi";
 
-export interface Projection {
-  id: number;
-  user_id: number;
+export interface ProjectionDetail {
+  label: string;
   image: string;
-  duration: string;
-  resolution: string;
-  tier: string;
-  projection_id: string;
-  projection_url: string;
-  route: string;
   timeframe: string;
   est_bmi: string;
   est_weight: string;
-  expected_changes: string;
-  confidence_score: string;
-  created_at: string;
-  updated_at: string;
+  expected_changes: string[];
 }
 
-export interface ProjectionResponse {
-  message: string;
-  data: Projection;
+export interface GetProjectionResponse {
+  success: boolean;
+  title: string;
+  subtitle: string;
+  input_image: string;
+  data: {
+    current_lifestyle: ProjectionDetail;
+    future_goal: ProjectionDetail;
+  };
 }
 
 export const projectionApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
-    // getLatestProjection: builder.query<ProjectionResponse, number | string>({
-    //   query: (userId) => ({
-    //     url: `/projection-lifestyle/latest/${userId}`,
-    //     method: "GET",
-    //   }),
-    //   providesTags: ["Projection"],
-    // }),
-
-    getLatestProjection: builder.query<ProjectionResponse, number | string>({
+    getProjectionById: builder.query<GetProjectionResponse, number | string>({
+      query: (id) => ({
+        url: `/projections/${id}`,
+        method: "GET",
+      }),
+      providesTags: ["Projection"],
+    }),
+    getLatestProjection: builder.query<GetProjectionResponse, number | string>({
       query: (userId) => ({
-        url: `/projection-lifestyle/latest/${userId}`,
+        url: `/projections/latest/${userId}`,
         method: "GET",
       }),
       providesTags: ["Projection"],
@@ -46,4 +39,4 @@ export const projectionApi = baseApi.injectEndpoints({
   }),
 });
 
-export const { useGetLatestProjectionQuery } = projectionApi;
+export const { useGetProjectionByIdQuery, useGetLatestProjectionQuery } = projectionApi;
