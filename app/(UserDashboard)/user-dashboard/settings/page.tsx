@@ -49,6 +49,20 @@ const SettingsPage = () => {
   const { data: notificationSettingsData, isLoading: isLoadingSettings, refetch: refetchNotifications } = useGetNotificationSettingsQuery();
   const [updateNotificationSettings] = useUpdateNotificationSettingsMutation();
   
+  // Default settings to use when API data is not yet available
+  const DEFAULT_SETTINGS = {
+    coach_messages: 1,
+    goal_updates: 1,
+    check_in_reminder_alerts: 1,
+    ai_insights: 1,
+    subscription_updates: 1,
+    missed_checkin_alerts: 1,
+    program_milestone_updates: 1,
+    weekly_summary_email: 1,
+    auto_remind_missed_checkins: 1,
+    default_reminder_time: "08:00 AM"
+  };
+
   // Local state for smooth toggles
   const [localSettings, setLocalSettings] = useState<any>(null);
 
@@ -57,24 +71,25 @@ const SettingsPage = () => {
   useEffect(() => {
     if (notificationSettingsData?.data) {
       setLocalSettings(notificationSettingsData.data);
+    } else if (!isLoadingSettings && !notificationSettingsData?.data) {
+      // If loading is finished and no data exists, use defaults
+      setLocalSettings(DEFAULT_SETTINGS);
     }
-  }, [notificationSettingsData]);
+  }, [notificationSettingsData, isLoadingSettings]);
 
   const handleNotificationToggle = async (key: string) => {
-    if (!localSettings) {
-      console.log("No local settings available");
-      return;
-    }
-
-    const currentValue = localSettings[key];
+    // Use localSettings or fallback to DEFAULT_SETTINGS if localSettings is still null
+    const currentSettings = localSettings || DEFAULT_SETTINGS;
+    const currentValue = currentSettings[key] ?? DEFAULT_SETTINGS[key as keyof typeof DEFAULT_SETTINGS];
     const newValue = currentValue === 1 ? 0 : 1;
 
     console.log(`Toggling ${key} from ${currentValue} to ${newValue}`);
 
     // Optimistically update local state
     setLocalSettings((prev: any) => {
+      const base = prev || DEFAULT_SETTINGS;
       const updated = {
-        ...prev,
+        ...base,
         [key]: newValue
       };
       console.log("Updated localSettings:", updated);
@@ -97,7 +112,7 @@ const SettingsPage = () => {
       console.error("Update failed:", error);
       // Revert if API fails
       setLocalSettings((prev: any) => ({
-        ...prev,
+        ...(prev || DEFAULT_SETTINGS),
         [key]: currentValue
       }));
       toast.error(error?.data?.message || "Failed to update notification settings");

@@ -9,11 +9,13 @@ import { useLoginMutation } from "@/redux/features/api/auth/authApi";
 import { toast } from "sonner";
 import { useDispatch } from "react-redux";
 import { setCredentials } from "@/redux/features/slice/authSlice";
+import { useUpdateAiSuggestedTargetMutation } from "@/redux/features/api/userDashboard/nutritionAiApi";
 
 const LoginPage = () => {
   const router = useRouter();
   const dispatch = useDispatch();
   const [login, { isLoading }] = useLoginMutation();
+  const [updateAiSuggestedTarget] = useUpdateAiSuggestedTargetMutation();
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
     email: "",
@@ -72,6 +74,9 @@ const LoginPage = () => {
             router.push("/personalize-journey/onboarding");
           }
         } else if (userRole === "individual") {
+          // Trigger AI suggested target update
+          updateAiSuggestedTarget({ user_id: userData?.id || userData?.user_id });
+          
           if (isProfileCompleted === "Your profile is complete.") {
             router.push("/user-dashboard");
           } else {
