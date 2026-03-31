@@ -10,12 +10,22 @@ import { toast } from "sonner";
 import { useDispatch } from "react-redux";
 import { setCredentials } from "@/redux/features/slice/authSlice";
 import { useUpdateAiSuggestedTargetMutation } from "@/redux/features/api/userDashboard/nutritionAiApi";
+import { 
+  useUpdateProfessionalRecommendationsMutation, 
+  useUpdateTrainerUserRecommendationsMutation, 
+  useUpdateNutritionistUserRecommendationsMutation, 
+  useUpdateSupplierUserRecommendationsMutation 
+} from "@/redux/features/api/recommendation/recommendationApi";
 
 const LoginPage = () => {
   const router = useRouter();
   const dispatch = useDispatch();
   const [login, { isLoading }] = useLoginMutation();
   const [updateAiSuggestedTarget] = useUpdateAiSuggestedTargetMutation();
+  const [updateProfessionalRecommendations] = useUpdateProfessionalRecommendationsMutation();
+  const [updateTrainerUserRecommendations] = useUpdateTrainerUserRecommendationsMutation();
+  const [updateNutritionistUserRecommendations] = useUpdateNutritionistUserRecommendationsMutation();
+  const [updateSupplierUserRecommendations] = useUpdateSupplierUserRecommendationsMutation();
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
     email: "",
@@ -56,26 +66,35 @@ const LoginPage = () => {
         if (userRole === "admin") {
           router.push("/admin-dashboard/overview");
         } else if (userType === "professional" || userRole === "professional") {
+          const userId = userData?.id || userData?.user_id;
+          
           if (professionType === "trainer_coach") {
+            updateTrainerUserRecommendations({ trainer_id: userId });
             if (isProfileCompleted === "Your profile is complete.") {
               router.push("/trainer-dashboard/overview");
             } else {
               router.push("/trainer-profile");
             }
           } else if (professionType === "supplement_supplier") {
+            updateSupplierUserRecommendations({ supplier_id: userId });
             if (isProfileCompleted === "Your profile is complete.") {
               router.push("/supplier-dashboard");
             } else {
               router.push("/register/business/profile-setup");
             }
           } else if (professionType === "nutritionist") {
+            updateNutritionistUserRecommendations({ nutritionist_id: userId });
             router.push("/nutritionist-dashboard/overview");
           } else {
             router.push("/personalize-journey/onboarding");
           }
         } else if (userRole === "individual") {
+          const userId = userData?.id || userData?.user_id;
+          
           // Trigger AI suggested target update
-          updateAiSuggestedTarget({ user_id: userData?.id || userData?.user_id });
+          updateAiSuggestedTarget({ user_id: userId });
+          // Trigger professional recommendations
+          updateProfessionalRecommendations({ user_id: userId });
           
           if (isProfileCompleted === "Your profile is complete.") {
             router.push("/user-dashboard");
