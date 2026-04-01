@@ -738,7 +738,7 @@ const OnboardingStepsPage = () => {
                 <div className="space-y-3">
                   <label className="flex items-center gap-2 text-[#041228] font-bold text-sm">
                     <Droplets size={18} className="text-[#3A86FF]" />
-                    Water Consumption Per Day (Cups)
+                    Water Consumption Per Day (Ounces)
                   </label>
                   <input
                     type="number"
