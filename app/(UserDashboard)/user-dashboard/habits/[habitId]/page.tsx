@@ -19,6 +19,7 @@ import { useGetActivityReportQuery } from "@/redux/features/api/userDashboard/ac
 import { useGetStressReportQuery } from "@/redux/features/api/userDashboard/stresslog";
 import { useGetHydrationReportQuery } from "@/redux/features/api/userDashboard/hydration";
 import { useGetNutritionReportQuery } from "@/redux/features/api/userDashboard/nutrition";
+import { useGetAiSuggestedTargetQuery } from "@/redux/features/api/userDashboard/nutritionAiApi";
 
 
 const HABIT_DETAILS: Record<string, any> = {
@@ -104,6 +105,7 @@ export default function HabitDetailPage() {
   const { data: stressReport, isLoading: isStressLoading } = useGetStressReportQuery(7, { skip: habitId !== 'stress' });
   const { data: hydrationReport, isLoading: isHydrationLoading } = useGetHydrationReportQuery(7, { skip: habitId !== 'hydration' });
   const { data: nutritionReport, isLoading: isNutritionLoading } = useGetNutritionReportQuery(7, { skip: habitId !== 'nutrition' });
+  const { data: aiNutritionData } = useGetAiSuggestedTargetQuery(userId, { skip: habitId !== 'nutrition' || !userId });
 
   const isAnyLoading = isCardLoading || isHabitLoading || isSleepLoading || isActivityLoading || isStressLoading || isHydrationLoading || isNutritionLoading;
 
@@ -190,7 +192,14 @@ export default function HabitDetailPage() {
     ...(insight ? {
       why: insight.why_this_matters,
       biovueInsights: insight.biovue_insights
-    } : {})
+    } : {}),
+    ...(habitId === 'nutrition' && aiNutritionData?.target_nutrition ? {
+      target: `${aiNutritionData.target_nutrition.calories.value} ${aiNutritionData.target_nutrition.calories.unit}`,
+      aiTarget: aiNutritionData.target_nutrition,
+      isAiSuggestion: true
+    } : {
+      isAiSuggestion: false
+    })
   };
 
   const handleLogClick = () => {
@@ -294,12 +303,40 @@ export default function HabitDetailPage() {
             <div className="flex flex-col gap-6">
               
               {/* Suggested Target */}
-              <div className="border border-gray-100 rounded-[16px] p-8 flex flex-col items-center justify-center text-center gap-3 bg-white shadow-sm">
-                <div className="text-[#94A3B8] font-bold text-[11px] uppercase tracking-widest">SUGGESTED TARGET</div>
+              <div className="border border-gray-100 rounded-[16px] p-8 flex flex-col items-center justify-center text-center gap-3 bg-white shadow-sm relative overflow-hidden">
+                {habit.isAiSuggestion && (
+                  <div className="absolute top-0 right-0 px-3 py-1 bg-[#3A86FF]/10 text-[#3A86FF] text-[8px] font-bold uppercase tracking-wider rounded-bl-lg">
+                    AI POWERED
+                  </div>
+                )}
+                <div className="text-[#94A3B8] font-bold text-[11px] uppercase tracking-widest leading-relaxed">
+                  {habit.isAiSuggestion ? "AI SUGGESTED TARGET" : "SUGGESTED TARGET"}
+                </div>
                 <div className="text-[32px] font-bold text-[#1F2D2E] leading-none my-1">{habit.target}</div>
-                <div className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-widest text-[#1F2D2E]">
-                  <div className="w-2.5 h-2.5 rounded-full bg-[#10B981]" />
-                  COACH SUGGESTS ADJUSTMENT
+                
+                {/* {habit.isAiSuggestion && habit.aiTarget?.macros && (
+                  <div className="grid grid-cols-3 gap-4 w-full mt-4 pt-4 border-t border-gray-50">
+                    <div className="flex flex-col">
+                      <span className="text-[10px] text-[#94A3B8] font-bold uppercase tracking-tight mb-1">PROT</span>
+                      <span className="text-[14px] font-bold text-[#1F2D2E]">{habit.aiTarget.macros.protein.value}{habit.aiTarget.macros.protein.unit}</span>
+                    </div>
+                    <div className="flex flex-col">
+                      <span className="text-[10px] text-[#94A3B8] font-bold uppercase tracking-tight mb-1">CARB</span>
+                      <span className="text-[14px] font-bold text-[#1F2D2E]">{habit.aiTarget.macros.carbs.value}{habit.aiTarget.macros.carbs.unit}</span>
+                    </div>
+                    <div className="flex flex-col">
+                      <span className="text-[10px] text-[#94A3B8] font-bold uppercase tracking-tight mb-1">FAT</span>
+                      <span className="text-[14px] font-bold text-[#1F2D2E]">{habit.aiTarget.macros.fat.value}{habit.aiTarget.macros.fat.unit}</span>
+                    </div>
+                  </div>
+                )} */}
+
+                <div className={cn(
+                  "flex items-center gap-2 text-[11px] font-bold uppercase tracking-widest mt-2",
+                  habit.isAiSuggestion ? "text-[#3A86FF]" : "text-[#1F2D2E]"
+                )}>
+                  <div className={cn("w-2.5 h-2.5 rounded-full", habit.isAiSuggestion ? "bg-[#3A86FF] animate-pulse shadow-[0_0_8px_rgba(58,134,255,0.4)]" : "bg-[#10B981]")} />
+                  {habit.isAiSuggestion ? "AI SUGGESTS" : "COACH SUGGESTS ADJUSTMENT"}
                 </div>
               </div>
 
