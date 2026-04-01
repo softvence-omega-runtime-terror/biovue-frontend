@@ -3,18 +3,21 @@
 import React, { useState } from "react";
 import Image from "next/image";
 
-import { 
-  Eye, 
-  X, 
-  Calendar, 
-  Activity, 
-  CheckCircle2, 
+import {
+  Eye,
+  X,
+  Calendar,
+  Activity,
+  CheckCircle2,
   Loader2,
-  Clock 
+  Clock,
 } from "lucide-react";
 import { useAppSelector } from "@/redux/store/hooks";
 import { selectCurrentUser } from "@/redux/features/slice/authSlice";
-import { useGetProjectionGalleryQuery, ProjectionGalleryResponse } from "@/redux/features/api/userDashboard/Projection/GalleryAPI";
+import {
+  useGetProjectionGalleryQuery,
+  ProjectionGalleryResponse,
+} from "@/redux/features/api/userDashboard/Projection/GalleryAPI";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -30,7 +33,13 @@ const getFullUrl = (url?: string) => {
 
 const formatDate = (dateString: string) => {
   try {
-    return new Intl.DateTimeFormat("en-US", { month: "short", day: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" }).format(new Date(dateString));
+    return new Intl.DateTimeFormat("en-US", {
+      month: "short",
+      day: "2-digit",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    }).format(new Date(dateString));
   } catch {
     return "N/A";
   }
@@ -38,7 +47,11 @@ const formatDate = (dateString: string) => {
 
 const formatDateShort = (dateString: string) => {
   try {
-    return new Intl.DateTimeFormat("en-US", { month: "short", day: "2-digit", year: "numeric" }).format(new Date(dateString));
+    return new Intl.DateTimeFormat("en-US", {
+      month: "short",
+      day: "2-digit",
+      year: "numeric",
+    }).format(new Date(dateString));
   } catch {
     return "N/A";
   }
@@ -52,7 +65,8 @@ export default function ProjectionGallery() {
     skip: !userId,
   });
 
-  const [selectedProjection, setSelectedProjection] = useState<ProjectionItem | null>(null);
+  const [selectedProjection, setSelectedProjection] =
+    useState<ProjectionItem | null>(null);
 
   if (isLoading) {
     return (
@@ -64,20 +78,43 @@ export default function ProjectionGallery() {
 
   const rawProjections = data?.projections || [];
 
-  if (rawProjections.length === 0) {
-    return null; // Don't show the gallery section if there are no projections yet
-  }
+  // if (rawProjections.length === 0) {
+  //   return null; // Don't show the gallery section if there are no projections yet
+  // }
 
+  if (rawProjections.length === 0) {
+    return (
+      <div className="mt-16 flex flex-col items-center justify-center text-center py-16 bg-white rounded-xl border border-gray-100 shadow-sm">
+        <div className="w-20 h-20 rounded-full bg-gray-50 flex items-center justify-center border border-gray-100 mb-4">
+          <Activity size={36} className="text-gray-300" />
+        </div>
+
+        <h3 className="text-lg font-semibold text-[#041228] mb-2">
+          No Projections Generated Yet
+        </h3>
+
+        <p className="text-sm text-[#5F6F73] max-w-md">
+          You haven’t generated any projections yet. Once available, they will
+          appear here for you to review and track your progress.
+        </p>
+      </div>
+    );
+  }
   // Sort projections chronologically (newest first) so the most recently generated one is at the top
   const projections = [...rawProjections].sort(
-    (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+    (a, b) =>
+      new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
   );
 
   return (
     <div className="mt-16 space-y-6 animate-in fade-in duration-700">
       <div className="flex flex-col space-y-2">
-        <h2 className="text-2xl font-bold text-[#041228]">Projection Gallery</h2>
-        <p className="text-[#5F6F73] text-sm">View your previously generated health projections and insights.</p>
+        <h2 className="text-2xl font-bold text-[#041228]">
+          Projection Gallery
+        </h2>
+        <p className="text-[#5F6F73] text-sm">
+          View your previously generated health projections and insights.
+        </p>
       </div>
 
       <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
@@ -94,10 +131,17 @@ export default function ProjectionGallery() {
             </thead>
             <tbody className="divide-y divide-gray-50">
               {projections.map((proj, idx) => {
-                const thumbnailUrl = proj.source_image || proj.projections?.current_lifestyle?.projection_url;
+                const thumbnailUrl =
+                  proj.source_image ||
+                  proj.projections?.current_lifestyle?.projection_url;
                 return (
-                  <tr key={proj.projection_id} className="hover:bg-gray-50/50 transition-colors">
-                    <td className="px-6 py-4 text-sm text-[#041228] font-medium">{idx + 1}</td>
+                  <tr
+                    key={proj.projection_id}
+                    className="hover:bg-gray-50/50 transition-colors"
+                  >
+                    <td className="px-6 py-4 text-sm text-[#041228] font-medium">
+                      {idx + 1}
+                    </td>
                     <td className="px-6 py-4 text-sm text-[#5F6F73]">
                       {proj.created_at ? formatDate(proj.created_at) : "N/A"}
                     </td>
@@ -110,20 +154,22 @@ export default function ProjectionGallery() {
                     <td className="px-6 py-4">
                       {thumbnailUrl ? (
                         <div className="relative w-12 h-12 rounded-lg overflow-hidden border border-gray-200">
-                          <img 
-                            src={getFullUrl(thumbnailUrl)} 
-                            alt="Thumbnail" 
+                          <img
+                            src={getFullUrl(thumbnailUrl)}
+                            alt="Thumbnail"
                             className="object-cover w-full h-full"
                           />
                         </div>
                       ) : (
                         <div className="w-12 h-12 rounded-lg bg-gray-100 flex items-center justify-center border border-gray-200">
-                          <span className="text-gray-400 text-xs text-center">No Image</span>
+                          <span className="text-gray-400 text-xs text-center">
+                            No Image
+                          </span>
                         </div>
                       )}
                     </td>
                     <td className="px-6 py-4 text-right">
-                      <button 
+                      <button
                         onClick={() => setSelectedProjection(proj)}
                         className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#E6F6F6] text-[#0FA4A9] border border-[#BDE8E8] rounded-md text-xs font-semibold hover:bg-[#d0f0f0] transition-colors cursor-pointer"
                       >
@@ -142,15 +188,15 @@ export default function ProjectionGallery() {
       <AnimatePresence>
         {selectedProjection && (
           <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setSelectedProjection(null)}
               className="absolute inset-0 bg-black/60 backdrop-blur-sm cursor-pointer"
             />
-            
-            <motion.div 
+
+            <motion.div
               initial={{ opacity: 0, scale: 0.95, y: 10 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 10 }}
@@ -159,7 +205,9 @@ export default function ProjectionGallery() {
               {/* Modal Header */}
               <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
                 <div>
-                  <h3 className="text-lg font-bold text-[#041228]">Projection Overview</h3>
+                  <h3 className="text-lg font-bold text-[#041228]">
+                    Projection Overview
+                  </h3>
                   <div className="flex items-center gap-4 mt-1 text-xs text-[#5F6F73] font-medium">
                     <span className="flex items-center gap-1.5">
                       <Calendar size={12} />
@@ -171,8 +219,8 @@ export default function ProjectionGallery() {
                     </span>
                   </div>
                 </div>
-                
-                <button 
+
+                <button
                   onClick={() => setSelectedProjection(null)}
                   className="w-8 h-8 bg-white border border-gray-200 rounded-full flex items-center justify-center text-gray-500 hover:text-[#041228] hover:bg-gray-50 transition-colors cursor-pointer"
                 >
@@ -183,41 +231,64 @@ export default function ProjectionGallery() {
               {/* Modal Body */}
               <div className="flex-1 overflow-y-auto p-6 md:p-8">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                  
                   {/* Current Lifestyle Column */}
                   <div className="flex flex-col gap-6">
                     <div className="text-center pb-4 border-b border-gray-100">
-                      <h4 className="text-[#8B5CF6] font-bold text-[15px] uppercase tracking-wider">Current Lifestyle Route</h4>
+                      <h4 className="text-[#8B5CF6] font-bold text-[15px] uppercase tracking-wider">
+                        Current Lifestyle Route
+                      </h4>
                     </div>
-                    
+
                     <div className="w-full h-auto bg-gray-50 rounded-xl border border-gray-100 overflow-hidden shadow-inner flex items-center justify-center">
-                      <img 
-                        src={getFullUrl(selectedProjection.projections?.current_lifestyle?.projection_url)} 
-                        alt="Current Lifestyle Projection" 
+                      <img
+                        src={getFullUrl(
+                          selectedProjection.projections?.current_lifestyle
+                            ?.projection_url,
+                        )}
+                        alt="Current Lifestyle Projection"
                         className="w-full object-contain max-h-[400px]"
                       />
                     </div>
-                    
+
                     <div className="grid grid-cols-2 gap-3">
                       <div className="bg-[#E1F9F0] text-[#10B981] p-3 rounded-lg flex flex-col items-center justify-center border border-[#10B981]/20">
-                        <span className="text-[10px] font-bold uppercase mb-1 flex items-center gap-1"><Activity size={10} /> EST. BMI</span>
-                        <span className="font-bold text-lg">{selectedProjection.projections?.current_lifestyle?.est_bmi || "N/A"}</span>
+                        <span className="text-[10px] font-bold uppercase mb-1 flex items-center gap-1">
+                          <Activity size={10} /> EST. BMI
+                        </span>
+                        <span className="font-bold text-lg">
+                          {selectedProjection.projections?.current_lifestyle
+                            ?.est_bmi || "N/A"}
+                        </span>
                       </div>
                       <div className="bg-[#E4EFFF] text-[#3A86FF] p-3 rounded-lg flex flex-col items-center justify-center border border-[#3A86FF]/20">
-                        <span className="text-[10px] font-bold uppercase mb-1">EST. WEIGHT</span>
-                        <span className="font-bold text-lg">{selectedProjection.projections?.current_lifestyle?.est_weight || "N/A"}</span>
+                        <span className="text-[10px] font-bold uppercase mb-1">
+                          EST. WEIGHT
+                        </span>
+                        <span className="font-bold text-lg">
+                          {selectedProjection.projections?.current_lifestyle
+                            ?.est_weight || "N/A"}
+                        </span>
                       </div>
                     </div>
-                    
+
                     <div className="bg-[#F8FAFF] p-5 rounded-xl border border-gray-100">
-                      <h5 className="font-bold text-[#041228] text-sm mb-3">Expected Changes:</h5>
+                      <h5 className="font-bold text-[#041228] text-sm mb-3">
+                        Expected Changes:
+                      </h5>
                       <ul className="space-y-3">
-                        {selectedProjection.projections?.current_lifestyle?.expected_changes?.map((change, i) => (
-                          <li key={i} className="flex gap-2.5 items-start">
-                             <CheckCircle2 size={14} className="text-[#8B5CF6] shrink-0 mt-0.5" />
-                             <span className="text-sm text-[#5F6F73] leading-relaxed">{change}</span>
-                          </li>
-                        ))}
+                        {selectedProjection.projections?.current_lifestyle?.expected_changes?.map(
+                          (change, i) => (
+                            <li key={i} className="flex gap-2.5 items-start">
+                              <CheckCircle2
+                                size={14}
+                                className="text-[#8B5CF6] shrink-0 mt-0.5"
+                              />
+                              <span className="text-sm text-[#5F6F73] leading-relaxed">
+                                {change}
+                              </span>
+                            </li>
+                          ),
+                        )}
                       </ul>
                     </div>
                   </div>
@@ -225,44 +296,66 @@ export default function ProjectionGallery() {
                   {/* Future Goal Column */}
                   <div className="flex flex-col gap-6">
                     <div className="text-center pb-4 border-b border-gray-100">
-                      <h4 className="text-[#0FA4A9] font-bold text-[15px] uppercase tracking-wider">Future Goal Route</h4>
+                      <h4 className="text-[#0FA4A9] font-bold text-[15px] uppercase tracking-wider">
+                        Future Goal Route
+                      </h4>
                     </div>
-                    
+
                     <div className="w-full h-auto bg-gray-50 rounded-xl border border-gray-100 overflow-hidden shadow-inner flex items-center justify-center">
-                      <img 
-                        src={getFullUrl(selectedProjection.projections?.future_goal?.projection_url)} 
-                        alt="Future Goal Projection" 
+                      <img
+                        src={getFullUrl(
+                          selectedProjection.projections?.future_goal
+                            ?.projection_url,
+                        )}
+                        alt="Future Goal Projection"
                         className="w-full object-contain max-h-[400px]"
                       />
                     </div>
-                    
+
                     <div className="grid grid-cols-2 gap-3">
-                       <div className="bg-[#E1F9F0] text-[#10B981] p-3 rounded-lg flex flex-col items-center justify-center border border-[#10B981]/20">
-                        <span className="text-[10px] font-bold uppercase mb-1 flex items-center gap-1"><Activity size={10} /> EST. BMI</span>
-                        <span className="font-bold text-lg">{selectedProjection.projections?.future_goal?.est_bmi || "N/A"}</span>
+                      <div className="bg-[#E1F9F0] text-[#10B981] p-3 rounded-lg flex flex-col items-center justify-center border border-[#10B981]/20">
+                        <span className="text-[10px] font-bold uppercase mb-1 flex items-center gap-1">
+                          <Activity size={10} /> EST. BMI
+                        </span>
+                        <span className="font-bold text-lg">
+                          {selectedProjection.projections?.future_goal
+                            ?.est_bmi || "N/A"}
+                        </span>
                       </div>
                       <div className="bg-[#E4EFFF] text-[#3A86FF] p-3 rounded-lg flex flex-col items-center justify-center border border-[#3A86FF]/20">
-                        <span className="text-[10px] font-bold uppercase mb-1">EST. WEIGHT</span>
-                        <span className="font-bold text-lg">{selectedProjection.projections?.future_goal?.est_weight || "N/A"}</span>
+                        <span className="text-[10px] font-bold uppercase mb-1">
+                          EST. WEIGHT
+                        </span>
+                        <span className="font-bold text-lg">
+                          {selectedProjection.projections?.future_goal
+                            ?.est_weight || "N/A"}
+                        </span>
                       </div>
                     </div>
-                    
+
                     <div className="bg-[#E6F6F6] p-5 rounded-xl border border-[#BDE8E8]/50">
-                      <h5 className="font-bold text-[#041228] text-sm mb-3">Expected Changes:</h5>
+                      <h5 className="font-bold text-[#041228] text-sm mb-3">
+                        Expected Changes:
+                      </h5>
                       <ul className="space-y-3">
-                        {selectedProjection.projections?.future_goal?.expected_changes?.map((change, i) => (
-                          <li key={i} className="flex gap-2.5 items-start">
-                             <CheckCircle2 size={14} className="text-[#0FA4A9] shrink-0 mt-0.5" />
-                             <span className="text-sm text-[#5F6F73] leading-relaxed">{change}</span>
-                          </li>
-                        ))}
+                        {selectedProjection.projections?.future_goal?.expected_changes?.map(
+                          (change, i) => (
+                            <li key={i} className="flex gap-2.5 items-start">
+                              <CheckCircle2
+                                size={14}
+                                className="text-[#0FA4A9] shrink-0 mt-0.5"
+                              />
+                              <span className="text-sm text-[#5F6F73] leading-relaxed">
+                                {change}
+                              </span>
+                            </li>
+                          ),
+                        )}
                       </ul>
                     </div>
                   </div>
-
                 </div>
               </div>
-
             </motion.div>
           </div>
         )}

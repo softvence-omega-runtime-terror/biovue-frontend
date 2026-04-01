@@ -6,11 +6,17 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Check, Lock, ArrowUpRight, Zap, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useGetPlansQuery, Plan } from "@/redux/features/api/adminDashboard/plan";
+import {
+  useGetPlansQuery,
+  Plan,
+} from "@/redux/features/api/adminDashboard/plan";
 import { useProcessPaymentMutation } from "@/redux/features/api/paymentApi";
 import { useSendMessageMutation } from "@/redux/features/api/contactApi";
 import { useSelector } from "react-redux";
-import { selectCurrentToken, selectCurrentUser } from "@/redux/features/slice/authSlice";
+import {
+  selectCurrentToken,
+  selectCurrentUser,
+} from "@/redux/features/slice/authSlice";
 import { toast } from "sonner";
 import { X } from "lucide-react";
 
@@ -21,7 +27,9 @@ const PricingPage = () => {
   const [processPayment] = useProcessPaymentMutation();
   const [sendMessage, { isLoading: isSending }] = useSendMessageMutation();
   const [loadingPlanId, setLoadingPlanId] = useState<number | null>(null);
-  const [billingCycle, setBillingCycle] = useState<"monthly" | "annual">("monthly");
+  const [billingCycle, setBillingCycle] = useState<"monthly" | "annual">(
+    "monthly",
+  );
   const [isContactModalOpen, setIsContactModalOpen] = useState(false);
   const [contactEmail, setContactEmail] = useState("");
   const [contactMessage, setContactMessage] = useState("");
@@ -30,12 +38,12 @@ const PricingPage = () => {
 
   // Filter Individual Plans
   const filteredIndividualPlans = plans
-    .filter(plan => plan.plan_type === 'individual' && plan.status)
+    .filter((plan) => plan.plan_type === "individual" && plan.status)
     .sort((a, b) => Number(a.price) - Number(b.price));
 
   // Filter Professional Plans
   const filteredProfessionalPlans = plans
-    .filter(plan => plan.plan_type === 'professional' && plan.status)
+    .filter((plan) => plan.plan_type === "professional" && plan.status)
     .sort((a, b) => {
       // Enterprise always last
       const aEnt = a.name.toLowerCase().includes("enterprise");
@@ -49,7 +57,8 @@ const PricingPage = () => {
     // Enterprise and Custom plan special handling
     if (
       plan.name.toLowerCase().includes("enterprise") ||
-      (plan.plan_type === "professional" && (plan.price === "0.00" || plan.price === 0))
+      (plan.plan_type === "professional" &&
+        (plan.price === "0.00" || plan.price === 0))
     ) {
       setContactEmail(user?.email || "");
       setIsContactModalOpen(true);
@@ -57,7 +66,11 @@ const PricingPage = () => {
     }
 
     // Free Trial / Zero Price handling
-    if (plan.price === "0.00" || plan.price === 0 || plan.name.toLowerCase().includes("free trial")) {
+    if (
+      plan.price === "0.00" ||
+      plan.price === 0 ||
+      plan.name.toLowerCase().includes("free trial")
+    ) {
       if (token) {
         router.push("/user-dashboard");
       } else {
@@ -74,11 +87,11 @@ const PricingPage = () => {
 
     try {
       setLoadingPlanId(plan.id);
-      const response = await processPayment({ 
-        plan_id: plan.id, 
-        billing: billingCycle 
+      const response = await processPayment({
+        plan_id: plan.id,
+        billing: billingCycle,
       }).unwrap();
-      
+
       if (response.success && response.checkout_url) {
         window.location.href = response.checkout_url;
       } else {
@@ -86,7 +99,9 @@ const PricingPage = () => {
       }
     } catch (error: any) {
       console.error("Payment error:", error);
-      toast.error(error?.data?.message || "An error occurred while processing payment.");
+      toast.error(
+        error?.data?.message || "An error occurred while processing payment.",
+      );
     } finally {
       setLoadingPlanId(null);
     }
@@ -106,7 +121,7 @@ const PricingPage = () => {
     try {
       const response = await sendMessage({
         email: contactEmail,
-        message: contactMessage
+        message: contactMessage,
       }).unwrap();
 
       if (response.success) {
@@ -117,8 +132,20 @@ const PricingPage = () => {
         toast.error(response.message || "Failed to send message.");
       }
     } catch (error: any) {
-      toast.error(error?.data?.message || "An error occurred while sending your message.");
+      toast.error(
+        error?.data?.message || "An error occurred while sending your message.",
+      );
     }
+  };
+
+  const getDisplayPrice = (price: string | number) => {
+    const numericPrice = Number(price);
+
+    if (billingCycle === "annual") {
+      return (numericPrice * 12).toFixed(0);
+    }
+
+    return numericPrice.toString();
   };
 
   return (
@@ -134,37 +161,68 @@ const PricingPage = () => {
             className="w-24 md:w-[120px] object-contain"
           />
         </Link>
-        <Link 
-          href="/" 
+        <Link
+          href="/"
           className="flex items-center gap-2 bg-[#0FA4A9] text-white px-5 py-2 rounded-full font-medium hover:bg-opacity-90 transition-all text-sm group"
         >
           Back To Home
-          <ArrowUpRight size={18} className="group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+          <ArrowUpRight
+            size={18}
+            className="group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform"
+          />
         </Link>
       </header>
 
       {/* Hero Section */}
       <div className="text-center mt-12 mb-16 px-6">
-        <h1 className="text-4xl md:text-5xl font-bold text-[#1F2D2E] mb-4">Choose your health journey.</h1>
+        <h1 className="text-4xl md:text-5xl font-bold text-[#1F2D2E] mb-4">
+          Choose your health journey.
+        </h1>
         <p className="text-[#5F6F73] max-w-2xl mx-auto text-lg leading-relaxed">
-          Start with a free AI trial, then unlock deeper insights, progress tracking, and personalized projections.
+          Start with a free AI trial, then unlock deeper insights, progress
+          tracking, and personalized projections.
         </p>
 
         {/* Global Toggle */}
         <div className="flex items-center justify-center gap-4 mt-12">
-          <span className={cn("text-base font-semibold transition-colors", billingCycle === "monthly" ? "text-[#1F2D2E]" : "text-[#94A3B8]")}>Monthly</span>
-          <button 
-            onClick={() => setBillingCycle(prev => prev === "monthly" ? "annual" : "monthly")}
+          <span
             className={cn(
-              "relative w-14 h-7 rounded-full transition-colors focus:outline-none p-1 cursor-pointer",
-              billingCycle === "annual" ? "bg-[#3A86FF]" : "bg-[#E2E8F0]"
+              "text-base font-semibold transition-colors",
+              billingCycle === "monthly" ? "text-[#1F2D2E]" : "text-[#94A3B8]",
             )}
           >
-            <div className={cn("w-5 h-5 bg-white rounded-full transition-transform shadow-md", billingCycle === "annual" ? "translate-x-7" : "translate-x-0")} />
+            Monthly
+          </span>
+          <button
+            onClick={() =>
+              setBillingCycle((prev) =>
+                prev === "monthly" ? "annual" : "monthly",
+              )
+            }
+            className={cn(
+              "relative w-14 h-7 rounded-full transition-colors focus:outline-none p-1 cursor-pointer",
+              billingCycle === "annual" ? "bg-[#3A86FF]" : "bg-[#E2E8F0]",
+            )}
+          >
+            <div
+              className={cn(
+                "w-5 h-5 bg-white rounded-full transition-transform shadow-md",
+                billingCycle === "annual" ? "translate-x-7" : "translate-x-0",
+              )}
+            />
           </button>
           <div className="flex items-center gap-2">
-            <span className={cn("text-base font-semibold transition-colors", billingCycle === "annual" ? "text-[#1F2D2E]" : "text-[#94A3B8]")}>Annual</span>
-            <span className="bg-[#E4EFFF] text-[#3A86FF] text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">SAVE 10%</span>
+            <span
+              className={cn(
+                "text-base font-semibold transition-colors",
+                billingCycle === "annual" ? "text-[#1F2D2E]" : "text-[#94A3B8]",
+              )}
+            >
+              Annual
+            </span>
+            <span className="bg-[#E4EFFF] text-[#3A86FF] text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">
+              SAVE 10%
+            </span>
           </div>
         </div>
       </div>
@@ -178,7 +236,20 @@ const PricingPage = () => {
           {/* Individual Plans Section */}
           <section className="container mx-auto px-6 mb-24">
             <div className="text-center mb-10">
-              <h2 style={{ color: 'var(--Primary-color, #3A86FF)', textAlign: 'center', fontFamily: 'Roboto', fontSize: '34px', fontStyle: 'normal', fontWeight: 400, lineHeight: '24px' }} className="mb-6">For Individual</h2>
+              <h2
+                style={{
+                  color: "var(--Primary-color, #3A86FF)",
+                  textAlign: "center",
+                  fontFamily: "Roboto",
+                  fontSize: "34px",
+                  fontStyle: "normal",
+                  fontWeight: 400,
+                  lineHeight: "24px",
+                }}
+                className="mb-6"
+              >
+                For Individual
+              </h2>
             </div>
 
             {/* Individual Cards Grid */}
@@ -187,32 +258,71 @@ const PricingPage = () => {
                 <PricingCard
                   key={plan.id}
                   title={plan.name}
-                  price={plan.price === "0.00" || plan.price === 0 ? "0" : plan.price}
-                  period={plan.name.toLowerCase().includes("free trial") ? `for ${plan.duration} days` : "/Month"}
-                  subtext={plan.name.toLowerCase().includes("free trial") ? "Then auto-bills based on selected plan" : ""}
-                  description={
-                    plan.name.toLowerCase().includes("free trial") 
-                      ? "Experience BioVue's core AI projections before committing." 
-                      : plan.name.toLowerCase().includes("plus")
-                      ? "See your future and track how your lifestyle is improving."
-                      : "Build a complete picture of your future health with our advanced AI, real-world data sync, and long-term forecasting."
+                  // price={
+                  //   plan.price === "0.00" || plan.price === 0 ? "0" : plan.price
+                  // }
+                  price={
+                    plan.price === "0.00" || plan.price === 0
+                      ? "0"
+                      : getDisplayPrice(plan.price)
                   }
-                  features={plan.features.map(f => {
-                    
+                  // period={
+                  //   plan.name.toLowerCase().includes("free trial")
+                  //     ? `for ${plan.duration} days`
+                  //     : "/Month"
+                  // }
+                  period={
+                    plan.name.toLowerCase().includes("free trial")
+                      ? `for ${plan.duration} days`
+                      : billingCycle === "monthly"
+                        ? "/Month"
+                        : "/Year"
+                  }
+                  // subtext={
+                  //   plan.name.toLowerCase().includes("free trial")
+                  //     ? "Then auto-bills based on selected plan"
+                  //     : ""
+                  // }
+                  subtext={
+                    plan.plan_type === "individual" &&
+                    !plan.name.toLowerCase().includes("free trial")
+                      ? "7 days free trial"
+                      : ""
+                  }
+                  description={
+                    plan.name.toLowerCase().includes("free trial")
+                      ? "Experience BioVue's core AI projections before committing."
+                      : plan.name.toLowerCase().includes("plus")
+                        ? "See your future and track how your lifestyle is improving."
+                        : "Build a complete picture of your future health with our advanced AI, real-world data sync, and long-term forecasting."
+                  }
+                  features={plan.features.map((f) => {
                     const lockedFeatures = [
                       "ai improvement suggestions",
                       "health indicators",
                       "recommended coaches & clinics",
                       "achievement badges & progress reports",
                     ];
-                    const isLocked = plan.name.toLowerCase().includes("free trial") && 
-                                    lockedFeatures.some(lf => f.toLowerCase().includes(lf));
+                    const isLocked =
+                      plan.name.toLowerCase().includes("free trial") &&
+                      lockedFeatures.some((lf) => f.toLowerCase().includes(lf));
                     return { text: f, included: !isLocked };
                   })}
-                  cta={plan.name.toLowerCase().includes("free trial") ? `Start ${plan.duration}-Day Trial` : `Upgrade To ${plan.name}`}
+                  cta={
+                    plan.name.toLowerCase().includes("free trial")
+                      ? `Start ${plan.duration}-Day Trial`
+                      : `Upgrade To ${plan.name}`
+                  }
                   active={false}
                   ctaColor="bg-[#0FA4A9]"
-                  specialFeature={plan.name.toLowerCase().includes("premium") ? { label: "EVERYTHING IN PLUS", icon: <Zap size={14} fill="#3A86FF" /> } : undefined}
+                  specialFeature={
+                    plan.name.toLowerCase().includes("premium")
+                      ? {
+                          label: "EVERYTHING IN PLUS",
+                          icon: <Zap size={14} fill="#3A86FF" />,
+                        }
+                      : undefined
+                  }
                   onSelect={() => handlePlanSelection(plan)}
                   isLoading={loadingPlanId === plan.id}
                 />
@@ -223,7 +333,20 @@ const PricingPage = () => {
           {/* Professional Plans Section */}
           <section className="container mx-auto px-6 mb-24">
             <div className="text-center mb-12">
-              <h2 style={{ color: 'var(--Primary-color, #3A86FF)', textAlign: 'center', fontFamily: 'Roboto', fontSize: '34px', fontStyle: 'normal', fontWeight: 400, lineHeight: '24px' }} className="mb-2">Professional Plan</h2>
+              <h2
+                style={{
+                  color: "var(--Primary-color, #3A86FF)",
+                  textAlign: "center",
+                  fontFamily: "Roboto",
+                  fontSize: "34px",
+                  fontStyle: "normal",
+                  fontWeight: 400,
+                  lineHeight: "24px",
+                }}
+                className="mb-2"
+              >
+                Professional Plan
+              </h2>
               <p className="text-[#041228] text-center font-['Roboto'] text-[24px] font-normal leading-[24px] my-6">
                 6 month minimum commitment required.
               </p>
@@ -236,40 +359,103 @@ const PricingPage = () => {
                   key={plan.id}
                   compact
                   title={plan.name}
-                  capacity={plan.member_limit ? `Up to ${plan.member_limit} clients` : "Unlimited clients"}
-                  price={plan.price === "0.00" || plan.price === 0 ? "Custom" : plan.price}
-                  period={plan.price === "0.00" || plan.price === 0 ? "" : "/Month"}
-                  subtext={plan.price !== "0.00" && plan.price !== 0 ? "7 days free trial" : ""}
+                  capacity={
+                    plan.member_limit
+                      ? `Up to ${plan.member_limit} clients`
+                      : "Unlimited clients"
+                  }
+                  // price={
+                  //   plan.price === "0.00" || plan.price === 0
+                  //     ? "Custom"
+                  //     : plan.price
+                  // }
+                  price={
+                    plan.price === "0.00" || plan.price === 0
+                      ? "Custom"
+                      : getDisplayPrice(plan.price)
+                  }
+                  // period={
+                  //   plan.price === "0.00" || plan.price === 0 ? "" : "/Month"
+                  // }
+                  period={
+                    plan.price === "0.00" || plan.price === 0
+                      ? ""
+                      : billingCycle === "monthly"
+                        ? "/Month"
+                        : "/Year"
+                  }
+                  subtext=""
                   features={(() => {
-                    const overrideTexts = ["Dedicated account manager", "Quarterly business reviews"];
+                    const overrideTexts = [
+                      "Dedicated account manager",
+                      "Quarterly business reviews",
+                    ];
                     const baseFeatures = plan.features
-                      .filter(f => !overrideTexts.some(ot => f.toLowerCase().includes(ot.toLowerCase())))
-                      .map(f => ({ text: f, included: true }));
+                      .filter(
+                        (f) =>
+                          !overrideTexts.some((ot) =>
+                            f.toLowerCase().includes(ot.toLowerCase()),
+                          ),
+                      )
+                      .map((f) => ({ text: f, included: true }));
 
                     // Professional Plan specific card overrides
                     if (plan.plan_type === "professional") {
-                      if (idx === 1) { // 2nd Professional Card
-                        return [...baseFeatures, { text: "Dedicated account manager", included: false, isNegative: true }];
-                      }
-                      if (idx === 2) { // 3rd Professional Card
+                      if (idx === 1) {
+                        // 2nd Professional Card
                         return [
                           ...baseFeatures,
-                          { text: "Quarterly business reviews", included: false, isNegative: true },
-                          { text: "Dedicated account manager", included: false, isNegative: true }
+                          {
+                            text: "Dedicated account manager",
+                            included: false,
+                            isNegative: true,
+                          },
+                        ];
+                      }
+                      if (idx === 2) {
+                        // 3rd Professional Card
+                        return [
+                          ...baseFeatures,
+                          {
+                            text: "Quarterly business reviews",
+                            included: false,
+                            isNegative: true,
+                          },
+                          {
+                            text: "Dedicated account manager",
+                            included: false,
+                            isNegative: true,
+                          },
                         ];
                       }
                       if (plan.name.toLowerCase().includes("enterprise")) {
                         return [
                           ...baseFeatures,
                           { text: "Dedicated account manager", included: true },
-                          { text: "Quarterly business reviews", included: true }
+                          {
+                            text: "Quarterly business reviews",
+                            included: true,
+                          },
                         ];
                       }
                     }
-                    
+
                     return baseFeatures;
                   })()}
-                  cta={plan.name.toLowerCase().includes("enterprise") || plan.price === "0.00" || plan.price === 0 ? "Contact Via Mail" : "Start 7-Day Free Trial"}
+                  // cta={
+                  //   plan.name.toLowerCase().includes("enterprise") ||
+                  //   plan.price === "0.00" ||
+                  //   plan.price === 0
+                  //     ? "Contact Via Mail"
+                  //     : "Start 7-Day Free Trial"
+                  // }
+                  cta={
+                    plan.name.toLowerCase().includes("enterprise")
+                      ? "Contact Via Mail"
+                      : plan.name.toLowerCase().includes("tier 1")
+                        ? "Buy Now"
+                        : `Update to ${plan.name}`
+                  }
                   active={false}
                   ctaColor="bg-[#0FA4A9]"
                   onSelect={() => handlePlanSelection(plan)}
@@ -287,8 +473,10 @@ const PricingPage = () => {
           <div className="bg-white rounded-xl w-full max-w-lg overflow-hidden shadow-2xl animate-in zoom-in-95 duration-200">
             <div className="p-8 md:p-10">
               <div className="flex justify-between items-center mb-8">
-                <h2 className="text-2xl font-bold text-[#041228] font-['Roboto']">Contact a specialist</h2>
-                <button 
+                <h2 className="text-2xl font-bold text-[#041228] font-['Roboto']">
+                  Contact a specialist
+                </h2>
+                <button
                   onClick={() => setIsContactModalOpen(false)}
                   className="p-2 hover:bg-gray-100 rounded-full transition-colors"
                 >
@@ -346,14 +534,20 @@ const PricingPage = () => {
       <section className="container mx-auto px-4">
         <div className="bg-[#D9EFEF] rounded-2xl p-8 md:p-12 flex flex-col md:flex-row items-center justify-between gap-8 max-w-7xl mx-auto shadow-sm">
           <div className="max-w-xl">
-            <h2 className="text-3xl md:text-3xl font-bold text-[#1F2D2E] mb-4">Already have an app or platform?</h2>
+            <h2 className="text-3xl md:text-3xl font-bold text-[#1F2D2E] mb-4">
+              Already have an app or platform?
+            </h2>
             <p className="text-[#5F6F73] text-lg">
-              Integrate BioVue's AI projections into your app, platform, or website to deliver real-time health insights to your users.
+              Integrate BioVue&apos;s AI projections into your app, platform, or
+              website to deliver real-time health insights to your users.
             </p>
           </div>
-          <button className="bg-[#8E53FF] text-white px-8 py-3 rounded-full font-bold hover:bg-opacity-90 transition-all shadow-md whitespace-nowrap">
+          <a
+            href="mailto:BioVueSupport@gmail.com?subject=API Pricing Inquiry&body=Hi BioVue team,%0D%0A%0D%0AI would like to know about API pricing.%0D%0A%0D%0AThanks."
+            className="bg-[#8E53FF] text-white px-8 py-3 rounded-full font-bold hover:bg-opacity-90 transition-all shadow-md whitespace-nowrap inline-block"
+          >
             Contact For API Pricing
-          </button>
+          </a>
         </div>
       </section>
 
@@ -362,18 +556,18 @@ const PricingPage = () => {
       </footer>
     </div>
   );
-}
+};
 
-const PricingCard = ({ 
-  title, 
-  capacity, 
-  price, 
-  period, 
-  subtext, 
-  description, 
-  features, 
-  cta, 
-  compact, 
+const PricingCard = ({
+  title,
+  capacity,
+  price,
+  period,
+  subtext,
+  description,
+  features,
+  cta,
+  compact,
   specialFeature,
   active,
   ctaColor,
@@ -383,51 +577,79 @@ const PricingCard = ({
   ...props
 }: any) => {
   return (
-    <div className={cn(
-      "bg-white rounded-xl p-8 border border-[#E5E9EA] shadow-sm transition-all flex flex-col h-full hover:border-blue-100 hover:shadow-md",
-      active && "border-[#3A86FF] ring-1 ring-[#3A86FF]/10 shadow-lg"
-    )}>
+    <div
+      className={cn(
+        "bg-white rounded-xl p-8 border border-[#E5E9EA] shadow-sm transition-all flex flex-col h-full hover:border-blue-100 hover:shadow-md",
+        active && "border-[#3A86FF] ring-1 ring-[#3A86FF]/10 shadow-lg",
+      )}
+    >
       <div className="mb-6">
         <h3 className="text-lg font-bold text-[#3A86FF] mb-2">{title}</h3>
-        {capacity && <p className="text-sm font-bold text-[#1F2D2E] mb-4">{capacity}</p>}
+        {capacity && (
+          <p className="text-sm font-bold text-[#1F2D2E] mb-4">{capacity}</p>
+        )}
         <div className="flex items-baseline gap-1 mb-2">
-          <span className={cn("font-bold text-[#1F2D2E]", price === "Custom" ? "text-4xl" : priceSize)}>
+          <span
+            className={cn(
+              "font-bold text-[#1F2D2E]",
+              price === "Custom" ? "text-4xl" : priceSize,
+            )}
+          >
             {price !== "Custom" && "$"}
             {price}
           </span>
-          {period && <span className="text-[#94A3B8] text-sm font-medium">{period}</span>}
+          {period && (
+            <span className="text-[#94A3B8] text-sm font-medium">{period}</span>
+          )}
         </div>
-        {subtext && <p className="text-xs text-[#5F6F73] font-medium">{subtext}</p>}
+        {subtext && (
+          <p className="text-xs text-[#5F6F73] font-medium">{subtext}</p>
+        )}
       </div>
 
-      {description && <p className="text-[13px] text-[#5F6F73] mb-6 leading-relaxed min-h-[40px]">{description}</p>}
+      {description && (
+        <p className="text-[13px] text-[#5F6F73] mb-6 leading-relaxed min-h-[40px]">
+          {description}
+        </p>
+      )}
 
       <div className="flex-1">
         {specialFeature && (
           <div className="flex items-center gap-2 mb-6">
-             {specialFeature.icon}
-             <span className="text-[10px] font-bold text-[#3A86FF] tracking-wider uppercase">{specialFeature.label}</span>
+            {specialFeature.icon}
+            <span className="text-[10px] font-bold text-[#3A86FF] tracking-wider uppercase">
+              {specialFeature.label}
+            </span>
           </div>
         )}
         <ul className="space-y-4 mb-8">
           {features.map((f: any, i: number) => (
             <li key={i} className="flex items-start gap-3">
               <div className="mt-0.5 shrink-0 flex items-center justify-center">
-                {f.icon ? f.icon : (
-                   f.isNegative ? (
-                     <div className="w-[18px] h-[18px] flex items-center justify-center">
-                        <X size={16} className="text-[#94A3B8]" />
-                     </div>
-                   ) : f.included ? (
-                     <div className="w-[18px] h-[18px] rounded-full bg-[#E4EFFF] flex items-center justify-center">
-                       <Check size={12} strokeWidth={3} className="text-[#3A86FF]" />
-                     </div>
-                   ) : (
-                     <Lock size={16} className="text-[#94A3B8] opacity-60" />
-                   )
+                {f.icon ? (
+                  f.icon
+                ) : f.isNegative ? (
+                  <div className="w-[18px] h-[18px] flex items-center justify-center">
+                    <X size={16} className="text-[#94A3B8]" />
+                  </div>
+                ) : f.included ? (
+                  <div className="w-[18px] h-[18px] rounded-full bg-[#E4EFFF] flex items-center justify-center">
+                    <Check
+                      size={12}
+                      strokeWidth={3}
+                      className="text-[#3A86FF]"
+                    />
+                  </div>
+                ) : (
+                  <Lock size={16} className="text-[#94A3B8] opacity-60" />
                 )}
               </div>
-              <span className={cn("text-[13px] leading-tight font-medium", f.included ? "text-[#1F2D2E]" : "text-[#94A3B8]")}>
+              <span
+                className={cn(
+                  "text-[13px] leading-tight font-medium",
+                  f.included ? "text-[#1F2D2E]" : "text-[#94A3B8]",
+                )}
+              >
                 {f.text}
               </span>
             </li>
@@ -441,7 +663,7 @@ const PricingCard = ({
         className={cn(
           "w-full text-center py-3.5 rounded-xl font-bold text-sm text-white hover:bg-opacity-90 transition-all shadow-md group flex items-center justify-center gap-2 cursor-pointer",
           ctaColor || "bg-[#3A86FF] shadow-[0_4px_14px_0_rgba(58,134,255,0.3)]",
-          isLoading && "opacity-70 cursor-not-allowed"
+          isLoading && "opacity-70 cursor-not-allowed",
         )}
       >
         {isLoading ? (
@@ -455,6 +677,6 @@ const PricingCard = ({
       </button>
     </div>
   );
-}
+};
 
 export default PricingPage;
