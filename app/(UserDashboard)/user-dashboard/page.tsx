@@ -26,6 +26,7 @@ import LogTodayModal from "@/components/dashboard/LogTodayModal";
 import ChangeSourceModal from "@/components/dashboard/ChangeSourceModal";
 import NotificationBell from "@/components/dashboard/NotificationBell";
 import ProfileDropdown from "@/components/dashboard/ProfileDropdown";
+import ProjectionLimitIndicator from "@/components/dashboard/ProjectionLimitIndicator";
 import ChartsNutrition from "@/components/UserDashboard/Dashboard/ChartsNutrition";
 import { useGetCardDataQuery } from "@/redux/features/api/userDashboard/habit";
 import { useGetInsightsQuery } from "@/redux/features/api/userDashboard/insightsApi";
@@ -79,13 +80,14 @@ const UserDashboard = () => {
       {/* Header - Only for Dashboard Overview */}
       <header className="sticky top-0 z-20 flex items-center justify-between py-4 bg-white border-b border-gray-100 px-6 w-full">
         <h1 className="text-xl font-semibold text-[#1F2D2E]">Dashboard</h1>
-        <div className="flex items-center gap-4 ml-auto">
+        <div className="flex items-center gap-6 ml-auto">
+          <ProjectionLimitIndicator />
           <NotificationBell />
           <div className="flex items-center gap-3 pr-2">
             <ProfileDropdown roleLabel="User" settingsHref="/user-dashboard/settings" />
           </div>
           <Link href="/user-dashboard/upgrade">
-            <button className="flex items-center gap-2 bg-[#0FA4A9] text-white px-4 py-2 rounded-lg font-medium hover:bg-opacity-90 transition-all text-sm cursor-pointer">
+            <button className="flex items-center gap-2 bg-[#0FA4A9] text-white px-4 py-2 rounded-lg font-medium hover:bg-opacity-90 transition-all text-sm cursor-pointer shadow-sm shadow-[#0FA4A9]/20 active:scale-95">
               <Crown size={18} fill="currentColor" />
               Upgrade
             </button>

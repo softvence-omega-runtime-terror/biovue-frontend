@@ -110,7 +110,7 @@ const PaymentSuccessPage = () => {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Link 
-              href="/dashboard" 
+              href="/user-dashboard" 
               className="flex items-center justify-center gap-2 bg-primary text-white py-4 rounded-2xl font-bold  transition-all group"
             >
               <LayoutDashboard size={20} className="group-hover:scale-110 transition-transform" />

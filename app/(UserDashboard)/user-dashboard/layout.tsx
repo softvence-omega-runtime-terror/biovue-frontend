@@ -3,7 +3,7 @@ import Sidebar from "@/components/Sidebar";
 import { Suspense } from "react";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
 
-export default function AdminDashboardLayout({
+export default function UserDashboardLayout({
   children,
 }: {
   children: React.ReactNode;
@@ -14,15 +14,15 @@ export default function AdminDashboardLayout({
         {/* Sidebar - Fixed width container to reserve space on desktop */}
       
         <Suspense fallback={<div className="w-20 md:w-65 border-r border-gray-200" />}>
-        <Sidebar role="user" />
-      </Suspense>
+          <Sidebar role="user" />
+        </Suspense>
 
-      {/* Right side */}
-      <div className="flex flex-col flex-1 min-w-0">
-        {/* Page Content */}
-        <main className="flex-1">{children}</main>
+        {/* Right side */}
+        <div className="flex flex-col flex-1 min-w-0">
+          {/* Page Content */}
+          <main className="flex-1">{children}</main>
+        </div>
       </div>
-    </div>
     </ProtectedRoute>
   );
 }
