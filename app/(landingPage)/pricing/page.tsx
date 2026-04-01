@@ -251,10 +251,17 @@ const PricingPage = () => {
                   price={
                     plan.price === "0.00" || plan.price === 0 ? "0" : plan.price
                   }
+                  // period={
+                  //   plan.name.toLowerCase().includes("free trial")
+                  //     ? `for ${plan.duration} days`
+                  //     : "/Month"
+                  // }
                   period={
                     plan.name.toLowerCase().includes("free trial")
                       ? `for ${plan.duration} days`
-                      : "/Month"
+                      : billingCycle === "monthly"
+                        ? "/Month"
+                        : "/Annual"
                   }
                   subtext={
                     plan.name.toLowerCase().includes("free trial")
@@ -341,14 +348,17 @@ const PricingPage = () => {
                       ? "Custom"
                       : plan.price
                   }
+                  // period={
+                  //   plan.price === "0.00" || plan.price === 0 ? "" : "/Month"
+                  // }
                   period={
-                    plan.price === "0.00" || plan.price === 0 ? "" : "/Half Annual"
+                    plan.price === "0.00" || plan.price === 0
+                      ? ""
+                      : billingCycle === "monthly"
+                        ? "/Month"
+                        : "/Annual"
                   }
-                  subtext={
-                    plan.price !== "0.00" && plan.price !== 0
-                      ? "7 days free trial"
-                      : ""
-                  }
+                  subtext=""
                   features={(() => {
                     const overrideTexts = [
                       "Dedicated account manager",
@@ -406,18 +416,19 @@ const PricingPage = () => {
 
                     return baseFeatures;
                   })()}
+                  // cta={
+                  //   plan.name.toLowerCase().includes("enterprise") ||
+                  //   plan.price === "0.00" ||
+                  //   plan.price === 0
+                  //     ? "Contact Via Mail"
+                  //     : "Start 7-Day Free Trial"
+                  // }
                   cta={
-                    plan.name.toLowerCase().includes("enterprise") ||
-                    plan.price === "0.00" ||
-                    plan.price === 0
+                    plan.name.toLowerCase().includes("enterprise")
                       ? "Contact Via Mail"
-                      : idx === 0
-                      ? "Buy Now"
-                      : idx === 1
-                      ? "Update to Tier 2"
-                      : idx === 2
-                      ? "Update to Tier 3"
-                      : "Start 7-Day Free Trial"
+                      : plan.name.toLowerCase().includes("tier 1")
+                        ? "Buy Now"
+                        : `Update to ${plan.name}`
                   }
                   active={false}
                   ctaColor="bg-[#0FA4A9]"
@@ -501,7 +512,7 @@ const PricingPage = () => {
               Already have an app or platform?
             </h2>
             <p className="text-[#5F6F73] text-lg">
-              Integrate BioVue&apos;s AI projections into your app, platform, or
+              Integrate BioVue's AI projections into your app, platform, or
               website to deliver real-time health insights to your users.
             </p>
           </div>
