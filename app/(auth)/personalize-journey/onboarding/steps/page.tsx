@@ -805,14 +805,12 @@ const OnboardingStepsPage = () => {
                       </span>
                     </div>
                     <input
-                      type="checkbox"
-                      className="w-5 h-5 rounded border-gray-300 text-[#3A86FF] focus:ring-[#3A86FF]"
+                      type="radio"
+                      name="healthGoal"
+                      className="w-5 h-5 border-gray-300 text-[#3A86FF] focus:ring-[#3A86FF]"
                       checked={formData.goals.includes(goal.title)}
-                      onChange={(e) => {
-                        const newGoals = e.target.checked
-                          ? [...formData.goals, goal.title]
-                          : formData.goals.filter((g) => g !== goal.title);
-                        setFormData({ ...formData, goals: newGoals });
+                      onChange={() => {
+                        setFormData({ ...formData, goals: [goal.title] });
                       }}
                     />
                   </label>
