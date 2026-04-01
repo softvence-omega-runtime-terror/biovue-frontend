@@ -63,9 +63,15 @@ const LoginPage = () => {
         const professionType = userData?.profession_type;
         const isProfileCompleted = userData?.is_profile_completed;
 
+        console.log("User Data for Routing:", { userRole, userType, professionType, isProfileCompleted });
+
         if (userRole === "admin") {
           router.push("/admin-dashboard/overview");
-        } else if (userType === "professional" || userRole === "professional") {
+        } else if (
+          userType === "professional" || 
+          userRole === "professional" || 
+          (professionType && ["trainer_coach", "supplement_supplier", "nutritionist"].includes(professionType))
+        ) {
           const userId = userData?.id || userData?.user_id;
           
           if (professionType === "trainer_coach") {
