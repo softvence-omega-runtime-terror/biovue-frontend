@@ -86,7 +86,7 @@ const ProjectionsPage = () => {
     },
   );
 
-  const getFullProjectionUrl = (url: string) => {
+  const getFullProjectionUrl = (url?: string) => {
     if (!url) return "";
     if (url.startsWith("http")) return url;
     const base = "https://ai.biovuedigitalwellness.com";
@@ -175,9 +175,8 @@ const ProjectionsPage = () => {
       const response = await combinedProjection({
         user_id: user.id.toString(),
         image: projectionImage as File,
-        duration: timeHorizon,
+        timeframe: timeHorizon,
         resolution: resolution.toUpperCase(),
-        use_default_goal: true,
       }).unwrap();
 
       setCombinedProjectionData(response);
@@ -439,16 +438,18 @@ const ProjectionsPage = () => {
   );
 
   const renderResultsStep = () => {
-    if (!combinedProjectionData) return null;
+    if (!combinedProjectionData?.data) return null;
+
+    const data = combinedProjectionData.data;
 
     const renderProjectionCard = (projection: IndividualProjection, isFuture: boolean) => {
       const expectedChanges: string[] = Array.isArray(projection?.expected_changes) 
         ? projection.expected_changes 
         : [];
 
-      let goalTitle = `Achieving your goal in ${combinedProjectionData.timeframe}`;
+      let goalTitle = `Achieving your goal in ${data.timeframe}`;
       if (isFuture) {
-        goalTitle = `Achieving your goal: Reach muscular physique in ${combinedProjectionData.timeframe}`; // Fallback
+        goalTitle = `Achieving your goal: Reach muscular physique in ${data.timeframe}`; // Fallback
         if (user?.profile?.weight && projection?.est_weight) {
           const currentWeight = parseFloat(user.profile.weight);
           const futureWeightStr = projection.est_weight.toLowerCase().replace(/[^0-9.]/g, '');
@@ -456,11 +457,11 @@ const ProjectionsPage = () => {
           if (!isNaN(currentWeight) && !isNaN(futureWeight)) {
             const diff = currentWeight - futureWeight;
             if (diff > 0) {
-              goalTitle = `Achieving your goal: Lose ${Math.round(diff)} lbs and reach muscular physique in ${combinedProjectionData.timeframe}`;
+              goalTitle = `Achieving your goal: Lose ${Math.round(diff)} lbs and reach muscular physique in ${data.timeframe}`;
             } else if (diff < 0) {
-              goalTitle = `Achieving your goal: Gain ${Math.round(Math.abs(diff))} lbs and reach muscular physique in ${combinedProjectionData.timeframe}`;
+              goalTitle = `Achieving your goal: Gain ${Math.round(Math.abs(diff))} lbs and reach muscular physique in ${data.timeframe}`;
             } else {
-              goalTitle = `Achieving your goal: Maintain weight and reach muscular physique in ${combinedProjectionData.timeframe}`;
+              goalTitle = `Achieving your goal: Maintain weight and reach muscular physique in ${data.timeframe}`;
             }
           }
         }
@@ -470,15 +471,13 @@ const ProjectionsPage = () => {
         <div className="bg-white rounded-[24px] border border-[#3A86FF]/10 shadow-sm overflow-hidden flex flex-col">
           <div className="p-8 text-center space-y-6 flex-1">
             <h3 className="text-[#8B5CF6] font-bold text-lg min-h-[56px] flex items-center justify-center">
-              {isFuture
-                ? goalTitle
-                : `If you continue your current lifestyle without changes for ${combinedProjectionData.timeframe}`}
+              {(projection as any).label || (isFuture ? goalTitle : `If you continue your current lifestyle without changes for ${data.timeframe}`)}
             </h3>
             <div className="w-full rounded-2xl overflow-hidden bg-gray-50 shadow-inner border border-gray-100">
-              {projection?.projection_url ? (
+              {((projection as any).image || projection.projection_url) ? (
                 <img
-                  key={projection.projection_url}
-                  src={getFullProjectionUrl(projection.projection_url)}
+                  key={(projection as any).image || projection.projection_url}
+                  src={getFullProjectionUrl((projection as any).image || projection.projection_url)}
                   alt="Projection Result"
                   className="w-full h-auto object-contain"
                 />
@@ -493,7 +492,7 @@ const ProjectionsPage = () => {
               {[
                 {
                   label: "Timeframe",
-                  value: combinedProjectionData.timeframe,
+                  value: data.timeframe,
                   icon: Calendar,
                   color: "text-[#8B5CF6]",
                   bg: "bg-[#F3E8FF]",
@@ -563,13 +562,13 @@ const ProjectionsPage = () => {
             Projection Results
           </h1>
           <p className="text-gray-500">
-            Visualizing your trajectory over the next {combinedProjectionData.timeframe}.
+            Visualizing your trajectory over the next {data.timeframe}.
           </p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-6xl mx-auto">
-          {renderProjectionCard(combinedProjectionData.projections.current_lifestyle, false)}
-          {renderProjectionCard(combinedProjectionData.projections.future_goal, true)}
+          {renderProjectionCard(data.projections_data.current_lifestyle, false)}
+          {renderProjectionCard(data.projections_data.future_goal, true)}
         </div>
 
         {/* Results Actions */}
