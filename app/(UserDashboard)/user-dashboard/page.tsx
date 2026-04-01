@@ -240,7 +240,7 @@ const UserDashboard = () => {
             },
             {
               label: "Nutrition Quality",
-              value: `${healthOverview?.nutrition?.score || "N/A"}/100`,
+              value: `${healthOverview?.nutrition?.score != null && !isNaN(Number(healthOverview.nutrition.score)) ? (Number.isInteger(Number(healthOverview.nutrition.score)) ? healthOverview.nutrition.score : Number(healthOverview.nutrition.score).toFixed(2)) : "N/A"}/100`,
               unit: "",
               status: healthOverview?.nutrition?.status || "N/A",
               desc: healthOverview?.nutrition?.message || "N/A",
@@ -280,7 +280,15 @@ const UserDashboard = () => {
               </span>
               <div className="flex items-baseline gap-1">
                 <span className={cn("text-3xl font-bold", metric.color)}>
-                  {metric.value}
+                  {typeof metric.value === "number"
+                    ? Number.isInteger(metric.value)
+                      ? metric.value
+                      : metric.value.toFixed(2)
+                    : isNaN(Number(metric.value))
+                      ? metric.value
+                      : Number.isInteger(Number(metric.value))
+                        ? metric.value
+                        : Number(metric.value).toFixed(2)}
                 </span>
                 <span className="text-[#5F6F73] text-sm font-medium">
                   {metric.unit}
