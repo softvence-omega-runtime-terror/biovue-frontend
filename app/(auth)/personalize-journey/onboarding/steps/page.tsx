@@ -78,33 +78,10 @@ const OnboardingStepsPage = () => {
   const [unitSystem, setUnitSystem] = useState<"imperial" | "metric">(
     "imperial",
   );
-  const cmToInches = (cm: number) => cm / 2.54;
   const inchesToCm = (inch: number) => inch * 2.54;
-
-  const kgToLbs = (kg: number) => kg * 2.20462;
   const lbsToKg = (lbs: number) => lbs / 2.20462;
   const handleUnitChange = (newUnit: "imperial" | "metric") => {
     if (newUnit === unitSystem) return;
-
-    let newHeight = Number(formData.height);
-    let newWeight = Number(formData.weight);
-
-    if (newUnit === "metric") {
-      // imperial → metric
-      newHeight = inchesToCm(newHeight);
-      newWeight = lbsToKg(newWeight);
-    } else {
-      // metric → imperial
-      newHeight = cmToInches(newHeight);
-      newWeight = kgToLbs(newWeight);
-    }
-
-    setFormData({
-      ...formData,
-      height: newHeight.toFixed(1),
-      weight: newWeight.toFixed(1),
-    });
-
     setUnitSystem(newUnit);
   };
   console.log(user, "user");
