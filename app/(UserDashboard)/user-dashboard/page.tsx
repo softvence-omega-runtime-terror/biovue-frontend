@@ -28,7 +28,7 @@ import NotificationBell from "@/components/dashboard/NotificationBell";
 import ProfileDropdown from "@/components/dashboard/ProfileDropdown";
 import ProjectionLimitIndicator from "@/components/dashboard/ProjectionLimitIndicator";
 import ChartsNutrition from "@/components/UserDashboard/Dashboard/ChartsNutrition";
-import { useGetCardDataQuery } from "@/redux/features/api/userDashboard/habit";
+import { useGetHealthReportQuery } from "@/redux/features/api/userDashboard/dashboard/health-report";
 import { useGetInsightsQuery } from "@/redux/features/api/userDashboard/insightsApi";
 import { useGetUserOverviewChartQuery } from "@/redux/features/api/userDashboard/dashboardApi";
 
@@ -43,7 +43,7 @@ const UserDashboard = () => {
   const [dataSource, setDataSource] = useState<"device" | "manual">("device");
   const [days, setDays] = useState(7);
   
-  const { data: cardData, isLoading: isCardLoading } = useGetCardDataQuery();
+  const { data: healthReport, isLoading: isHealthLoading } = useGetHealthReportQuery();
   const { data: insightsData, isLoading: isInsightsLoading } = useGetInsightsQuery({});
   const { data: chartResponse, isLoading: isChartLoading } = useGetUserOverviewChartQuery(days);
 
@@ -62,7 +62,7 @@ const UserDashboard = () => {
     water: "",
   });
 
-  if (isCardLoading) {
+  if (isHealthLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <Loader2 className="w-10 h-10 animate-spin text-[#0FA4A9]" />
@@ -70,7 +70,7 @@ const UserDashboard = () => {
     );
   }
 
-  const rawData = cardData?.data;
+  const rawData = healthReport?.data;
   const summary = rawData?.summary;
   const healthOverview = rawData?.health_overview;
   const chartData = chartResponse?.charts;
@@ -149,15 +149,15 @@ const UserDashboard = () => {
               </span>
               <div className="flex items-baseline gap-1">
                 <span className="text-3xl font-bold text-[#1F2D2E]">
-                  {summary?.wellness_score?.value || 0}
+                  {summary?.wellness_score || 0}
                 </span>
                 <span className="text-[#5F6F73] text-sm font-medium">
-                  / {summary?.wellness_score?.max || 100}
+                  / 100
                 </span>
               </div>
-              <span className="text-[#2DD4BF] text-[10px] font-medium flex items-center gap-1 mt-1">
+              {/* <span className="text-[#2DD4BF] text-[10px] font-medium flex items-center gap-1 mt-1">
                 <Plus size={10} /> {summary?.wellness_score?.trend || "N/A"}
-              </span>
+              </span> */}
             </div>
             <div className="w-16 h-16 rounded-full border-[1.5px] border-[#3A86FF] border-t-transparent flex items-center justify-center transform group-hover:rotate-12 transition-transform">
               <Activity size={24} className="text-[#3A86FF]" />
@@ -172,14 +172,11 @@ const UserDashboard = () => {
               </span>
               <div className="flex items-baseline gap-1">
                 <span className="text-3xl font-bold text-[#1F2D2E]">
-                  {summary?.days_active?.current || 0}
-                </span>
-                <span className="text-[#5F6F73] text-sm font-medium">
-                  / {summary?.days_active?.total || 7}
+                  {summary?.days_active || 0}
                 </span>
               </div>
               <span className="text-[#2DD4BF] text-[10px] font-medium flex items-center gap-1 mt-1">
-                {summary?.days_active?.status || "Keep it up!"}
+                Keep it up!
               </span>
             </div>
             <div className="w-16 h-16 rounded-xl bg-[#E4EFFF] flex items-center justify-center group-hover:bg-blue-100 transition-colors">
@@ -195,11 +192,11 @@ const UserDashboard = () => {
               </span>
               <div className="flex items-baseline gap-1">
                 <span className="text-3xl font-bold text-[#1F2D2E]">
-                  {summary?.data_logged?.count || 0}
+                  {summary?.data_logged_entries || 0}
                 </span>
               </div>
               <span className="text-[#2DD4BF] text-[10px] font-medium flex items-center gap-1 mt-1">
-                {summary?.data_logged?.label || "Entries this week"}
+                Entries total
               </span>
             </div>
             <div className="w-16 h-16 rounded-xl bg-[#E4EFFF] flex items-center justify-center group-hover:bg-blue-100 transition-colors">
@@ -227,50 +224,58 @@ const UserDashboard = () => {
             {
               label: "Current Weight",
               value: healthOverview?.weight?.current || "N/A",
-              unit: healthOverview?.weight?.unit || "lbs",
-              status: healthOverview?.weight?.diff_label || "N/A",
-              desc: healthOverview?.weight?.insight || "N/A",
+              unit: summary?.unit_system === "imperial" ? "lbs" : "kg",
+              status: healthOverview?.weight?.status || "N/A",
+              desc: `Target: ${healthOverview?.weight?.coach_target || "N/A"}`,
               color: "text-[#3A86FF]",
             },
             {
               label: "BMI",
-              value: healthOverview?.bmi?.score || "N/A",
+              value: healthOverview?.bmi?.current || "N/A",
               unit: "",
-              status: `Range: ${healthOverview?.bmi?.range || "N/A"}`,
-              desc: healthOverview?.bmi?.status || "N/A",
+              status: healthOverview?.bmi?.status || "N/A",
+              desc: `Ideal Range: ${healthOverview?.bmi?.ideal_range || "N/A"}`,
               color: "text-[#F59E0B]",
             },
             {
-              label: "Nutrition Quality",
-              value: `${healthOverview?.nutrition?.score != null && !isNaN(Number(healthOverview.nutrition.score)) ? (Number.isInteger(Number(healthOverview.nutrition.score)) ? healthOverview.nutrition.score : Number(healthOverview.nutrition.score).toFixed(2)) : "N/A"}/100`,
-              unit: "",
-              status: healthOverview?.nutrition?.status || "N/A",
-              desc: healthOverview?.nutrition?.message || "N/A",
+              label: "Nutrition",
+              value: healthOverview?.nutrition?.protein_servings || 0,
+              unit: "protein serv.",
+              status: healthOverview?.nutrition?.last_meal_balance || "N/A",
+              desc: healthOverview?.nutrition?.note || "N/A",
               color: "text-[#2DD4BF]",
             },
             {
-              label: "Weekly Workouts",
-              value: healthOverview?.workouts?.completed || 0,
-              unit: "session",
-              status: `Goal: ${healthOverview?.workouts?.goal || "N/A"}`,
-              desc: healthOverview?.workouts?.insight || "N/A",
-              color: "text-[#EF4444]",
-            },
-            {
               label: "Daily Steps",
-              value: healthOverview?.steps?.current || 0,
+              value: healthOverview?.daily_steps?.current || 0,
               unit: "",
-              status: `Goal: ${healthOverview?.steps?.goal || "N/A"}`,
-              desc: healthOverview?.steps?.insight || "N/A",
+              status: "Coach Plan",
+              desc: healthOverview?.daily_steps?.coach_plan || "N/A",
               color: "text-[#EF4444]",
             },
             {
               label: "Sleep Hours",
-              value: healthOverview?.sleep?.avg || 0,
+              value: healthOverview?.sleep_hours?.current || 0,
               unit: "hrs",
-              status: `Goal: ${healthOverview?.sleep?.goal || "N/A"}`,
-              desc: healthOverview?.sleep?.insight || "N/A",
+              status: "Coach Plan",
+              desc: healthOverview?.sleep_hours?.coach_plan || "N/A",
               color: "text-[#3A86FF]",
+            },
+            {
+              label: "Hydration",
+              value: healthOverview?.hydration?.current_glasses || 0,
+              unit: "glasses",
+              status: "Target",
+              desc: healthOverview?.hydration?.target || "N/A",
+              color: "text-[#3A86FF]",
+            },
+            {
+              label: "Stress & Mood",
+              value: healthOverview?.stress_and_mood?.avg_stress_level || 0,
+              unit: "/ 10",
+              status: "Latest Mood",
+              desc: healthOverview?.stress_and_mood?.latest_mood || "N/A",
+              color: "text-[#F59E0B]",
             },
           ].map((metric, i) => (
             <div
@@ -282,15 +287,12 @@ const UserDashboard = () => {
               </span>
               <div className="flex items-baseline gap-1">
                 <span className={cn("text-3xl font-bold", metric.color)}>
-                  {typeof metric.value === "number"
-                    ? Number.isInteger(metric.value)
-                      ? metric.value
-                      : metric.value.toFixed(2)
-                    : isNaN(Number(metric.value))
-                      ? metric.value
-                      : Number.isInteger(Number(metric.value))
+                  {metric.value === "N/A" ? "N/A" : 
+                    typeof metric.value === "number"
+                      ? Number.isInteger(metric.value)
                         ? metric.value
-                        : Number(metric.value).toFixed(2)}
+                        : metric.value.toFixed(2)
+                      : metric.value}
                 </span>
                 <span className="text-[#5F6F73] text-sm font-medium">
                   {metric.unit}
