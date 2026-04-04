@@ -63,7 +63,7 @@ export interface PlansResponse {
 
 export const paymentApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
-    getPlans: builder.query<PlansResponse, { billing: string; type: string }>({
+    getSubscriptionPlans: builder.query<PlansResponse, { billing: string; type: string }>({
       query: ({ billing, type }) => `/plans?billing=${billing}&type=${type}`,
       providesTags: ["Plans"],
     }),
@@ -81,6 +81,6 @@ export const paymentApi = baseApi.injectEndpoints({
   overrideExisting: false,
 });
 
-export const { useGetPlansQuery, useProcessPaymentMutation, useGetPaymentSummaryQuery } = paymentApi;
+export const { useGetSubscriptionPlansQuery, useProcessPaymentMutation, useGetPaymentSummaryQuery } = paymentApi;
 
 export default paymentApi;
