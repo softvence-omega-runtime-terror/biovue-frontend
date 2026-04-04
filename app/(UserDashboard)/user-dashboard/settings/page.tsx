@@ -1,10 +1,10 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useSelector } from "react-redux";
 import { selectCurrentUser } from "@/redux/features/slice/authSlice";
 
-import { useGetSubscriptionPlansQuery } from "@/redux/features/api/paymentApi";
+import { useGetSubscriptionPlansQuery, useGetPaymentSummaryQuery } from "@/redux/features/api/paymentApi";
 import { 
   useGetNotificationsQuery,
   useGetNotificationSettingsQuery,
@@ -996,8 +996,19 @@ const SubscriptionView = ({ onBack, currentUser, router }: { onBack: () => void,
     type: currentUser?.role || "individual"
   });
 
+  const { data: paymentSummary } = useGetPaymentSummaryQuery();
+
   const plans = plansData?.data || [];
   const currentPlanId = currentUser?.plan_id;
+
+  // Calculate if the subscription is more than 6 months old
+  const canCancel = useMemo(() => {
+    if (!paymentSummary?.latest_payment?.created_at) return false;
+    const createdAt = new Date(paymentSummary.latest_payment.created_at);
+    const sixMonthsAgo = new Date();
+    sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
+    return createdAt <= sixMonthsAgo;
+  }, [paymentSummary]);
 
   return (
     <div className="flex flex-col gap-8 p-6 md:p-8 w-full min-h-screen pb-24">
@@ -1042,7 +1053,24 @@ const SubscriptionView = ({ onBack, currentUser, router }: { onBack: () => void,
                  <span className="text-xs font-bold opacity-80">
                    Plan: {currentUser?.plan_name || "None"}
                  </span>
-                 <button className="text-[10px] font-extrabold uppercase tracking-widest border border-white/40 px-4 py-1.5 rounded-lg hover:bg-white/10 transition-all">Cancel Subscription</button>
+                 <div className="flex flex-col items-end gap-1">
+                   <button 
+                     disabled={!canCancel}
+                     className={cn(
+                       "text-[10px] font-extrabold uppercase tracking-widest border px-4 py-1.5 rounded-lg transition-all",
+                       canCancel 
+                         ? "border-white/40 hover:bg-white/10" 
+                         : "border-white/20 text-white/40 cursor-not-allowed opacity-50 grayscale"
+                     )}
+                   >
+                     Cancel Subscription
+                   </button>
+                   {!canCancel && (
+                     <span className="text-[8px] font-bold text-white/50 uppercase tracking-tighter">
+                       6 months commitment required
+                     </span>
+                   )}
+                 </div>
               </div>
            </div>
            {/* Decorative Crown */}
