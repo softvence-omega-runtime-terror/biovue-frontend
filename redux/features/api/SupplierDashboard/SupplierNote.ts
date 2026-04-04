@@ -36,7 +36,6 @@ export interface DeleteSupplierNoteResponse {
 
 export const supplierNoteApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
-    // ➕ Add Note
     addSupplierNote: builder.mutation<
       AddSupplierNoteResponse,
       AddSupplierNoteRequest
@@ -51,7 +50,6 @@ export const supplierNoteApi = baseApi.injectEndpoints({
       ],
     }),
 
-    // 📥 Get Notes
     getSupplierNotes: builder.query<GetSupplierNotesResponse, number>({
       query: (user_id) => ({
         url: `/trainer-notes/${user_id}`,
@@ -62,7 +60,6 @@ export const supplierNoteApi = baseApi.injectEndpoints({
       ],
     }),
 
-    // ❌ Delete Note
     deleteSupplierNote: builder.mutation<
       DeleteSupplierNoteResponse,
       { note_id: number; user_id: number }
@@ -75,6 +72,20 @@ export const supplierNoteApi = baseApi.injectEndpoints({
         { type: "SupplierNote", id: user_id },
       ],
     }),
+
+    updateSupplierNote: builder.mutation<
+      DeleteSupplierNoteResponse,
+      { note_id: number; note: string; user_id: number }
+    >({
+      query: ({ note_id, note }) => ({
+        url: `/trainer-notes/${note_id}`,
+        method: "PATCH",
+        body: { note },
+      }),
+      invalidatesTags: (_result, _error, { user_id }) => [
+        { type: "SupplierNote", id: user_id },
+      ],
+    }),
   }),
 });
 
@@ -82,4 +93,5 @@ export const {
   useAddSupplierNoteMutation,
   useGetSupplierNotesQuery,
   useDeleteSupplierNoteMutation,
+  useUpdateSupplierNoteMutation,
 } = supplierNoteApi;

@@ -78,8 +78,7 @@ const OnboardingStepsPage = () => {
   const [unitSystem, setUnitSystem] = useState<"imperial" | "metric">(
     "imperial",
   );
-  const inchesToCm = (inch: number) => inch * 2.54;
-  const lbsToKg = (lbs: number) => lbs / 2.20462;
+
   const handleUnitChange = (newUnit: "imperial" | "metric") => {
     if (newUnit === unitSystem) return;
     setUnitSystem(newUnit);
@@ -103,10 +102,7 @@ const OnboardingStepsPage = () => {
       let finalHeight = Number(formData.height);
       let finalWeight = Number(formData.weight);
 
-      if (unitSystem === "imperial") {
-        finalHeight = inchesToCm(finalHeight);
-        finalWeight = lbsToKg(finalWeight);
-      }
+
 
       // Always send metric to backend
       // apiData.append("height", finalHeight.toFixed(1)); // cm
