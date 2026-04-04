@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
 import { selectCurrentUser } from "@/redux/features/slice/authSlice";
 
-import { useGetPlansQuery } from "@/redux/features/api/paymentApi";
+import { useGetSubscriptionPlansQuery } from "@/redux/features/api/paymentApi";
 import { 
   useGetNotificationsQuery,
   useGetNotificationSettingsQuery,
@@ -15,7 +15,7 @@ import {
   useFetchFutureInsightsMutation 
 } from "@/redux/features/api/userDashboard/insightsApi";
 import { useCreateUpdateProfileMutation, useGetProfileQuery } from "@/redux/features/api/profileApi";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 import Image from "next/image";
 import {
@@ -42,7 +42,26 @@ type ViewState = "overview" | "profile" | "subscription";
 
 // --- Main Page ---
 const SettingsPage = () => {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const tab = searchParams.get("tab");
+  
   const [view, setView] = useState<ViewState>("overview");
+
+  useEffect(() => {
+    if (tab === "subscription") {
+      setView("subscription");
+      
+      // Auto-scroll to billing cycle after a short delay to ensure component is rendered
+      setTimeout(() => {
+        const element = document.getElementById("billing-cycle");
+        if (element) {
+          element.scrollIntoView({ behavior: "smooth" });
+        }
+      }, 500);
+    }
+  }, [tab]);
+
   const currentUser = useSelector(selectCurrentUser);
 
   // Notifications API
@@ -203,7 +222,7 @@ const SettingsPage = () => {
   ];
 
   if (view === "profile") return <ProfileEditView onBack={() => setView("overview")} currentUser={currentUser} />;
-  if (view === "subscription") return <SubscriptionView onBack={() => setView("overview")} currentUser={currentUser} />;
+  if (view === "subscription") return <SubscriptionView onBack={() => setView("overview")} currentUser={currentUser} router={router} />;
 
   return (
     <div className="flex flex-col gap-10 p-6 md:p-8 w-full min-h-screen pb-24">
@@ -969,10 +988,10 @@ const ProfileEditView = ({ onBack, currentUser }: { onBack: () => void, currentU
   );
 };
 
-const SubscriptionView = ({ onBack, currentUser }: { onBack: () => void, currentUser: any }) => {
+const SubscriptionView = ({ onBack, currentUser, router }: { onBack: () => void, currentUser: any, router: any }) => {
   const [billingCycle, setBillingCycle] = useState<"monthly" | "yearly">("monthly");
   
-  const { data: plansData, isLoading: isLoadingPlans } = useGetPlansQuery({
+  const { data: plansData, isLoading: isLoadingPlans } = useGetSubscriptionPlansQuery({
     billing: billingCycle,
     type: currentUser?.role || "individual"
   });
@@ -1031,7 +1050,7 @@ const SubscriptionView = ({ onBack, currentUser }: { onBack: () => void, current
         </div>
 
         {/* Billing Cycle */}
-        <div className="bg-white rounded-[16px] p-8 border border-[#3A86FF]/25 shadow-sm flex flex-col md:flex-row items-center justify-between gap-6">
+        <div id="billing-cycle" className="bg-white rounded-[16px] p-8 border border-[#3A86FF]/25 shadow-sm flex flex-col md:flex-row items-center justify-between gap-6">
            <div className="flex flex-col gap-1">
               <h3 className="text-xl font-bold text-[#1F2D2E]">Billing Cycle</h3>
               <p className="text-[#5F6F73] text-sm font-medium">Save up to 15% with annual billing</p>
@@ -1074,8 +1093,14 @@ const SubscriptionView = ({ onBack, currentUser }: { onBack: () => void, current
                return (
                 <div 
                   key={plan.id}
+                  onClick={() => {
+                    if (!isActive) {
+                      router.push("/pricing");
+                    }
+                  }}
                   className={cn(
                     "rounded-[16px] p-6 border transition-all duration-300",
+                    !isActive && "cursor-pointer",
                     isActive 
                       ? "bg-[#EAFBF7] border-2 border-[#0FA4A9] shadow-sm ring-4 ring-[#0FA4A9]/5" 
                       : "bg-white border-[#3A86FF]/25 shadow-sm hover:border-[#0FA4A9]/50"
