@@ -37,9 +37,8 @@ export default function Sidebar({ role }: SidebarProps) {
 
   const getTooltipMessage = (reason: string) => {
     switch (reason) {
-      case "low_credits_and_expiring_soon": return "Low credits and subscription expiring soon! Please upgrade to maintain access.";
-      case "low_credits": return "Low credits! Please upgrade your plan to continue using this feature.";
-      case "expiring_soon": return "Your subscription is expiring soon. Please renew to maintain access.";
+      case "low_credits_or_expiring_soon": return "Low credits or subscription expiring soon! Please upgrade to maintain access.";
+      case "subscription_expired_or_no_credits": return "Subscription expired or no credits remaining! Please upgrade your plan to continue.";
       case "trial_ended": return "Trial period ended. Please choose a plan to continue.";
       default: return "To access this feature, you need an active subscription plan.";
     }
