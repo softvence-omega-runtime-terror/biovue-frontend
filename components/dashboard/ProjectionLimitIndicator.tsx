@@ -1,3 +1,5 @@
+"use client";
+
 import React from "react";
 import { useSubscriptionStatus } from "@/lib/hooks/useSubscriptionStatus";
 import { Zap, Calendar, AlertCircle } from "lucide-react";
@@ -11,6 +13,8 @@ export default function ProjectionLimitIndicator() {
     restricted: isCritical, 
     isLoading 
   } = useSubscriptionStatus();
+
+  
 
   if (isLoading) return null;
  

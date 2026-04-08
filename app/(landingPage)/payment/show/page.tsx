@@ -6,9 +6,20 @@ import Image from "next/image";
 import { CheckCircle2, ArrowRight, Home, LayoutDashboard, Loader2, Receipt } from "lucide-react";
 import { useGetPaymentSummaryQuery } from "@/redux/features/api/paymentApi";
 import { cn } from "@/lib/utils";
+import { useDispatch } from "react-redux";
+import { baseApi } from "@/redux/features/api/baseApi";
+import { useEffect } from "react";
 
 const PaymentSuccessPage = () => {
   const { data, isLoading, isError } = useGetPaymentSummaryQuery();
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    if (data?.success) {
+      console.log("Payment successful, invalidating tags...");
+      dispatch(baseApi.util.invalidateTags(["Projection", "Profile"]));
+    }
+  }, [data, dispatch]);
 
   console.log(data,"showpricing data ")
 
