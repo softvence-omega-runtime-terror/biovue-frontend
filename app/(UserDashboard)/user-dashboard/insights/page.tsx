@@ -20,6 +20,7 @@ import { useGetAiCurrentInsightsQuery, useGetAiFutureInsightsQuery, useUpdateAiC
 import { useSelector } from "react-redux";
 import { selectCurrentUser } from "@/redux/features/slice/authSlice";
 import { toast } from "sonner";
+import SubscriptionGuard from "@/components/common/SubscriptionGuard";
 
 // Mock data removed in favor of API integration
 
@@ -87,7 +88,8 @@ export default function InsightsPage() {
   const isLoading = activeTab === "current" ? isLoadingInsights : isLoadingFuture;
 
   return (
-    <div className="flex flex-col min-h-[calc(100vh-80px)] p-6 md:p-8 container mx-auto w-full">
+    <SubscriptionGuard>
+      <div className="flex flex-col min-h-[calc(100vh-80px)] p-6 md:p-8 container mx-auto w-full">
       {/* Top Navigation */}
       <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-8">
         <div className="flex items-center gap-1 bg-[#E6F6F6] p-1 rounded-lg border border-[#BDE8E8]">
@@ -436,6 +438,7 @@ export default function InsightsPage() {
         )}
       </AnimatePresence>
     </div>
+    </SubscriptionGuard>
   );
 }
 
