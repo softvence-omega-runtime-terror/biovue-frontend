@@ -78,33 +78,9 @@ const OnboardingStepsPage = () => {
   const [unitSystem, setUnitSystem] = useState<"imperial" | "metric">(
     "imperial",
   );
-  const cmToInches = (cm: number) => cm / 2.54;
-  const inchesToCm = (inch: number) => inch * 2.54;
 
-  const kgToLbs = (kg: number) => kg * 2.20462;
-  const lbsToKg = (lbs: number) => lbs / 2.20462;
   const handleUnitChange = (newUnit: "imperial" | "metric") => {
     if (newUnit === unitSystem) return;
-
-    let newHeight = Number(formData.height);
-    let newWeight = Number(formData.weight);
-
-    if (newUnit === "metric") {
-      // imperial → metric
-      newHeight = inchesToCm(newHeight);
-      newWeight = lbsToKg(newWeight);
-    } else {
-      // metric → imperial
-      newHeight = cmToInches(newHeight);
-      newWeight = kgToLbs(newWeight);
-    }
-
-    setFormData({
-      ...formData,
-      height: newHeight.toFixed(1),
-      weight: newWeight.toFixed(1),
-    });
-
     setUnitSystem(newUnit);
   };
   console.log(user, "user");
@@ -126,10 +102,7 @@ const OnboardingStepsPage = () => {
       let finalHeight = Number(formData.height);
       let finalWeight = Number(formData.weight);
 
-      if (unitSystem === "imperial") {
-        finalHeight = inchesToCm(finalHeight);
-        finalWeight = lbsToKg(finalWeight);
-      }
+
 
       // Always send metric to backend
       // apiData.append("height", finalHeight.toFixed(1)); // cm
@@ -805,14 +778,12 @@ const OnboardingStepsPage = () => {
                       </span>
                     </div>
                     <input
-                      type="checkbox"
-                      className="w-5 h-5 rounded border-gray-300 text-[#3A86FF] focus:ring-[#3A86FF]"
+                      type="radio"
+                      name="healthGoal"
+                      className="w-5 h-5 border-gray-300 text-[#3A86FF] focus:ring-[#3A86FF]"
                       checked={formData.goals.includes(goal.title)}
-                      onChange={(e) => {
-                        const newGoals = e.target.checked
-                          ? [...formData.goals, goal.title]
-                          : formData.goals.filter((g) => g !== goal.title);
-                        setFormData({ ...formData, goals: newGoals });
+                      onChange={() => {
+                        setFormData({ ...formData, goals: [goal.title] });
                       }}
                     />
                   </label>

@@ -1,10 +1,10 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useSelector } from "react-redux";
 import { selectCurrentUser } from "@/redux/features/slice/authSlice";
 
-import { useGetPlansQuery } from "@/redux/features/api/paymentApi";
+import { useGetSubscriptionPlansQuery, useGetPaymentSummaryQuery } from "@/redux/features/api/paymentApi";
 import { 
   useGetNotificationsQuery,
   useGetNotificationSettingsQuery,
@@ -15,7 +15,7 @@ import {
   useFetchFutureInsightsMutation 
 } from "@/redux/features/api/userDashboard/insightsApi";
 import { useCreateUpdateProfileMutation, useGetProfileQuery } from "@/redux/features/api/profileApi";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 import Image from "next/image";
 import {
@@ -42,7 +42,26 @@ type ViewState = "overview" | "profile" | "subscription";
 
 // --- Main Page ---
 const SettingsPage = () => {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const tab = searchParams.get("tab");
+  
   const [view, setView] = useState<ViewState>("overview");
+
+  useEffect(() => {
+    if (tab === "subscription") {
+      setView("subscription");
+      
+      // Auto-scroll to billing cycle after a short delay to ensure component is rendered
+      setTimeout(() => {
+        const element = document.getElementById("billing-cycle");
+        if (element) {
+          element.scrollIntoView({ behavior: "smooth" });
+        }
+      }, 500);
+    }
+  }, [tab]);
+
   const currentUser = useSelector(selectCurrentUser);
 
   // Notifications API
@@ -203,7 +222,7 @@ const SettingsPage = () => {
   ];
 
   if (view === "profile") return <ProfileEditView onBack={() => setView("overview")} currentUser={currentUser} />;
-  if (view === "subscription") return <SubscriptionView onBack={() => setView("overview")} currentUser={currentUser} />;
+  if (view === "subscription") return <SubscriptionView onBack={() => setView("overview")} currentUser={currentUser} router={router} />;
 
   return (
     <div className="flex flex-col gap-10 p-6 md:p-8 w-full min-h-screen pb-24">
@@ -969,16 +988,27 @@ const ProfileEditView = ({ onBack, currentUser }: { onBack: () => void, currentU
   );
 };
 
-const SubscriptionView = ({ onBack, currentUser }: { onBack: () => void, currentUser: any }) => {
+const SubscriptionView = ({ onBack, currentUser, router }: { onBack: () => void, currentUser: any, router: any }) => {
   const [billingCycle, setBillingCycle] = useState<"monthly" | "yearly">("monthly");
   
-  const { data: plansData, isLoading: isLoadingPlans } = useGetPlansQuery({
+  const { data: plansData, isLoading: isLoadingPlans } = useGetSubscriptionPlansQuery({
     billing: billingCycle,
     type: currentUser?.role || "individual"
   });
 
+  const { data: paymentSummary } = useGetPaymentSummaryQuery();
+
   const plans = plansData?.data || [];
   const currentPlanId = currentUser?.plan_id;
+
+  // Calculate if the subscription is more than 6 months old
+  const canCancel = useMemo(() => {
+    if (!paymentSummary?.latest_payment?.created_at) return false;
+    const createdAt = new Date(paymentSummary.latest_payment.created_at);
+    const sixMonthsAgo = new Date();
+    sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
+    return createdAt <= sixMonthsAgo;
+  }, [paymentSummary]);
 
   return (
     <div className="flex flex-col gap-8 p-6 md:p-8 w-full min-h-screen pb-24">
@@ -1023,7 +1053,24 @@ const SubscriptionView = ({ onBack, currentUser }: { onBack: () => void, current
                  <span className="text-xs font-bold opacity-80">
                    Plan: {currentUser?.plan_name || "None"}
                  </span>
-                 <button className="text-[10px] font-extrabold uppercase tracking-widest border border-white/40 px-4 py-1.5 rounded-lg hover:bg-white/10 transition-all">Cancel Subscription</button>
+                 <div className="flex flex-col items-end gap-1">
+                   <button 
+                     disabled={!canCancel}
+                     className={cn(
+                       "text-[10px] font-extrabold uppercase tracking-widest border px-4 py-1.5 rounded-lg transition-all",
+                       canCancel 
+                         ? "border-white/40 hover:bg-white/10" 
+                         : "border-white/20 text-white/40 cursor-not-allowed opacity-50 grayscale"
+                     )}
+                   >
+                     Cancel Subscription
+                   </button>
+                   {!canCancel && (
+                     <span className="text-[8px] font-bold text-white/50 uppercase tracking-tighter">
+                       6 months commitment required
+                     </span>
+                   )}
+                 </div>
               </div>
            </div>
            {/* Decorative Crown */}
@@ -1031,7 +1078,7 @@ const SubscriptionView = ({ onBack, currentUser }: { onBack: () => void, current
         </div>
 
         {/* Billing Cycle */}
-        <div className="bg-white rounded-[16px] p-8 border border-[#3A86FF]/25 shadow-sm flex flex-col md:flex-row items-center justify-between gap-6">
+        <div id="billing-cycle" className="bg-white rounded-[16px] p-8 border border-[#3A86FF]/25 shadow-sm flex flex-col md:flex-row items-center justify-between gap-6">
            <div className="flex flex-col gap-1">
               <h3 className="text-xl font-bold text-[#1F2D2E]">Billing Cycle</h3>
               <p className="text-[#5F6F73] text-sm font-medium">Save up to 15% with annual billing</p>
@@ -1074,8 +1121,14 @@ const SubscriptionView = ({ onBack, currentUser }: { onBack: () => void, current
                return (
                 <div 
                   key={plan.id}
+                  onClick={() => {
+                    if (!isActive) {
+                      router.push("/pricing");
+                    }
+                  }}
                   className={cn(
                     "rounded-[16px] p-6 border transition-all duration-300",
+                    !isActive && "cursor-pointer",
                     isActive 
                       ? "bg-[#EAFBF7] border-2 border-[#0FA4A9] shadow-sm ring-4 ring-[#0FA4A9]/5" 
                       : "bg-white border-[#3A86FF]/25 shadow-sm hover:border-[#0FA4A9]/50"
