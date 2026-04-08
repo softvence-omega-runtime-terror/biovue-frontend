@@ -10,7 +10,7 @@ import Tooltip from "@/components/Tooltip";
 
 import { useDispatch, useSelector } from "react-redux";
 import { logout, selectCurrentUser } from "@/redux/features/slice/authSlice";
-import { useGetProjectionLimitQuery } from "@/redux/features/api/userDashboard/Projection/ProjectionLimitAPI";
+import { useSubscriptionStatus } from "@/lib/hooks/useSubscriptionStatus";
 
 type Role = "user" | "trainer" | "admin" | "nutritionist";
 
@@ -30,42 +30,9 @@ export default function Sidebar({ role }: SidebarProps) {
   const [openSubmenus, setOpenSubmenus] = useState<string[]>([]);
   const [mounted, setMounted] = useState(false);
 
-  const { data: limitData } = useGetProjectionLimitQuery(user?.id, { 
-    skip: role !== "user" || !user?.id 
-  });
+  const restrictionState = useSubscriptionStatus();
+  const isRestricted = role === "user" ? restrictionState.restricted : false;
 
-  const restrictionState = (() => {
-    if (role !== "user" || !user?.created_at) return { restricted: false, reason: "" };
-
-    if (limitData) {
-      const expiryDate = new Date(limitData.expired_at);
-      const today = new Date();
-      const diffDays = Math.ceil((expiryDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
-      
-      const isLowCredits = limitData.projection_limit <= 2;
-      const isExpiringSoon = diffDays <= 5;
-
-      return {
-        restricted: isLowCredits || isExpiringSoon,
-        reason: isLowCredits && isExpiringSoon
-          ? "low_credits_and_expiring_soon"
-          : isLowCredits
-          ? "low_credits"
-          : isExpiringSoon
-          ? "expiring_soon"
-          : "",
-      };
-    }
-
-    const createdDate = new Date(user.created_at);
-    const today = new Date();
-    const diffInDays = (today.getTime() - createdDate.getTime()) / (1000 * 60 * 60 * 24);
-
-    const isTrialEnded = !user.plan_id && diffInDays > 7;
-    return { restricted: isTrialEnded, reason: isTrialEnded ? "trial_ended" : "" };
-  })();
-
-  const isRestricted = restrictionState.restricted;
   const restrictedLabels = ["Projections", "Projection Galary", "Insights", "Habits", "Support", "Message"];
 
   const getTooltipMessage = (reason: string) => {

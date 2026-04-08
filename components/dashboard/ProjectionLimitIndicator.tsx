@@ -1,26 +1,18 @@
 import React from "react";
-import { useSelector } from "react-redux";
-import { selectCurrentUser } from "@/redux/features/slice/authSlice";
-import { useGetProjectionLimitQuery } from "@/redux/features/api/userDashboard/Projection/ProjectionLimitAPI";
+import { useSubscriptionStatus } from "@/lib/hooks/useSubscriptionStatus";
 import { Zap, Calendar, AlertCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence, Variants } from "framer-motion";
 
 export default function ProjectionLimitIndicator() {
-  const user = useSelector(selectCurrentUser);
-  const { data, isLoading } = useGetProjectionLimitQuery(user?.id, { skip: !user?.id });
+  const { 
+    projection_limit = 0, 
+    diffDays = 0, 
+    restricted: isCritical, 
+    isLoading 
+  } = useSubscriptionStatus();
 
-  if (isLoading || !data) return null;
-
-  const { projection_limit, expired_at } = data;
-  const expiryDate = new Date(expired_at);
-  const today = new Date();
-  const diffTime = expiryDate.getTime() - today.getTime();
-  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-
-  const isLowCredits = projection_limit <= 2;
-  const isExpiringSoon = diffDays <= 5;
-  const isCritical = isLowCredits || isExpiringSoon;
+  if (isLoading) return null;
  
 
   // Animation variants
