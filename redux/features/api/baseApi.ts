@@ -55,7 +55,9 @@ export const baseApi = createApi({
     "NotificationSettings",
     "BulkProduct",
     "SupplierNote",
+    "SupportImage",
   ],
+
 
   endpoints: () => ({}),
 });

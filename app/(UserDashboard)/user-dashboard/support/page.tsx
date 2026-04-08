@@ -30,6 +30,7 @@ import {
   useUpdateLifestyleImageMutation,
   useGetCurrentImageQuery,
 } from "@/redux/features/api/userDashboard/support";
+import { useGetAiRecommendedProfessionalsQuery } from "@/redux/features/api/userDashboard/supportAiApi";
 import { 
   useGetMessagesByUserIdQuery, 
   useSendMessageMutation 
@@ -41,7 +42,7 @@ import { toast } from "sonner";
 // --- Mock Data ---
 const RECOMMENDED_COACHES = [
   {
-    id: "sarah-jenkins",
+    id: 101,
     name: "Sarah Jenkins, RD",
     role: "NUTRITION COACH",
     avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=300&h=300&auto=format&fit=crop",
@@ -50,7 +51,7 @@ const RECOMMENDED_COACHES = [
     description: "Suggested due to irregular micronutrient variety and energy spikes in your nutritional data.",
   },
   {
-    id: "david-aris",
+    id: 102,
     name: "David Aris",
     role: "WELLNESS COACH",
     avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=300&h=300&auto=format&fit=crop",
@@ -59,7 +60,7 @@ const RECOMMENDED_COACHES = [
     description: "Recommended based on decreased deep sleep markers.",
   },
   {
-    id: "marcus-chen",
+    id: 103,
     name: "Marcus Chen",
     role: "PERSONAL TRAINER",
     avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=300&h=300&auto=format&fit=crop",
@@ -73,7 +74,7 @@ const RECOMMENDED_COACHES = [
 
 const ALL_PROFESSIONALS = [
   {
-    id: "core-supplements",
+    id: 201,
     name: "Core Supplements",
     role: "SUPPLEMENT SHOP",
     avatar: "https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?q=80&w=300&h=300&auto=format&fit=crop",
@@ -81,35 +82,35 @@ const ALL_PROFESSIONALS = [
     isShop: true,
   },
   {
-    id: "sarah-jenkins-2",
+    id: 202,
     name: "Sarah Jenkins, RD",
     role: "NUTRITION COACH",
     avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=300&h=300&auto=format&fit=crop",
     rating: 4.9,
   },
   {
-    id: "david-aris-2",
+    id: 203,
     name: "David Aris",
     role: "WELLNESS COACH",
     avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=300&h=300&auto=format&fit=crop",
     rating: 4.9,
   },
   {
-    id: "marcus-chen-2",
+    id: 204,
     name: "Marcus Chen",
     role: "PERSONAL TRAINER",
     avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=300&h=300&auto=format&fit=crop",
     rating: 4.8,
   },
   {
-    id: "elena-rios",
+    id: 205,
     name: "Elena Rios",
     role: "YOGA INSTRUCTOR",
     avatar: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?q=80&w=300&h=300&auto=format&fit=crop",
     rating: 4.7,
   },
   {
-    id: "john-doe",
+    id: 206,
     name: "John Doe",
     role: "THERAPIST",
     avatar: "https://images.unsplash.com/photo-1599566150163-29194dcaad36?q=80&w=300&h=300&auto=format&fit=crop",
@@ -166,184 +167,225 @@ const SHARED_GOALS = [
 
 // --- Sub-components ---
 
-const RecommendationCard = ({ coach, onView }: { coach: any; onView: () => void }) => (
-  <div className="bg-white rounded-[16px] p-6 border border-[#3A86FF]/25 shadow-[0_4px_20px_rgba(0,0,0,0.03)] flex flex-col gap-4">
-    <div className="flex items-start justify-between">
-       <div className="w-16 h-16 rounded-xl overflow-hidden">
-         <Image src={coach.avatar} alt={coach.name} width={64} height={64} className="object-cover w-full h-full" />
-       </div>
-       <span className={cn("text-[9px] font-bold px-3 py-1 rounded-full uppercase tracking-wider", coach.priorityColor)}>
-         {coach.priority}
-       </span>
-    </div>
-    <div className="flex flex-col gap-1">
-      <span className="text-[#3A86FF] text-[10px] font-bold uppercase tracking-widest leading-none">{coach.role}</span>
-      <h3 className="text-lg font-bold text-[#1F2D2E]">{coach.name}</h3>
-    </div>
-    <div className="bg-[#F3F4F6] rounded-xl p-4 min-h-21 flex items-center">
-      <p className="text-[#5F6F73] text-[11px] italic leading-relaxed">
-        &quot;{coach.description}&quot;
-      </p>
-    </div>
-    <button 
-      onClick={onView}
-      className="w-full mt-auto py-3.5 rounded-xl font-bold flex items-center justify-center gap-2 transition-all group bg-[#6C91C2] text-white hover:bg-[#5a7da9] text-sm cursor-pointer"
-    >
-      View Profile
-      <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
-    </button>
-  </div>
-);
+const SafeImage = ({ src, alt, width, height, className, fallback = "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=300&h=300&auto=format&fit=crop" }: { src: string; alt: string; width?: number; height?: number; className?: string; fallback?: string }) => {
+  const [imgSrc, setImgSrc] = useState(src);
 
-const SupportTeamCard = ({ member, onMessage, onGoals }: { member: any; onMessage: () => void; onGoals: () => void }) => (
-  <div className="bg-white   rounded-[16px] p-6 border border-[#3A86FF]/25 shadow-[0_4px_20px_rgba(0,0,0,0.03)] flex flex-col gap-5 min-w-[320px]">
-    <div className="flex items-start justify-between">
-      <div className="flex items-center gap-4">
-        <div className="w-14 h-14 rounded-xl overflow-hidden">
-          <Image src={member.avatar || "https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=300&h=300&auto=format&fit=crop"} alt={member.name} width={56} height={56} className="object-cover" />
-        </div>
-        <div className="flex flex-col">
-          <span className="text-[#3A86FF] text-[9px] font-bold uppercase tracking-widest">{member.role}</span>
-          <h3 className="text-base font-bold text-[#1F2D2E]">{member.name}</h3>
-          <p className="text-[#5F6F73] text-[10px] font-medium">Currently Support your goal</p>
-        </div>
-      </div>
-      <div className="flex items-center gap-1.5 px-3 py-1 rounded-full border border-[#10B981]/10 bg-[#ECFDF5]">
-        <div className="w-1.5 h-1.5 rounded-full bg-[#10B981]" />
-        <span className="text-[10px] font-bold text-[#10B981]">Active</span>
-      </div>
-    </div>
-    
-    <div className="flex items-center gap-3">
-      <button 
-        onClick={onMessage}
-        className="flex-1 bg-[#0FA4A9] text-white py-3 rounded-xl text-xs font-bold flex items-center justify-center gap-2 hover:bg-[#0d8d91] transition-all cursor-pointer"
-      >
-        Message Coach
-        <MessageSquare size={14} />
-      </button>
-      <button 
-        className="flex-1 border border-[#0FA4A9]/20 text-[#0FA4A9] bg-[#0FA4A9]/5 py-3 rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition-all cursor-default"
-      >
-        Connected
-        <Check size={14} />
-      </button>
-      {/* 
-      <button 
-        onClick={onGoals}
-        className="flex-1 border border-gray-200 text-[#1F2D2E] py-3 rounded-xl text-xs flex items-center justify-center gap-2 hover:bg-gray-50 transition-all font-bold cursor-pointer"
-      >
-        Shared Goal
-        <TrendingUp size={14} />
-      </button> 
-      */}
-    </div>
-  </div>
-);
+  useEffect(() => {
+    setImgSrc(src);
+  }, [src]);
 
-const BrowseCard = ({ item, onView }: { item: any; onView: () => void }) => (
-  <div className="bg-white rounded-[16px] p-6 border border-[#3A86FF]/25 shadow-[0_4px_20px_rgba(0,0,0,0.03)] flex flex-col items-center text-center gap-4 min-w-[280px]">
-    <div className="w-16 h-16 rounded-xl overflow-hidden">
-      <Image src={item.avatar} alt={item.name} width={64} height={64} className="object-cover w-full h-full" />
+  return (
+    <Image 
+      src={imgSrc} 
+      alt={alt} 
+      width={width} 
+      height={height} 
+      fill={!width && !height}
+      unoptimized
+      className={className}
+      onError={() => setImgSrc(fallback)}
+    />
+  );
+};
+
+const RecommendationCard = ({ coach, onView }: { coach: any; onView: () => void }) => {
+
+  const [imgSrc, setImgSrc] = useState(coach.avatar);
+
+  return (
+    <div className="bg-white rounded-[16px] p-6 border border-[#3A86FF]/25 shadow-[0_4px_20px_rgba(0,0,0,0.03)] flex flex-col gap-4">
+      <div className="flex items-start justify-between">
+        <div className="w-16 h-16 rounded-xl overflow-hidden bg-gray-50 flex items-center justify-center">
+          <SafeImage 
+            src={coach.avatar} 
+            alt={coach.name} 
+            width={64} 
+            height={64} 
+            className="object-cover w-full h-full"
+          />
+        </div>
+
+        <span className={cn("text-[9px] font-bold px-3 py-1 rounded-full uppercase tracking-wider", coach.priorityColor)}>
+          {coach.priority}
+        </span>
+      </div>
+      <div className="flex flex-col gap-1">
+        <span className="text-[#3A86FF] text-[10px] font-bold uppercase tracking-widest leading-none">{coach.role}</span>
+        <h3 className="text-lg font-bold text-[#1F2D2E]">{coach.name}</h3>
+      </div>
+      <div className="bg-[#F3F4F6] rounded-xl p-4 min-h-21 flex items-center">
+        <p className="text-[#5F6F73] text-[11px] italic leading-relaxed">
+          &quot;{coach.description}&quot;
+        </p>
+      </div>
+      <button 
+        onClick={onView}
+        className="w-full mt-auto py-3.5 rounded-xl font-bold flex items-center justify-center gap-2 transition-all group bg-[#6C91C2] text-white hover:bg-[#5a7da9] text-sm cursor-pointer"
+      >
+        View Profile
+        <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
+      </button>
     </div>
-    <div className="flex flex-col gap-1 items-center">
-      <span className="text-[#3A86FF] text-[10px] font-bold uppercase tracking-widest">{item.role}</span>
-      <h3 className="text-base font-bold text-[#1F2D2E]">{item.name}</h3>
-      <div className="flex items-center gap-1 mt-0.5">
-        <Star size={14} className="text-orange-400 fill-orange-400" />
-        <span className="text-sm font-bold text-[#1F2D2E]">{item.rating}</span>
+  );
+};
+
+const SupportTeamCard = ({ member, onMessage, onGoals }: { member: any; onMessage: () => void; onGoals: () => void }) => {
+  const [imgSrc, setImgSrc] = useState(member.avatar);
+
+  return (
+    <div className="bg-white rounded-[16px] p-6 border border-[#3A86FF]/25 shadow-[0_4px_20px_rgba(0,0,0,0.03)] flex flex-col gap-5 min-w-[320px]">
+      <div className="flex flex-col gap-4">
+        <div className="flex items-center gap-4">
+          <div className="w-14 h-14 rounded-xl overflow-hidden bg-gray-50 flex items-center justify-center">
+            <SafeImage 
+              src={member.avatar} 
+              alt={member.name} 
+              width={56} 
+              height={56} 
+              className="object-cover" 
+              fallback="https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=300&h=300&auto=format&fit=crop"
+            />
+          </div>
+          <div className="flex flex-col">
+            <span className="text-[#3A86FF] text-[9px] font-bold uppercase tracking-widest">{member.role}</span>
+            <h3 className="text-base font-bold text-[#1F2D2E]">{member.name}</h3>
+            <p className="text-[#5F6F73] text-[10px] font-medium">Currently Support your goal</p>
+          </div>
+        </div>
+        <div className="flex items-center gap-1.5 px-3 py-1 rounded-full border border-[#10B981]/10 bg-[#ECFDF5] w-fit">
+          <div className="w-1.5 h-1.5 rounded-full bg-[#10B981]" />
+          <span className="text-[10px] font-bold text-[#10B981]">Active</span>
+        </div>
+      </div>
+      
+      <div className="flex items-center gap-3">
+        <button 
+          onClick={onMessage}
+          className="flex-1 bg-[#0FA4A9] text-white py-3 rounded-xl text-xs font-bold flex items-center justify-center gap-2 hover:bg-[#0d8d91] transition-all cursor-pointer"
+        >
+          Message Coach
+          <MessageSquare size={14} />
+        </button>
+        <button 
+          className="flex-1 border border-[#0FA4A9]/20 text-[#0FA4A9] bg-[#0FA4A9]/5 py-3 rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition-all cursor-default"
+        >
+          Connected
+          <Check size={14} />
+        </button>
       </div>
     </div>
-    <button 
-      onClick={onView}
-      className="w-full bg-[#6C91C2] text-white py-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-2 hover:bg-[#5a7da9] transition-all group cursor-pointer"
-    >
-      {item.isShop ? "View Shop" : "View Profile"}
-      <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
-    </button>
-  </div>
-);
+  );
+};
+
+const BrowseCard = ({ item, onView }: { item: any; onView: () => void }) => {
+  const [imgSrc, setImgSrc] = useState(item.avatar);
+
+  return (
+    <div className="bg-white rounded-[16px] p-6 border border-[#3A86FF]/25 shadow-[0_4px_20px_rgba(0,0,0,0.03)] flex flex-col items-center text-center gap-4 min-w-[280px]">
+      <div className="w-16 h-16 rounded-xl overflow-hidden bg-gray-50 flex items-center justify-center">
+        <SafeImage 
+          src={item.avatar} 
+          alt={item.name} 
+          width={64} 
+          height={64} 
+          className="object-cover w-full h-full" 
+          fallback="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=300&h=300&auto=format&fit=crop"
+        />
+      </div>
+      <div className="flex flex-col gap-1 items-center">
+        <span className="text-[#3A86FF] text-[10px] font-bold uppercase tracking-widest">{item.role}</span>
+        <h3 className="text-base font-bold text-[#1F2D2E]">{item.name}</h3>
+        <div className="flex items-center gap-1 mt-0.5">
+          <Star size={14} className="text-orange-400 fill-orange-400" />
+          <span className="text-sm font-bold text-[#1F2D2E]">{item.rating}</span>
+        </div>
+      </div>
+      <button 
+        onClick={onView}
+        className="w-full bg-[#6C91C2] text-white py-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-2 hover:bg-[#5a7da9] transition-all group cursor-pointer"
+      >
+        {item.isShop ? "View Shop" : "View Profile"}
+        <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
+      </button>
+    </div>
+  );
+};
 
 // --- Main Pages ---
 
 const SupportPage = () => {
   const user = useSelector(selectCurrentUser);
-  const [recommendationsData, setRecommendationsData] = useState<any>(null);
-  const [isLoadingRecommendations, setIsLoadingRecommendations] = useState(true);
+  
+  const { data: recommendationsData, isLoading: isLoadingRecommendations } = useGetAiRecommendedProfessionalsQuery(user?.id, { skip: !user?.id });
 
-
-  // const { data: recommendationsData, isLoading: isLoadingRecommendations } = useGetRecommendedProfessionalsQuery(user?.id, { skip: !user?.id });
-
-  useEffect(() => {
-    if (!user?.id) {
-      setIsLoadingRecommendations(false);
-      return;
-    }
-
-    const fetchRecommendations = async () => {
-      setIsLoadingRecommendations(true);
-      try {
-        const response = await fetch(`https://ai.biovuedigitalwellness.com/api/v1/recommend/professionals/${user.id}`, {
-          method: 'GET',
-          headers: {
-            'accept': 'application/json'
-          }
-        });
-        const data = await response.json();
-        // Since the component expects recommendationsData?.data?.suggestions
-        setRecommendationsData({ data });
-      } catch (error) {
-        console.error("Failed to fetch recommendations:", error);
-      } finally {
-        setIsLoadingRecommendations(false);
-      }
-    };
-
-    fetchRecommendations();
-  }, [user?.id]);
-
-    console.log(recommendationsData,"recommendationsData");
   const { data: connectedData, isLoading: isLoadingConnected } = useGetConnectedProfessionsQuery();
+
   
   const [supportTeamIndex, setSupportTeamIndex] = useState(0);
   const [browseIndex, setBrowseIndex] = useState(0);
 
-  const suggestions = recommendationsData?.data?.suggestions || [];
+  const getFullImageUrl = (url?: any, defaultUrl?: string) => {
+    const fallback = defaultUrl || "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=300&h=300&auto=format&fit=crop";
+    
+    if (!url || typeof url !== 'string' || url === "null" || url === "undefined") {
+      return fallback;
+    }
+    
+    if (url.startsWith("http")) return url;
+    
+    const base = "https://ai.biovuedigitalwellness.com";
+    const normalizedUrl = url.startsWith("/") ? url : `/${url}`;
+    return `${base}${normalizedUrl}`;
+  };
+
+  const sanitizeArrayField = (arr: any) => {
+    if (!arr || !Array.isArray(arr)) return [];
+    // Handle the case where the array contains stringified JSON or weirdly formatted strings
+    return arr.map(item => {
+      if (typeof item !== 'string') return String(item);
+      // Remove characters like [, ], and extra quotes
+      return item.replace(/[\[\]"]/g, '').trim();
+    }).filter(item => item.length > 0);
+  };
+
+  const suggestions = recommendationsData?.suggestions || [];
   const connectedProfessions = connectedData?.data || [];
 
-  const displaySupportTeam = connectedProfessions.map((item: any) => ({
-    id: item.id,
-    name: item.name,
+  const displaySupportTeam = (Array.isArray(connectedProfessions) ? connectedProfessions : []).map((item: any) => ({
+    id: item.professional_info?.id || item.id,
+    name: item.professional_info?.name || item.name,
     role: "COACH", 
-    avatar: item.image_url || "https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=300&h=300&auto=format&fit=crop",
+    avatar: getFullImageUrl(item.professional_info?.profile_image || item.image_url, "https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=300&h=300&auto=format&fit=crop"),
     status: "Active",
   }));
+
   const recommendedCoaches = suggestions.slice(0, 3).map((item: any) => ({
     ...item,
-    id: item.professional.id,
-    name: item.professional.name,
-    role: item.professional_type.replace(/_/g, ' ').toUpperCase(),
-    avatar: item.professional.profile?.image || "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=300&h=300&auto=format&fit=crop",
+    id: item.professional?.id || item.id,
+    name: item.professional?.name || item.name,
+    role: (item.professional_type || item.professional?.profession_type || "coach").replace(/_/g, ' ').toUpperCase(),
+    avatar: getFullImageUrl(item.professional?.profile?.image || item.professional?.profile_image, "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=300&h=300&auto=format&fit=crop"),
     priority: item.priority === "High" ? "HIGH PRIORITY" : item.priority === "Medium" ? "MEDIUM PRIORITY" : "LOW PRIORITY",
     priorityColor: item.priority === "High" ? "text-[#EF4444] bg-[#FEF2F2]" : item.priority === "Medium" ? "text-[#F59E0B] bg-[#FFFBEB]" : "text-[#6B7280] bg-[#F3F4FB]",
-    description: item.match_reason,
-    bio: item.professional.profile?.bio || "Helps busy professionals improve body composition, energy, and consistency through data-driven lifestyle adjustments.",
-    specialties: item.professional.profile?.specialties?.length ? item.professional.profile.specialties : ["Fat loss", "Strength", "Habit building", "Nutrition guidance"],
-    services: item.professional.profile?.services?.length ? item.professional.profile.services : ["Set personalized goals", "Monitor your progress", "Provide weekly guidance", "Adjust targets based on your data"]
+    description: item.match_reason || "Based on your clinical health data.",
+    bio: item.professional?.profile?.bio || "Helps busy professionals improve body composition, energy, and consistency through data-driven lifestyle adjustments.",
+    specialties: item.professional?.profile?.specialties?.length ? sanitizeArrayField(item.professional.profile.specialties) : ["Fat loss", "Strength", "Habit building", "Nutrition guidance"],
+    services: item.professional?.profile?.services?.length ? sanitizeArrayField(item.professional.profile.services) : ["Set personalized goals", "Monitor your progress", "Provide weekly guidance", "Adjust targets based on your data"]
   }));
 
   const browseProfessionals = suggestions.slice(3).map((item: any) => ({
     ...item,
-    id: item.professional.id,
-    name: item.professional.name,
-    role: item.professional_type.replace(/_/g, ' ').toUpperCase(),
-    avatar: item.professional.profile?.image || "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=300&h=300&auto=format&fit=crop",
-    rating: (item.relevance_score / 20).toFixed(1), // Map 100 to 5.0
-    isShop: item.professional_type === "supplement_supplier",
-    bio: item.professional.profile?.bio || "Helps busy professionals improve body composition, energy, and consistency through data-driven lifestyle adjustments.",
-    specialties: item.professional.profile?.specialties?.length ? item.professional.profile.specialties : ["Supplementation", "Recovery"],
-    services: item.professional.profile?.services?.length ? item.professional.profile.services : ["Provide quality products", "Nutrition advice"]
+    id: item.professional?.id || item.id,
+    name: item.professional?.name || item.name,
+    role: (item.professional_type || item.professional?.profession_type || "coach").replace(/_/g, ' ').toUpperCase(),
+    avatar: getFullImageUrl(item.professional?.profile?.image || item.professional?.profile_image, "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=300&h=300&auto=format&fit=crop"),
+    rating: item.relevance_score ? (item.relevance_score / 20).toFixed(1) : "4.8", 
+    isShop: item.professional_type === "supplement_supplier" || item.professional?.profession_type === "supplement_supplier",
+    bio: item.professional?.profile?.bio || item.bio || "Quality products tailored to your needs.",
+    specialties: item.professional?.profile?.specialties?.length ? sanitizeArrayField(item.professional.profile.specialties) : ["Supplementation", "Recovery"],
+    services: item.professional?.profile?.services?.length ? sanitizeArrayField(item.professional.profile.services) : ["Provide quality products", "Nutrition advice"]
   }));
+
 
   const displayRecommended = suggestions.length > 0 ? recommendedCoaches : RECOMMENDED_COACHES;
   const displayBrowse = suggestions.length > 0 ? browseProfessionals : ALL_PROFESSIONALS;
@@ -461,8 +503,8 @@ const SupportPage = () => {
           {/* Coach Meta Bar */}
           <div className="px-6 py-4 border-b border-gray-100 flex items-center bg-white/80 backdrop-blur-sm sticky top-0 z-10">
              <div className="flex items-center gap-4">
-               <div className="w-12 h-12 rounded-full overflow-hidden shrink-0 border-2 border-white shadow-sm">
-                 <Image src={selectedCoach.avatar} alt={selectedCoach.name} width={48} height={48} className="object-cover" />
+               <div className="w-12 h-12 rounded-full overflow-hidden shrink-0 border-2 border-white shadow-sm relative">
+                 <SafeImage src={selectedCoach.avatar} alt={selectedCoach.name} width={48} height={48} className="object-cover" />
                </div>
                <div className="flex flex-col">
                  <h3 className="text-[15px] font-bold text-[#1F2D2E] leading-tight">{selectedCoach.name}</h3>
@@ -672,8 +714,8 @@ const SupportPage = () => {
 
         <div className="bg-white rounded-3xl p-8 md:p-12 border border-[#3A86FF]/25 shadow-[0_4px_30px_rgba(0,0,0,0.02)] flex flex-col items-center text-center gap-8 relative overflow-hidden">
           <div className="relative">
-             <div className="w-40 h-40 rounded-[32px] overflow-hidden border-8 border-[#3A86FF]/5">
-               <Image src={selectedCoach.avatar} alt={selectedCoach.name} width={160} height={160} className="object-cover w-full h-full" />
+             <div className="w-40 h-40 rounded-[32px] overflow-hidden border-8 border-[#3A86FF]/5 relative">
+               <SafeImage src={selectedCoach.avatar} alt={selectedCoach.name} width={160} height={160} className="object-cover w-full h-full" />
              </div>
              <div className="absolute -bottom-3 -right-3 w-10 h-10 rounded-xl bg-[#0FA4A9] flex items-center justify-center text-white border-4 border-white shadow-lg">
                <Check size={20} strokeWidth={3} />
@@ -1016,9 +1058,9 @@ const SupportPage = () => {
                  <Heart size={32} className="text-white fill-white" />
                </div>
                <div className="flex flex-col gap-2 text-center md:text-left">
-                 <h3 className="text-xl font-bold text-[#1F2D2E]">{recommendationsData?.data?.trend?.topic || "Why professional support matters"}</h3>
+                 <h3 className="text-xl font-bold text-[#1F2D2E]">{recommendationsData?.trend?.topic || "Why professional support matters"}</h3>
                  <p className="text-[#5F6F73] text-[15px] leading-relaxed ">
-                   {recommendationsData?.data?.trend?.description || "Working with a coach or clinic can dramatically improve your progress and long-term outcomes. BioVue data shows users with dedicated support hit their 5-year goals faster."}
+                   {recommendationsData?.trend?.description || "Working with a coach or clinic can dramatically improve your progress and long-term outcomes. BioVue data shows users with dedicated support hit their 5-year goals faster."}
                  </p>
                </div>
             </div>

@@ -292,7 +292,7 @@ const UserDashboard = () => {
                       ? Number.isInteger(metric.value)
                         ? metric.value
                         : metric.value.toFixed(2)
-                      : metric.value}
+                     : metric.value}
                 </span>
                 <span className="text-[#5F6F73] text-sm font-medium">
                   {metric.unit}

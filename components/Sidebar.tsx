@@ -10,6 +10,7 @@ import Tooltip from "@/components/Tooltip";
 
 import { useDispatch, useSelector } from "react-redux";
 import { logout, selectCurrentUser } from "@/redux/features/slice/authSlice";
+import { useGetProjectionLimitQuery } from "@/redux/features/api/userDashboard/Projection/ProjectionLimitAPI";
 
 type Role = "user" | "trainer" | "admin" | "nutritionist";
 
@@ -29,17 +30,53 @@ export default function Sidebar({ role }: SidebarProps) {
   const [openSubmenus, setOpenSubmenus] = useState<string[]>([]);
   const [mounted, setMounted] = useState(false);
 
-  const isRestricted = (() => {
-    if (role !== "user" || !user?.created_at) return false;
+  const { data: limitData } = useGetProjectionLimitQuery(user?.id, { 
+    skip: role !== "user" || !user?.id 
+  });
+
+  const restrictionState = (() => {
+    if (role !== "user" || !user?.created_at) return { restricted: false, reason: "" };
+
+    if (limitData) {
+      const expiryDate = new Date(limitData.expired_at);
+      const today = new Date();
+      const diffDays = Math.ceil((expiryDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+      
+      const isLowCredits = limitData.projection_limit <= 2;
+      const isExpiringSoon = diffDays <= 5;
+
+      return {
+        restricted: isLowCredits || isExpiringSoon,
+        reason: isLowCredits && isExpiringSoon
+          ? "low_credits_and_expiring_soon"
+          : isLowCredits
+          ? "low_credits"
+          : isExpiringSoon
+          ? "expiring_soon"
+          : "",
+      };
+    }
 
     const createdDate = new Date(user.created_at);
     const today = new Date();
     const diffInDays = (today.getTime() - createdDate.getTime()) / (1000 * 60 * 60 * 24);
 
-    return diffInDays > 7 || !user.plan_id;
+    const isTrialEnded = !user.plan_id && diffInDays > 7;
+    return { restricted: isTrialEnded, reason: isTrialEnded ? "trial_ended" : "" };
   })();
 
+  const isRestricted = restrictionState.restricted;
   const restrictedLabels = ["Projections", "Projection Galary", "Insights", "Habits", "Support", "Message"];
+
+  const getTooltipMessage = (reason: string) => {
+    switch (reason) {
+      case "low_credits_and_expiring_soon": return "Low credits and subscription expiring soon! Please upgrade to maintain access.";
+      case "low_credits": return "Low credits! Please upgrade your plan to continue using this feature.";
+      case "expiring_soon": return "Your subscription is expiring soon. Please renew to maintain access.";
+      case "trial_ended": return "Trial period ended. Please choose a plan to continue.";
+      default: return "To access this feature, you need an active subscription plan.";
+    }
+  };
 
   useEffect(() => {
     setMounted(true);
@@ -148,7 +185,7 @@ export default function Sidebar({ role }: SidebarProps) {
                 {/* Parent Menu Item */}
                 <div className="flex items-center group relative">
                   {isItemRestricted ? (
-                    <Tooltip message="To access this feature, you need an active subscription plan.">
+                    <Tooltip message={getTooltipMessage(restrictionState.reason)}>
                       <div
                         className={`flex-1 flex items-center gap-3 px-2 py-2.5 rounded-lg text-sm font-medium transition-all duration-300 whitespace-nowrap text-gray-400 opacity-50 cursor-not-allowed`}
                       >
@@ -195,9 +232,8 @@ export default function Sidebar({ role }: SidebarProps) {
 
                         if (isChildRestricted) {
                           return (
-                            <Tooltip message="To access this feature, you need an active subscription plan.">
+                            <Tooltip key={child.label} message={getTooltipMessage(restrictionState.reason)}>
                               <div
-                                key={child.label}
                                 className={`px-4 py-2 text-xs font-medium rounded-lg transition-colors text-gray-400 opacity-50 cursor-not-allowed`}
                               >
                                 - {child.label}
