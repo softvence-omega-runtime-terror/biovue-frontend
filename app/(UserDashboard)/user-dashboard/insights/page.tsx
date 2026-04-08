@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Info,
@@ -331,13 +332,25 @@ export default function InsightsPage() {
 
                       {/* Footer Button - Only on left side in image */}
                       <div className="mt-2">
-                        <button className="bg-[#0FA4A9] text-white px-5 py-2.5 rounded-lg font-medium hover:bg-opacity-90 transition-all text-[13px] flex items-center gap-2 group w-fit cursor-pointer">
-                          Go {proj.category?.charAt(0).toUpperCase() + proj.category?.slice(1)} Habit
-                          <ArrowRight
-                            size={16}
-                            className="group-hover:translate-x-1 transition-transform"
-                          />
-                        </button>
+                        <Link
+                          href={(() => {
+                            const cat = proj.category?.toLowerCase() || "";
+                            if (cat.includes("nutrition")) return "/user-dashboard/habits/nutrition";
+                            if (cat.includes("sleep")) return "/user-dashboard/habits/sleep";
+                            if (cat.includes("stress")) return "/user-dashboard/habits/stress";
+                            if (cat.includes("activity") || cat.includes("exercise") || cat.includes("cardio")) return "/user-dashboard/habits/activity";
+                            if (cat.includes("hydration") || cat.includes("water")) return "/user-dashboard/habits/hydration";
+                            return "/user-dashboard/habits";
+                          })()}
+                        >
+                          <button className="bg-[#0FA4A9] text-white px-5 py-2.5 rounded-lg font-medium hover:bg-opacity-90 transition-all text-[13px] flex items-center gap-2 group w-fit cursor-pointer">
+                            Go {proj.category?.charAt(0).toUpperCase() + proj.category?.slice(1)} Habit
+                            <ArrowRight
+                              size={16}
+                              className="group-hover:translate-x-1 transition-transform"
+                            />
+                          </button>
+                        </Link>
                       </div>
                     </div>
 

@@ -24,10 +24,9 @@ import { useSelector } from "react-redux";
 import { selectCurrentUser } from "@/redux/features/slice/authSlice";
 import LogTodayModal from "@/components/dashboard/LogTodayModal";
 import ChangeSourceModal from "@/components/dashboard/ChangeSourceModal";
-import NotificationBell from "@/components/dashboard/NotificationBell";
-import ProfileDropdown from "@/components/dashboard/ProfileDropdown";
-import ProjectionLimitIndicator from "@/components/dashboard/ProjectionLimitIndicator";
 import ChartsNutrition from "@/components/UserDashboard/Dashboard/ChartsNutrition";
+import DashboardBanner from "@/components/UserDashboard/Dashboard/DashboardBanner";
+import { useGetProfileQuery } from "@/redux/features/api/profileApi";
 import { useGetHealthReportQuery } from "@/redux/features/api/userDashboard/dashboard/health-report";
 import { useGetInsightsQuery } from "@/redux/features/api/userDashboard/insightsApi";
 import { useGetUserOverviewChartQuery } from "@/redux/features/api/userDashboard/dashboardApi";
@@ -35,11 +34,12 @@ import { useGetUserOverviewChartQuery } from "@/redux/features/api/userDashboard
 // --- Main Page ---
 const UserDashboard = () => {
   const currentUser = useSelector(selectCurrentUser);
-  const userName = currentUser?.name || "User";
+  const { data: profileResponse } = useGetProfileQuery(currentUser?.id, { skip: !currentUser?.id });
+  const userName = profileResponse?.data?.name || currentUser?.name || "User";
+  console.log(currentUser, "currentUser");
 
   const [showLogModal, setShowLogModal] = useState(false);
   const [showSourceModal, setShowSourceModal] = useState(false);
-  const [isNotificationOpen, setIsNotificationOpen] = useState(false);
   const [dataSource, setDataSource] = useState<"device" | "manual">("device");
   const [days, setDays] = useState(7);
   
@@ -77,26 +77,11 @@ const UserDashboard = () => {
 
   return (
     <div className="flex flex-col min-h-screen">
-      {/* Header - Only for Dashboard Overview */}
-      <header className="sticky top-0 z-20 flex items-center justify-between py-4 bg-white border-b border-gray-100 px-6 w-full">
-        <h1 className="text-xl font-semibold text-[#1F2D2E]">Dashboard</h1>
-        <div className="flex items-center gap-6 ml-auto">
-          <ProjectionLimitIndicator />
-          <NotificationBell />
-          <div className="flex items-center gap-3 pr-2">
-            <ProfileDropdown roleLabel="User" settingsHref="/user-dashboard/settings" />
-          </div>
-          <Link href="/user-dashboard/upgrade">
-            <button className="flex items-center gap-2 bg-[#0FA4A9] text-white px-4 py-2 rounded-lg font-medium hover:bg-opacity-90 transition-all text-sm cursor-pointer shadow-sm shadow-[#0FA4A9]/20 active:scale-95">
-              <Crown size={18} fill="currentColor" />
-              Upgrade
-            </button>
-          </Link>
-        </div>
-      </header>
-
       {/* Main Content Area with Padding */}
       <div className="flex flex-col gap-6 py-6 container mx-auto pb-12">
+        {/* Top Banner - Mirrored from Landing Page */}
+        <DashboardBanner />
+
         {/* Welcome Message */}
         <div className="bg-white rounded-xl p-4 md:p-6 border border-gray-100 shadow-[0_2px_12px_rgba(0,0,0,0.02)]">
           <h2 className="text-lg font-bold text-[#1F2D2E] mb-1">
