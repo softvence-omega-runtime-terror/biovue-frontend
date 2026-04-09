@@ -6,6 +6,7 @@ import { selectCurrentUser } from "@/redux/features/slice/authSlice";
 
 import { useGetSubscriptionPlansQuery, useGetPaymentSummaryQuery } from "@/redux/features/api/paymentApi";
 import { 
+  useGetNotificationsQuery,
   useGetNotificationSettingsQuery,
   useUpdateNotificationSettingsMutation
 } from "@/redux/features/api/userDashboard/notificationApi";
@@ -988,7 +989,7 @@ const ProfileEditView = ({ onBack, currentUser }: { onBack: () => void, currentU
 };
 
 const SubscriptionView = ({ onBack, currentUser, router }: { onBack: () => void, currentUser: any, router: any }) => {
-  const [billingCycle, setBillingCycle] = useState<"monthly" | "annual">("monthly");
+  const [billingCycle, setBillingCycle] = useState<"monthly" | "yearly">("monthly");
   
   const { data: plansData, isLoading: isLoadingPlans } = useGetSubscriptionPlansQuery({
     billing: billingCycle,
@@ -1076,13 +1077,12 @@ const SubscriptionView = ({ onBack, currentUser, router }: { onBack: () => void,
            <Crown size={120} className="absolute -right-4 top-1/2 -translate-y-1/2 text-white opacity-5 rotate-[15deg] pointer-events-none" />
         </div>
 
-        {/* Billing Cycle Toggle */}
+        {/* Billing Cycle */}
         <div id="billing-cycle" className="bg-white rounded-[16px] p-8 border border-[#3A86FF]/25 shadow-sm flex flex-col md:flex-row items-center justify-between gap-6">
-           <div className="flex flex-col gap-1 text-center md:text-left">
+           <div className="flex flex-col gap-1">
               <h3 className="text-xl font-bold text-[#1F2D2E]">Billing Cycle</h3>
               <p className="text-[#5F6F73] text-sm font-medium">Save up to 15% with annual billing</p>
            </div>
-           
            <div className="flex text-sm font-bold items-center gap-4">
               <span 
                 onClick={() => setBillingCycle("monthly")}
@@ -1094,10 +1094,10 @@ const SubscriptionView = ({ onBack, currentUser, router }: { onBack: () => void,
                 Monthly
               </span>
               <span 
-                onClick={() => setBillingCycle("annual")}
+                onClick={() => setBillingCycle("yearly")}
                 className={cn(
                   "cursor-pointer transition-all",
-                  billingCycle === "annual" ? "text-[#0FA4A9] underline underline-offset-4" : "text-[#94A3B8]"
+                  billingCycle === "yearly" ? "text-[#0FA4A9] underline underline-offset-4" : "text-[#94A3B8]"
                 )}
               >
                 Annual
