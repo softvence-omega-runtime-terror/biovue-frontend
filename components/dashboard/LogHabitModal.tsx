@@ -263,6 +263,3 @@ export default function LogHabitModal({ isOpen, onClose, habitType }: LogHabitMo
     </AnimatePresence>
   );
 }
-
-
-// this is commit?
