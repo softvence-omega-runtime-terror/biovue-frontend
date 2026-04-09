@@ -39,24 +39,24 @@ const PricingPage = () => {
   // Filter Individual Plans
   const filteredIndividualPlans = plans
     .filter((plan) => plan.plan_type === "individual" && plan.status)
-    .sort((a, b) => Number(a.price) - Number(b.price));
+    .sort((a, b) => (Number(a.price) || 0) - (Number(b.price) || 0));
 
   // Filter Professional Plans
   const filteredProfessionalPlans = plans
     .filter((plan) => plan.plan_type === "professional" && plan.status)
     .sort((a, b) => {
       // Enterprise always last
-      const aEnt = a.name.toLowerCase().includes("enterprise");
-      const bEnt = b.name.toLowerCase().includes("enterprise");
+      const aEnt = a.name?.toLowerCase().includes("enterprise") || false;
+      const bEnt = b.name?.toLowerCase().includes("enterprise") || false;
       if (aEnt && !bEnt) return 1;
       if (!aEnt && bEnt) return -1;
-      return Number(a.price) - Number(b.price);
+      return (Number(a.price) || 0) - (Number(b.price) || 0);
     });
 
   const handlePlanSelection = async (plan: Plan) => {
     // Enterprise and Custom plan special handling
     if (
-      plan.name.toLowerCase().includes("enterprise") ||
+      plan.name?.toLowerCase().includes("enterprise") ||
       (plan.plan_type === "professional" &&
         (plan.price === "0.00" || plan.price === 0))
     ) {
@@ -69,7 +69,7 @@ const PricingPage = () => {
     if (
       plan.price === "0.00" ||
       plan.price === 0 ||
-      plan.name.toLowerCase().includes("free trial")
+      plan.name?.toLowerCase().includes("free trial")
     ) {
       if (token) {
         router.push("/user-dashboard");
@@ -257,25 +257,25 @@ const PricingPage = () => {
                   //     : "/Month"
                   // }
                   period={
-                    plan.name.toLowerCase().includes("free trial")
-                      ? `for ${plan.duration} days`
+                    plan.name?.toLowerCase().includes("free trial")
+                      ? `for ${plan.duration || 0} days`
                       : billingCycle === "monthly"
                         ? "/Month"
                         : "/Annual"
                   }
                   subtext={
-                    plan.name.toLowerCase().includes("free trial")
+                    plan.name?.toLowerCase().includes("free trial")
                       ? "Then auto-bills based on selected plan"
                       : ""
                   }
                   description={
-                    plan.name.toLowerCase().includes("free trial")
+                    plan.name?.toLowerCase().includes("free trial")
                       ? "Experience BioVue's core AI projections before committing."
-                      : plan.name.toLowerCase().includes("plus")
+                      : plan.name?.toLowerCase().includes("plus")
                         ? "See your future and track how your lifestyle is improving."
                         : "Build a complete picture of your future health with our advanced AI, real-world data sync, and long-term forecasting."
                   }
-                  features={plan.features.map((f) => {
+                  features={(plan.features || []).map((f) => {
                     const lockedFeatures = [
                       "ai improvement suggestions",
                       "health indicators",
@@ -283,19 +283,19 @@ const PricingPage = () => {
                       "achievement badges & progress reports",
                     ];
                     const isLocked =
-                      plan.name.toLowerCase().includes("free trial") &&
+                      (plan.name?.toLowerCase() || "").includes("free trial") &&
                       lockedFeatures.some((lf) => f.toLowerCase().includes(lf));
                     return { text: f, included: !isLocked };
                   })}
                   cta={
-                    plan.name.toLowerCase().includes("free trial")
-                      ? `Start ${plan.duration}-Day Trial`
-                      : `Upgrade To ${plan.name}`
+                    plan.name?.toLowerCase().includes("free trial")
+                      ? `Start ${plan.duration || 0}-Day Trial`
+                      : `Upgrade To ${plan.name || ""}`
                   }
                   active={false}
                   ctaColor="bg-[#0FA4A9]"
                   specialFeature={
-                    plan.name.toLowerCase().includes("premium")
+                    plan.name?.toLowerCase().includes("premium")
                       ? {
                           label: "EVERYTHING IN PLUS",
                           icon: <Zap size={14} fill="#3A86FF" />,
@@ -364,7 +364,7 @@ const PricingPage = () => {
                       "Dedicated account manager",
                       "Quarterly business reviews",
                     ];
-                    const baseFeatures = plan.features
+                    const baseFeatures = (plan.features || [])
                       .filter(
                         (f) =>
                           !overrideTexts.some((ot) =>
@@ -402,7 +402,7 @@ const PricingPage = () => {
                           },
                         ];
                       }
-                      if (plan.name.toLowerCase().includes("enterprise")) {
+                      if (plan.name?.toLowerCase().includes("enterprise")) {
                         return [
                           ...baseFeatures,
                           { text: "Dedicated account manager", included: true },
@@ -424,11 +424,11 @@ const PricingPage = () => {
                   //     : "Start 7-Day Free Trial"
                   // }
                   cta={
-                    plan.name.toLowerCase().includes("enterprise")
+                    plan.name?.toLowerCase().includes("enterprise")
                       ? "Contact Via Mail"
-                      : plan.name.toLowerCase().includes("tier 1")
+                      : plan.name?.toLowerCase().includes("tier 1")
                         ? "Buy Now"
-                        : `Update to ${plan.name}`
+                        : `Update to ${plan.name || ""}`
                   }
                   active={false}
                   ctaColor="bg-[#0FA4A9]"
