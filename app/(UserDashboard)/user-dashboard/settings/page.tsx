@@ -6,7 +6,6 @@ import { selectCurrentUser } from "@/redux/features/slice/authSlice";
 
 import { useGetSubscriptionPlansQuery, useGetPaymentSummaryQuery } from "@/redux/features/api/paymentApi";
 import { 
-  useGetNotificationsQuery,
   useGetNotificationSettingsQuery,
   useUpdateNotificationSettingsMutation
 } from "@/redux/features/api/userDashboard/notificationApi";

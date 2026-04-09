@@ -18,17 +18,18 @@ export const useSubscriptionStatus = () => {
       const today = new Date();
       const diffDays = Math.ceil((expiryDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
       
-      const isLowCredits = limitData.projection_limit <= 2;
-      const isExpiringSoon = diffDays <= 5;
+      const isBlocked = limitData.projection_limit <= 0 || diffDays <= 0;
+      const isSafe = limitData.projection_limit >= 2 && diffDays > 3;
+      const isWarning = !isBlocked && !isSafe;
 
       return {
-        restricted: isLowCredits || isExpiringSoon,
-        reason: isLowCredits && isExpiringSoon
-          ? "low_credits_and_expiring_soon"
-          : isLowCredits
-          ? "low_credits"
-          : isExpiringSoon
-          ? "expiring_soon"
+        restricted: isBlocked,
+        isSafe,
+        isWarning,
+        reason: isBlocked
+          ? "subscription_expired_or_no_credits"
+          : isWarning
+          ? "low_credits_or_expiring_soon"
           : "",
         isLoading: false,
         projection_limit: limitData.projection_limit,
@@ -43,6 +44,8 @@ export const useSubscriptionStatus = () => {
     const isTrialEnded = !user.plan_id && diffInDays > 7;
     return { 
       restricted: isTrialEnded, 
+      isSafe: !isTrialEnded,
+      isWarning: false,
       reason: isTrialEnded ? "trial_ended" : "", 
       isLoading: false,
       projection_limit: 0,
