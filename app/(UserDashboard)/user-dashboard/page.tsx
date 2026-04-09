@@ -28,7 +28,7 @@ import ChartsNutrition from "@/components/UserDashboard/Dashboard/ChartsNutritio
 import DashboardBanner from "@/components/UserDashboard/Dashboard/DashboardBanner";
 import { useGetProfileQuery } from "@/redux/features/api/profileApi";
 import { useGetHealthReportQuery } from "@/redux/features/api/userDashboard/dashboard/health-report";
-import { useGetInsightsQuery } from "@/redux/features/api/userDashboard/insightsApi";
+import { useGetAiCurrentInsightsQuery } from "@/redux/features/api/userDashboard/Projection/AIInsightsAPI";
 import { useGetUserOverviewChartQuery } from "@/redux/features/api/userDashboard/dashboardApi";
 
 // --- Main Page ---
@@ -44,7 +44,7 @@ const UserDashboard = () => {
   const [days, setDays] = useState(7);
   
   const { data: healthReport, isLoading: isHealthLoading } = useGetHealthReportQuery();
-  const { data: insightsData, isLoading: isInsightsLoading } = useGetInsightsQuery({});
+  const { data: insightsData, isLoading: isInsightsLoading } = useGetAiCurrentInsightsQuery(currentUser?.id, { skip: !currentUser?.id });
   const { data: chartResponse, isLoading: isChartLoading } = useGetUserOverviewChartQuery(days);
 
   const [habitData, setHabitData] = useState({
@@ -74,6 +74,7 @@ const UserDashboard = () => {
   const summary = rawData?.summary;
   const healthOverview = rawData?.health_overview;
   const chartData = chartResponse?.charts;
+  const dynamicInsights = (insightsData?.insights || insightsData?.data) || [];
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -359,7 +360,7 @@ const UserDashboard = () => {
               <div className="col-span-2 flex items-center justify-center py-12">
                 <Loader2 className="w-6 h-6 animate-spin text-[#0FA4A9]" />
               </div>
-            ) : (insightsData?.data || []).slice(0, 2).map((insight: any, i: number) => {
+            ) : dynamicInsights.slice(0, 2).map((insight: any, i: number) => {
               const cat = insight.category?.toLowerCase() || "";
               const categoryIcon = cat.includes("nutrition") ? <Zap size={20} className="text-[#1F2D2E]" />
                 : cat.includes("cardio") || cat.includes("heart") ? <HeartPulse size={20} className="text-[#1F2D2E]" />
@@ -399,20 +400,20 @@ const UserDashboard = () => {
                 </div>
               );
             })}
-            {!isInsightsLoading && (!insightsData?.data || insightsData.data.length === 0) && (
+            {!isInsightsLoading && dynamicInsights.length === 0 && (
               <>
                 {[
                   {
-                    title: "Improve Diet Quality",
-                    desc: '"Based on logged meals and nutrition quality"',
-                    icon: <Repeat size={20} className="text-[#3A86FF]" />,
+                    title: "URGENT BIOMETRIC DATA VERIFICATION",
+                    desc: '"The recorded height (432.0cm) and weight (91.0 lbs) result in a BMI of 2.2, which is physiologically impossible. This data suggests a major entry error."',
+                    icon: <Scale size={20} className="text-[#3A86FF]" />,
                     badge: "HIGH PRIORITY",
                     iconBg: "bg-[#E4EFFF]",
                   },
                   {
-                    title: "Optimize Sleep Duration",
-                    desc: '"Better recovery and mental clarity"',
-                    icon: <Moon size={20} className="text-[#3A86FF]" />,
+                    title: "ADDRESS ANXIETY RISK FACTORS",
+                    desc: '"Anxiety is identified as your primary health risk, which can impact sleep quality, recovery, and overall metabolic health."',
+                    icon: <HeartPulse size={20} className="text-[#3A86FF]" />,
                     badge: "HIGH PRIORITY",
                     iconBg: "bg-[#E4EFFF]",
                   },
