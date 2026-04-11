@@ -438,6 +438,82 @@ const PricingPage = () => {
               ))}
             </div>
           </section>
+
+          {/* API Plans Section */}
+          <section className="container mx-auto px-6 mb-24">
+            <div className="text-center mb-12">
+              <h2
+                style={{
+                  color: "var(--Primary-color, #3A86FF)",
+                  textAlign: "center",
+                  fontFamily: "Roboto",
+                  fontSize: "34px",
+                  fontWeight: 400,
+                  lineHeight: "24px",
+                }}
+                className="mb-2"
+              >
+                Plans for API Services
+              </h2>
+
+              <p className="text-[#041228] text-center text-[18px] mt-4">
+                Integrate BioVue AI into your platform with scalable API plans.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 container mx-auto">
+              {[
+                {
+                  name: "Micro",
+                  price: "250",
+                  projections: "150 projections",
+                  users: "~75 users",
+                },
+                {
+                  name: "Small",
+                  price: "750",
+                  projections: "500 projections",
+                  users: "~250 users",
+                },
+                {
+                  name: "Medium",
+                  price: "3500",
+                  projections: "2,500 projections",
+                  users: "~1,250 users",
+                },
+                {
+                  name: "Enterprise",
+                  price: "12000",
+                  projections: "12,000 projections",
+                  users: "~6,000 users",
+                },
+              ].map((plan, idx) => (
+                <PricingCard
+                  key={idx}
+                  compact
+                  title={plan.name}
+                  price={plan.price}
+                  period="/Month"
+                  features={[
+                    { text: plan.projections, included: true },
+                    { text: plan.users, included: true },
+                  ]}
+                  cta={
+                    plan.name === "Enterprise" ? "Contact Sales" : "Get Started"
+                  }
+                  ctaColor="bg-[#0FA4A9]"
+                  onSelect={() => {
+                    if (plan.name === "Enterprise") {
+                      setIsContactModalOpen(true);
+                    } else {
+                      window.location.href =
+                        "mailto:BioVueSupport@gmail.com?subject=API Plan Inquiry";
+                    }
+                  }}
+                />
+              ))}
+            </div>
+          </section>
         </>
       )}
 
