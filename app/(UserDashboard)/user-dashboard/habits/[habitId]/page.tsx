@@ -202,6 +202,16 @@ export default function HabitDetailPage() {
     })
   };
 
+  // Final cleanup for Hydration units if they come from API as "Glasses"
+  if (habitId === 'hydration') {
+    if (typeof habit.avg === 'string') {
+      habit.avg = habit.avg.replace(/glasses/gi, "Ounces");
+    }
+    if (typeof habit.target === 'string') {
+      habit.target = habit.target.replace(/glasses/gi, "Ounces");
+    }
+  }
+
   const handleLogClick = () => {
     if (habitId === 'nutrition' || habitId === 'stress') {
       setView("logging");

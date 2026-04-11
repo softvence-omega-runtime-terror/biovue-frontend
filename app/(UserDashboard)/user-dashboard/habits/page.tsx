@@ -49,7 +49,7 @@ const DEFAULT_HABITS = [
   {
     title: "Hydration",
     status: "Good",
-    avg: "2.5L Average",
+    avg: "64 Ounces Average",
     ratio: "7/7 Days",
   },
 ];
@@ -98,15 +98,25 @@ export default function HabitsPage() {
       const habitKey = metric.title.toLowerCase();
       const insight = habitData.habits[habitKey];
       
+      // Sanitize hydration units if they come from API as "glasses"
+      let sanitizedAvg = metric.avg;
+      if (habitKey === 'hydration' && typeof sanitizedAvg === 'string') {
+        sanitizedAvg = sanitizedAvg.replace(/glasses/gi, "Ounces");
+      }
+
       if (insight) {
         return {
           ...metric,
+          avg: sanitizedAvg,
           status: insight.status.replace("_", " ").toLowerCase().split(" ").map((s: string) => s.charAt(0).toUpperCase() + s.slice(1)).join(" "),
           biovue_insights: insight.biovue_insights,
           why_this_matters: insight.why_this_matters,
         };
       }
-      return metric;
+      return {
+        ...metric,
+        avg: sanitizedAvg
+      };
     });
   };
 

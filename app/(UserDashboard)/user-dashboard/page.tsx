@@ -252,7 +252,7 @@ const UserDashboard = () => {
               value: healthOverview?.hydration?.current_glasses || 0,
               unit: "Ounces",
               status: "Target",
-              desc: healthOverview?.hydration?.target || "N/A",
+              desc: (healthOverview?.hydration?.target || "N/A").replace(/glasses/gi, "Ounces"),
               color: "text-[#3A86FF]",
             },
             {
