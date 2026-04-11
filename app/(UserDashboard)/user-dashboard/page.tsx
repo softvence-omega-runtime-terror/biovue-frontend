@@ -250,7 +250,7 @@ const UserDashboard = () => {
             {
               label: "Hydration",
               value: healthOverview?.hydration?.current_glasses || 0,
-              unit: "glasses",
+              unit: "Ounces",
               status: "Target",
               desc: healthOverview?.hydration?.target || "N/A",
               color: "text-[#3A86FF]",

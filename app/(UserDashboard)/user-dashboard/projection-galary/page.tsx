@@ -1,13 +1,3 @@
-// import ProjectionGallery from "@/components/dashboard/ProjectionGallery";
-
-// export default function ProjectionGalary(){
-//     return(
-//         <div>
-//             <ProjectionGallery/>
-//         </div>
-//     )
-// }
-
 "use client";
 
 import React, { useState } from "react";
@@ -80,7 +70,20 @@ export default function ProjectionGallery() {
   const rawProjections = data?.data || [];
 
   if (rawProjections.length === 0) {
-    return null; // Don't show the gallery section if there are no projections yet
+    return (
+      <SubscriptionGuard>
+        <div className="mt-16 px-10 flex flex-col items-center justify-center text-center py-20">
+          <div className="text-[#5F6F73] space-y-3">
+            <h2 className="text-xl font-semibold text-[#041228]">
+              No Projections Yet
+            </h2>
+            <p className="text-sm">
+              You haven&apos;t generated any projections yet.
+            </p>
+          </div>
+        </div>
+      </SubscriptionGuard>
+    );
   }
 
   // Sort projections chronologically (newest first) so the most recently generated one is at the top
@@ -195,7 +198,8 @@ export default function ProjectionGallery() {
                     <div className="flex items-center gap-4 mt-1 text-xs text-[#5F6F73] font-medium">
                       <span className="flex items-center gap-1.5">
                         <Calendar size={12} />
-                        Generated {formatDateShort(selectedProjection.created_at)}
+                        Generated{" "}
+                        {formatDateShort(selectedProjection.created_at)}
                       </span>
                       <span className="flex items-center gap-1.5 px-2 py-0.5 rounded bg-white border border-gray-200 shadow-sm">
                         <Clock size={12} className="text-[#3A86FF]" />
@@ -214,138 +218,155 @@ export default function ProjectionGallery() {
 
                 {/* Modal Body */}
                 <div className="flex-1 overflow-y-auto p-6 md:p-8">
-                  {selectedProjection && (() => {
-                    // Handle both 'projections' and 'projections_data' keys for maximum compatibility
-                    const projData = (selectedProjection as any).projections || (selectedProjection as any).projections_data;
-                    const current = projData?.current_lifestyle;
-                    const future = projData?.future_goal;
+                  {selectedProjection &&
+                    (() => {
+                      // Handle both 'projections' and 'projections_data' keys for maximum compatibility
+                      const projData =
+                        (selectedProjection as any).projections ||
+                        (selectedProjection as any).projections_data;
+                      const current = projData?.current_lifestyle;
+                      const future = projData?.future_goal;
 
-                    if (!current || !future) {
+                      if (!current || !future) {
+                        return (
+                          <div className="flex flex-col items-center justify-center py-12 text-[#5F6F73]">
+                            <p>
+                              No projection details available for this record.
+                            </p>
+                          </div>
+                        );
+                      }
+
                       return (
-                        <div className="flex flex-col items-center justify-center py-12 text-[#5F6F73]">
-                          <p>No projection details available for this record.</p>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                          {/* Current Lifestyle Column */}
+                          <div className="flex flex-col gap-6">
+                            <div className="text-center pb-4 border-b border-gray-100">
+                              <h4 className="text-[#8B5CF6] font-bold text-[15px] uppercase tracking-wider">
+                                {current.label ||
+                                  "Current Lifestyle Trajectory"}
+                              </h4>
+                            </div>
+
+                            <div className="w-full h-auto bg-gray-50 rounded-xl border border-gray-100 overflow-hidden shadow-inner flex items-center justify-center">
+                              <img
+                                src={
+                                  current.image ||
+                                  (current as any).projection_url
+                                }
+                                alt="Current Lifestyle Projection"
+                                className="w-full object-contain max-h-[400px]"
+                              />
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-3">
+                              <div className="bg-[#E1F9F0] text-[#10B981] p-3 rounded-lg flex flex-col items-center justify-center border border-[#10B981]/20">
+                                <span className="text-[10px] font-bold uppercase mb-1 flex items-center gap-1">
+                                  <Activity size={10} /> EST. BMI
+                                </span>
+                                <span className="font-bold text-lg">
+                                  {current.est_bmi || "N/A"}
+                                </span>
+                              </div>
+                              <div className="bg-[#E4EFFF] text-[#3A86FF] p-3 rounded-lg flex flex-col items-center justify-center border border-[#3A86FF]/20">
+                                <span className="text-[10px] font-bold uppercase mb-1">
+                                  EST. WEIGHT
+                                </span>
+                                <span className="font-bold text-lg">
+                                  {current.est_weight || "N/A"}
+                                </span>
+                              </div>
+                            </div>
+
+                            <div className="bg-[#F8FAFF] p-5 rounded-xl border border-gray-100">
+                              <h5 className="font-bold text-[#041228] text-sm mb-3">
+                                Expected Changes:
+                              </h5>
+                              <ul className="space-y-3">
+                                {current.expected_changes?.map(
+                                  (change: string, i: number) => (
+                                    <li
+                                      key={i}
+                                      className="flex gap-2.5 items-start"
+                                    >
+                                      <CheckCircle2
+                                        size={14}
+                                        className="text-[#8B5CF6] shrink-0 mt-0.5"
+                                      />
+                                      <span className="text-sm text-[#5F6F73] leading-relaxed">
+                                        {change}
+                                      </span>
+                                    </li>
+                                  ),
+                                )}
+                              </ul>
+                            </div>
+                          </div>
+
+                          {/* Future Goal Column */}
+                          <div className="flex flex-col gap-6">
+                            <div className="text-center pb-4 border-b border-gray-100">
+                              <h4 className="text-[#0FA4A9] font-bold text-[15px] uppercase tracking-wider">
+                                {future.label || "Future Goal Projection"}
+                              </h4>
+                            </div>
+
+                            <div className="w-full h-auto bg-gray-50 rounded-xl border border-gray-100 overflow-hidden shadow-inner flex items-center justify-center">
+                              <img
+                                src={
+                                  future.image || (future as any).projection_url
+                                }
+                                alt="Future Goal Projection"
+                                className="w-full object-contain max-h-[400px]"
+                              />
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-3">
+                              <div className="bg-[#E1F9F0] text-[#10B981] p-3 rounded-lg flex flex-col items-center justify-center border border-[#10B981]/20">
+                                <span className="text-[10px] font-bold uppercase mb-1 flex items-center gap-1">
+                                  <Activity size={10} /> EST. BMI
+                                </span>
+                                <span className="font-bold text-lg">
+                                  {future.est_bmi || "N/A"}
+                                </span>
+                              </div>
+                              <div className="bg-[#E4EFFF] text-[#3A86FF] p-3 rounded-lg flex flex-col items-center justify-center border border-[#3A86FF]/20">
+                                <span className="text-[10px] font-bold uppercase mb-1">
+                                  EST. WEIGHT
+                                </span>
+                                <span className="font-bold text-lg">
+                                  {future.est_weight || "N/A"}
+                                </span>
+                              </div>
+                            </div>
+
+                            <div className="bg-[#E6F6F6] p-5 rounded-xl border border-[#BDE8E8]/50">
+                              <h5 className="font-bold text-[#041228] text-sm mb-3">
+                                Expected Changes:
+                              </h5>
+                              <ul className="space-y-3">
+                                {future.expected_changes?.map(
+                                  (change: string, i: number) => (
+                                    <li
+                                      key={i}
+                                      className="flex gap-2.5 items-start"
+                                    >
+                                      <CheckCircle2
+                                        size={14}
+                                        className="text-[#0FA4A9] shrink-0 mt-0.5"
+                                      />
+                                      <span className="text-sm text-[#5F6F73] leading-relaxed">
+                                        {change}
+                                      </span>
+                                    </li>
+                                  ),
+                                )}
+                              </ul>
+                            </div>
+                          </div>
                         </div>
                       );
-                    }
-
-                    return (
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                        {/* Current Lifestyle Column */}
-                        <div className="flex flex-col gap-6">
-                          <div className="text-center pb-4 border-b border-gray-100">
-                            <h4 className="text-[#8B5CF6] font-bold text-[15px] uppercase tracking-wider">
-                              {current.label || "Current Lifestyle Trajectory"}
-                            </h4>
-                          </div>
-
-                          <div className="w-full h-auto bg-gray-50 rounded-xl border border-gray-100 overflow-hidden shadow-inner flex items-center justify-center">
-                            <img
-                              src={current.image || (current as any).projection_url}
-                              alt="Current Lifestyle Projection"
-                              className="w-full object-contain max-h-[400px]"
-                            />
-                          </div>
-
-                          <div className="grid grid-cols-2 gap-3">
-                            <div className="bg-[#E1F9F0] text-[#10B981] p-3 rounded-lg flex flex-col items-center justify-center border border-[#10B981]/20">
-                              <span className="text-[10px] font-bold uppercase mb-1 flex items-center gap-1">
-                                <Activity size={10} /> EST. BMI
-                              </span>
-                              <span className="font-bold text-lg">
-                                {current.est_bmi || "N/A"}
-                              </span>
-                            </div>
-                            <div className="bg-[#E4EFFF] text-[#3A86FF] p-3 rounded-lg flex flex-col items-center justify-center border border-[#3A86FF]/20">
-                              <span className="text-[10px] font-bold uppercase mb-1">
-                                EST. WEIGHT
-                              </span>
-                              <span className="font-bold text-lg">
-                                {current.est_weight || "N/A"}
-                              </span>
-                            </div>
-                          </div>
-
-                          <div className="bg-[#F8FAFF] p-5 rounded-xl border border-gray-100">
-                            <h5 className="font-bold text-[#041228] text-sm mb-3">
-                              Expected Changes:
-                            </h5>
-                            <ul className="space-y-3">
-                              {current.expected_changes?.map(
-                                (change: string, i: number) => (
-                                  <li key={i} className="flex gap-2.5 items-start">
-                                    <CheckCircle2
-                                      size={14}
-                                      className="text-[#8B5CF6] shrink-0 mt-0.5"
-                                    />
-                                    <span className="text-sm text-[#5F6F73] leading-relaxed">
-                                      {change}
-                                    </span>
-                                  </li>
-                                ),
-                              )}
-                            </ul>
-                          </div>
-                        </div>
-
-                        {/* Future Goal Column */}
-                        <div className="flex flex-col gap-6">
-                          <div className="text-center pb-4 border-b border-gray-100">
-                            <h4 className="text-[#0FA4A9] font-bold text-[15px] uppercase tracking-wider">
-                              {future.label || "Future Goal Projection"}
-                            </h4>
-                          </div>
-
-                          <div className="w-full h-auto bg-gray-50 rounded-xl border border-gray-100 overflow-hidden shadow-inner flex items-center justify-center">
-                            <img
-                              src={future.image || (future as any).projection_url}
-                              alt="Future Goal Projection"
-                              className="w-full object-contain max-h-[400px]"
-                            />
-                          </div>
-
-                          <div className="grid grid-cols-2 gap-3">
-                            <div className="bg-[#E1F9F0] text-[#10B981] p-3 rounded-lg flex flex-col items-center justify-center border border-[#10B981]/20">
-                              <span className="text-[10px] font-bold uppercase mb-1 flex items-center gap-1">
-                                <Activity size={10} /> EST. BMI
-                              </span>
-                              <span className="font-bold text-lg">
-                                {future.est_bmi || "N/A"}
-                              </span>
-                            </div>
-                            <div className="bg-[#E4EFFF] text-[#3A86FF] p-3 rounded-lg flex flex-col items-center justify-center border border-[#3A86FF]/20">
-                              <span className="text-[10px] font-bold uppercase mb-1">
-                                EST. WEIGHT
-                              </span>
-                              <span className="font-bold text-lg">
-                                {future.est_weight || "N/A"}
-                              </span>
-                            </div>
-                          </div>
-
-                          <div className="bg-[#E6F6F6] p-5 rounded-xl border border-[#BDE8E8]/50">
-                            <h5 className="font-bold text-[#041228] text-sm mb-3">
-                              Expected Changes:
-                            </h5>
-                            <ul className="space-y-3">
-                              {future.expected_changes?.map(
-                                (change: string, i: number) => (
-                                  <li key={i} className="flex gap-2.5 items-start">
-                                    <CheckCircle2
-                                      size={14}
-                                      className="text-[#0FA4A9] shrink-0 mt-0.5"
-                                    />
-                                    <span className="text-sm text-[#5F6F73] leading-relaxed">
-                                      {change}
-                                    </span>
-                                  </li>
-                                ),
-                              )}
-                            </ul>
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })()}
+                    })()}
                 </div>
               </motion.div>
             </div>

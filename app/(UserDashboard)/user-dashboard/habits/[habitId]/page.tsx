@@ -82,8 +82,8 @@ const HABIT_DETAILS: Record<string, any> = {
     status: "Need Attention",
     statusBg: "bg-pink-100 text-pink-500",
     why: "adequate water intake is crucial for cellular function and metabolism.",
-    target: "8 Glasses",
-    avg: "4 Glasses",
+    target: "64 ounces",
+    avg: "45 ounces",
     consistency: "14%",
     daysLogged: "1/7",
     logType: "Hydration"
