@@ -226,8 +226,8 @@ export default function HabitProgressPage() {
     streak: hydrationReport.hydration.best_streak || "0 DAYS",
     trend: hydrationReport.hydration.current_trend || "Stable",
     trendColor: "text-[#10B981]",
-    insight: "Your hydration levels are tracked based on your daily water intake.",
-    coachNote: "Adequate water intake is crucial for cellular function and metabolism.",
+    insight: hydrationReport.hydration.bio_insight || "Your hydration levels are tracked based on your daily water intake.",
+    coachNote: hydrationReport.hydration.coach_note || hydrationReport.hydration.bio_insight || "Adequate water intake is crucial for cellular function and metabolism.",
     coachName: "JORDAN",
     coachTime: "2H AGO",
   } : habitId === 'stress' && stressData?.stats ? {
