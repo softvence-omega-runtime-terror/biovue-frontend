@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import Image from "next/image";
 import { X, Target, Dumbbell, Footprints, Moon, Droplets, Calendar, Edit2, Trash2, Plus, Save, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -11,8 +11,48 @@ import {
   useUpdateSupplierNoteMutation, 
   useDeleteSupplierNoteMutation 
 } from "@/redux/features/api/SupplierDashboard/SupplierNote";
-import { useGetTargetGoalQuery } from "@/redux/features/api/TrainerDashboard/Clients/TargetGoal/PostTargetGoal";
+import { useGetTargetGoalQuery, type TargetGoal as ApiTargetGoal } from "@/redux/features/api/TrainerDashboard/Clients/TargetGoal/PostTargetGoal";
 import { toast } from "sonner";
+
+type GoalForDisplay = {
+  id: number;
+  target_weight: string | number;
+  weekly_workout_goal: number;
+  daily_step_goal: number;
+  sleep_target: string | number;
+  water_target: string | number | null;
+  start_date: string;
+  end_date: string;
+  supplement_recommendation?: string | string[] | null;
+};
+
+function goalFromEmbedded(g: NonNullable<User["target_goals"]>[number]): GoalForDisplay {
+  return {
+    id: g.id,
+    target_weight: g.target_weight,
+    weekly_workout_goal: g.weekly_workout_goal,
+    daily_step_goal: g.daily_step_goal,
+    sleep_target: g.sleep_target,
+    water_target: g.water_target,
+    start_date: g.start_date,
+    end_date: g.end_date,
+    supplement_recommendation: g.supplement_recommendation,
+  };
+}
+
+function goalFromApi(g: ApiTargetGoal): GoalForDisplay {
+  return {
+    id: g.id,
+    target_weight: g.target_weight,
+    weekly_workout_goal: g.weekly_workout_goal,
+    daily_step_goal: g.daily_step_goal,
+    sleep_target: g.sleep_target,
+    water_target: g.water_target,
+    start_date: g.start_date,
+    end_date: g.end_date,
+    supplement_recommendation: g.supplement_recommendation,
+  };
+}
 
 interface TargetGoalsModalProps {
   isOpen: boolean;
@@ -53,7 +93,23 @@ function TargetGoalsModalContent({
   onClose: () => void;
   user: User;
 }) {
-  const { data: goals = [], isLoading: goalsLoading } = useGetTargetGoalQuery(user.id);
+  const { data: apiGoals = [], isLoading: goalsLoading } = useGetTargetGoalQuery(user.id);
+
+  const mergedGoals = useMemo(() => {
+    const map = new Map<number, GoalForDisplay>();
+    for (const g of user.target_goals ?? []) {
+      map.set(g.id, goalFromEmbedded(g));
+    }
+    for (const g of apiGoals) {
+      map.set(g.id, goalFromApi(g));
+    }
+    return Array.from(map.values());
+  }, [apiGoals, user.target_goals]);
+
+  const sortedGoals = useMemo(
+    () => [...mergedGoals].sort((a, b) => new Date(a.start_date).getTime() - new Date(b.start_date).getTime()),
+    [mergedGoals],
+  );
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4 animate-in fade-in duration-200">
@@ -100,13 +156,13 @@ function TargetGoalsModalContent({
             <div className="flex justify-center py-10 mb-10">
               <Loader2 className="animate-spin text-[#3A86FF]" size={32} />
             </div>
-          ) : goals.length > 0 ? (
+          ) : sortedGoals.length > 0 ? (
             <div className="space-y-6 mb-10">
               <div className="flex items-center gap-2 mb-4">
                 <Target className="text-[#3A86FF]" size={20} />
                 <h3 className="text-xl font-bold text-[#041228]">Target Goals</h3>
               </div>
-              {[...goals].reverse().map((goal, index) => (
+              {[...sortedGoals].reverse().map((goal, index) => (
                 <div
                   key={goal.id}
                   className="p-6 bg-[#F8FBFA] rounded-3xl border border-[#D9E6FF] space-y-6"
@@ -115,7 +171,7 @@ function TargetGoalsModalContent({
                     <div className="flex items-center gap-2 text-[#3A86FF]">
                       <Calendar size={18} />
                       <span className="font-bold text-sm uppercase tracking-wider">
-                        Goal Period {goals.length - index}
+                        Goal Period {sortedGoals.length - index}
                       </span>
                     </div>
                     <span className="text-xs font-bold text-[#94A3B8]">
@@ -145,7 +201,7 @@ function TargetGoalsModalContent({
                         <Footprints size={14} />
                         <span className="text-[10px] font-black uppercase tracking-widest">Daily Steps</span>
                       </div>
-                      <p className="text-xl font-bold text-[#041228]">{goal.daily_step_goal.toLocaleString()}</p>
+                      <p className="text-xl font-bold text-[#041228]">{Number(goal.daily_step_goal).toLocaleString()}</p>
                     </div>
 
                     <div className="space-y-1">
@@ -156,7 +212,7 @@ function TargetGoalsModalContent({
                       <p className="text-xl font-bold text-[#041228]">{goal.sleep_target}</p>
                     </div>
 
-                    {goal.water_target != null && (
+                    {goal.water_target != null && String(goal.water_target).length > 0 && (
                       <div className="space-y-1">
                         <div className="flex items-center gap-2 text-[#94A3B8] mb-1">
                           <Droplets size={14} />
@@ -165,6 +221,18 @@ function TargetGoalsModalContent({
                         <p className="text-xl font-bold text-[#10B981]">{goal.water_target} ml</p>
                       </div>
                     )}
+
+                    {(() => {
+                      const sr = goal.supplement_recommendation;
+                      const text = Array.isArray(sr) ? sr.filter(Boolean).join(", ") : sr;
+                      if (!text) return null;
+                      return (
+                        <div className="space-y-1 col-span-2">
+                          <span className="text-[10px] font-black uppercase tracking-widest text-[#94A3B8]">Supplements</span>
+                          <p className="text-sm font-medium text-[#041228]">{text}</p>
+                        </div>
+                      );
+                    })()}
                   </div>
                 </div>
               ))}

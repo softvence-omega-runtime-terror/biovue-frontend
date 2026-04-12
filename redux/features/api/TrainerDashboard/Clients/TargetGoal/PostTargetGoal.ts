@@ -127,8 +127,12 @@ export const targetGoalApi = baseApi.injectEndpoints({
         method: "GET",
       }),
 
-      transformResponse: (response: GetTargetGoalResponse) => {
-        return response.data;
+      transformResponse: (response: GetTargetGoalResponse | TargetGoal[] | null) => {
+        if (Array.isArray(response)) return response;
+        if (response && "data" in response && Array.isArray(response.data)) {
+          return response.data;
+        }
+        return [];
       },
 
       providesTags: ["TargetGoals"],
