@@ -1,6 +1,7 @@
 "use client";
 
 import { AiApi } from "./AiApi";
+import type { User } from "./AllUsers";
 
 export interface MatchedProduct {
   product_id: number;
@@ -12,7 +13,7 @@ export interface MatchedProduct {
   redirect_url: string;
   match_score: number;
   match_reason: string;
-  health_benefits: string[];
+  health_benefits: string[] | null;
   warnings: string[] | null;
 }
 
@@ -33,7 +34,32 @@ export interface FindMatchResponse {
 export interface FindMatchRequest {
   user_id: string;
   supplier_id: string;
-  user_data?: any;
+  user_data?: Record<string, unknown> | null;
+}
+
+/** Plain JSON snapshot for the AI service — avoids 500s from non-serializable or oversized payloads. */
+export function buildFindMatchUserPayload(user: User): Record<string, unknown> {
+  const goals = Array.isArray(user.target_goals) ? user.target_goals : [];
+  return {
+    id: user.id,
+    name: user.name,
+    email: user.email,
+    user_type: user.user_type,
+    profession_type: user.profession_type ?? null,
+    profile_image: user.profile_image ?? null,
+    joined_at: user.joined_at,
+    target_goals: goals.map((g) => ({
+      id: g.id,
+      target_weight: g.target_weight,
+      weekly_workout_goal: g.weekly_workout_goal,
+      daily_step_goal: g.daily_step_goal,
+      sleep_target: g.sleep_target,
+      water_target: g.water_target ?? null,
+      supplement_recommendation: g.supplement_recommendation ?? null,
+      start_date: g.start_date,
+      end_date: g.end_date,
+    })),
+  };
 }
 
 export const findMatchApi = AiApi.injectEndpoints({
@@ -45,7 +71,7 @@ export const findMatchApi = AiApi.injectEndpoints({
         body: {
           user_id: body.user_id,
           supplier_id: body.supplier_id,
-          user_data: body.user_data,
+          ...(body.user_data != null ? { user_data: body.user_data } : {}),
         },
       }),
 
