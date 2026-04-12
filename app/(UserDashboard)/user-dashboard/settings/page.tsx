@@ -989,13 +989,15 @@ const ProfileEditView = ({ onBack, currentUser }: { onBack: () => void, currentU
 };
 
 const SubscriptionView = ({ onBack, currentUser, router }: { onBack: () => void, currentUser: any, router: any }) => {
-  const [billingCycle, setBillingCycle] = useState<"monthly" | "annual">("monthly");
+  const [billingCycle, setBillingCycle] = useState<"monthly" | "yearly">("monthly");
   
   const { data: plansData, isLoading: isLoadingPlans } = useGetSubscriptionPlansQuery({
     billing: billingCycle,
     type: currentUser?.role || "individual"
   });
   
+  console.log("plansData", plansData);
+
   const { data: paymentSummary } = useGetPaymentSummaryQuery();
 
   const plans = plansData?.data || [];
@@ -1081,7 +1083,7 @@ const SubscriptionView = ({ onBack, currentUser, router }: { onBack: () => void,
         <div id="billing-cycle" className="bg-white rounded-[16px] p-8 border border-[#3A86FF]/25 shadow-sm flex flex-col md:flex-row items-center justify-between gap-6">
            <div className="flex flex-col gap-1">
               <h3 className="text-xl font-bold text-[#1F2D2E]">Billing Cycle</h3>
-              <p className="text-[#5F6F73] text-sm font-medium">Save up to 10% with annual billing</p>
+              <p className="text-[#5F6F73] text-sm font-medium">Save up to 15% with annual billing</p>
            </div>
            <div className="flex text-sm font-bold items-center gap-4">
               <span 
@@ -1094,10 +1096,10 @@ const SubscriptionView = ({ onBack, currentUser, router }: { onBack: () => void,
                 Monthly
               </span>
               <span 
-                onClick={() => setBillingCycle("annual")}
+                onClick={() => setBillingCycle("yearly")}
                 className={cn(
                   "cursor-pointer transition-all",
-                  billingCycle === "annual" ? "text-[#0FA4A9] underline underline-offset-4" : "text-[#94A3B8]"
+                  billingCycle === "yearly" ? "text-[#0FA4A9] underline underline-offset-4" : "text-[#94A3B8]"
                 )}
               >
                 Annual
