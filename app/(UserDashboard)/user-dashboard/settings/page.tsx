@@ -995,6 +995,8 @@ const SubscriptionView = ({ onBack, currentUser, router }: { onBack: () => void,
     billing: billingCycle,
     type: currentUser?.role || "individual"
   });
+  
+  console.log("plansData", plansData);
 
   const { data: paymentSummary } = useGetPaymentSummaryQuery();
 
@@ -1188,3 +1190,4 @@ const SubscriptionView = ({ onBack, currentUser, router }: { onBack: () => void,
 
 export default SettingsPage;
 
+// backup notepad
