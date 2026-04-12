@@ -35,7 +35,8 @@ import { useGetNutritionReportQuery } from "@/redux/features/api/userDashboard/n
 import { useGetHydrationReportQuery } from "@/redux/features/api/userDashboard/hydration";
 import { useGetActivityReportQuery } from "@/redux/features/api/userDashboard/activitylog";
 import { useGetStressReportQuery } from "@/redux/features/api/userDashboard/stresslog";
-import { useGetHabitsQuery } from "@/redux/features/api/userDashboard/habit";
+import { useGetHabitsQuery as _unused } from "@/redux/features/api/userDashboard/habit";
+import { useGetAiSavedHabitsQuery } from "@/redux/features/api/userDashboard/Projection/AIHabitsAPI";
 import { useSelector } from "react-redux";
 import { selectCurrentUser } from "@/redux/features/slice/authSlice";
 import { Loader2, Footprints, Activity as ActivityIcon } from "lucide-react";
@@ -137,7 +138,7 @@ export default function HabitProgressPage() {
   const [timeframe, setTimeframe] = useState("Weekly");
   const [isLogModalOpen, setIsLogModalOpen] = useState(false);
 
-  const { data: habitData, isLoading: isHabitLoading } = useGetHabitsQuery(userId, { skip: !userId });
+  const { data: habitData, isLoading: isHabitLoading } = useGetAiSavedHabitsQuery(userId, { skip: !userId });
 
   const timeframeToDays = (tf: string) => {
     switch (tf) {
@@ -202,32 +203,32 @@ export default function HabitProgressPage() {
     coachNote: activityData.bio_insight || "Increasing your daily step count is one of the most effective ways to improve metabolic health.",
     coachName: "JORDAN",
     coachTime: "2H AGO",
-  } : habitId === 'nutrition' && nutritionReport?.data ? {
+  } : habitId === 'nutrition' && (nutritionReport?.data || nutritionReport?.statistics) ? {
     title: "Nutrition",
     icon: <Apple size={24} className="text-[#0FA4A9]" />,
     iconBg: "bg-[#E6F6F6]",
-    avgStr: nutritionReport.data.statistics.average,
+    avgStr: nutritionReport?.data?.statistics?.average || nutritionReport?.statistics?.average || "0 kcal",
     unit: "",
-    consistency: nutritionReport.data.statistics.consistency,
-    streak: nutritionReport.data.statistics.best_streak,
-    trend: nutritionReport.data.statistics.current_trend,
+    consistency: nutritionReport?.data?.statistics?.consistency || nutritionReport?.statistics?.consistency || "0%",
+    streak: nutritionReport?.data?.statistics?.best_streak || nutritionReport?.statistics?.best_streak || "0",
+    trend: nutritionReport?.data?.statistics?.current_trend || nutritionReport?.statistics?.current_trend || "Stable",
     trendColor: "text-[#10B981]",
-    insight: nutritionReport.data.bio_insight,
-    coachNote: nutritionReport.data.bio_insight,
+    insight: nutritionReport?.data?.bio_insight || nutritionReport?.bio_insight,
+    coachNote: nutritionReport?.data?.bio_insight || nutritionReport?.bio_insight,
     coachName: "JORDAN",
     coachTime: "2H AGO",
-  } : habitId === 'hydration' && hydrationReport?.hydration ? {
+  } : habitId === 'hydration' && (hydrationReport?.hydration || hydrationReport?.data) ? {
     title: "Hydration",
     icon: <Droplets size={24} className="text-[#3A86FF]" />,
     iconBg: "bg-blue-100/50",
-    avgStr: hydrationReport.hydration.average || "0 Ounces",
+    avgStr: hydrationReport?.hydration?.average || hydrationReport?.data?.statistics?.average_water || "0 Ounces",
     unit: "Ounces",
-    consistency: hydrationReport.hydration.consistency || "0%",
-    streak: hydrationReport.hydration.best_streak || "0 DAYS",
-    trend: hydrationReport.hydration.current_trend || "Stable",
+    consistency: hydrationReport?.hydration?.consistency || hydrationReport?.data?.statistics?.consistency || "0%",
+    streak: hydrationReport?.hydration?.best_streak || hydrationReport?.data?.statistics?.best_streak || "0 DAYS",
+    trend: hydrationReport?.hydration?.current_trend || hydrationReport?.data?.statistics?.current_trend || "Stable",
     trendColor: "text-[#10B981]",
-    insight: hydrationReport.hydration.bio_insight || "Your hydration levels are tracked based on your daily water intake.",
-    coachNote: hydrationReport.hydration.coach_note || hydrationReport.hydration.bio_insight || "Adequate water intake is crucial for cellular function and metabolism.",
+    insight: hydrationReport?.hydration?.bio_insight || hydrationReport?.data?.bio_insight || "Your hydration levels are tracked based on your daily water intake.",
+    coachNote: hydrationReport?.hydration?.coach_note || hydrationReport?.hydration?.bio_insight || hydrationReport?.data?.bio_insight || "Adequate water intake is crucial for cellular function and metabolism.",
     coachName: "JORDAN",
     coachTime: "2H AGO",
   } : habitId === 'stress' && stressData?.stats ? {
@@ -246,6 +247,20 @@ export default function HabitProgressPage() {
     coachTime: "2H AGO",
   } : (HABIT_META[habitId] || HABIT_META["sleep"]);
 
+  // Final cleanup for units from API based on habit type
+  if (habitId === 'hydration') {
+    if (typeof habit.avgStr === 'string') {
+      habit.avgStr = habit.avgStr.replace(/glasses|gls/gi, "Ounces");
+    }
+  } else if (habitId === 'nutrition') {
+    if (typeof habit.avgStr === 'string') {
+      habit.avgStr = habit.avgStr.replace(/glasses|gls/gi, "kcal").replace(/kcal\s+kcal/gi, "kcal").trim();
+      if (habit.avgStr === "0" || habit.avgStr === "0 kcal") {
+        habit.avgStr = "0 kcal";
+      }
+    }
+  }
+
   const chartData = habitId === 'sleep' && sleepData?.chart_data ? 
     sleepData.chart_data.map((item: any) => ({
       name: item.label, // Mon, Tue etc.
@@ -255,17 +270,26 @@ export default function HabitProgressPage() {
       activityData.chart_data.map((item: any) => ({
       name: item.label,
       val: item.steps || 0,
-    })) : habitId === 'nutrition' && nutritionReport?.data?.chart_data ? 
-      nutritionReport.data.chart_data.map((item: any) => ({
-        name: item.label,
-        Protin: item.protein,
-        Carbs: item.carbs,
-        Fats: item.fats
-      })) : habitId === 'hydration' && hydrationReport?.hydration?.chart ? 
-        Object.entries(hydrationReport.hydration.chart).map(([label, value]) => ({
-      name: label,
-      val: value || 0
-    })) : habitId === 'stress' && stressData?.chart_data ?
+    })) : habitId === 'nutrition' && (nutritionReport?.data?.chart_data || nutritionReport?.chart_data || nutritionReport?.data?.statistics?.chart_data) ? 
+      (nutritionReport?.data?.chart_data || nutritionReport?.chart_data || nutritionReport?.data?.statistics?.chart_data).map((item: any) => ({
+        name: item.label || item.date || item.name,
+        Protin: Number(item.protein || item.Protin || 0),
+        Carbs: Number(item.carbs || item.Carbs || 0),
+        Fats: Number(item.fats || item.Fats || 0)
+      })) : habitId === 'hydration' && (hydrationReport?.hydration?.chart || hydrationReport?.hydration?.chart_data || hydrationReport?.chart_data || hydrationReport?.data?.chart_data) ? 
+        (() => {
+          const rawChart = hydrationReport?.hydration?.chart || hydrationReport?.hydration?.chart_data || hydrationReport?.chart_data || hydrationReport?.data?.chart_data;
+          if (Array.isArray(rawChart)) {
+            return rawChart.map((item: any) => ({
+              name: item.label || item.name || item.date || item.day,
+              val: Number(item.val || item.value || item.ounces || item.Ounces || 0)
+            }));
+          }
+          return Object.entries(rawChart || {}).map(([label, value]) => ({
+            name: label,
+            val: Number(value || 0)
+          }));
+        })() : habitId === 'stress' && stressData?.chart_data ?
       stressData.chart_data.map((item: any) => ({
         name: item.day,
         date: item.date,
