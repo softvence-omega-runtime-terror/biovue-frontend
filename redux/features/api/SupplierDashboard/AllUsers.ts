@@ -22,7 +22,8 @@ export interface User {
   profession_type?: string | null;
   profile_image: string | null;
   joined_at: string;
-  target_goals: TargetGoal[];
+  /** Present when the supplier users list embeds goals; used when /get-goal is empty or unavailable. */
+  target_goals?: TargetGoal[];
 }
 
 export interface AllUsersResponse {

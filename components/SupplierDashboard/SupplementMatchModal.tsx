@@ -5,11 +5,51 @@ import { useEffect } from "react";
 import { X, Sparkles, CheckCircle2, Send, Loader2, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { User } from "@/redux/features/api/SupplierDashboard/AllUsers";
-import { useLazyGetSavedMatchQuery, MatchedProduct, useFindMatchMutation } from "@/redux/features/api/SupplierDashboard/FindMatch";
+import {
+  useLazyGetSavedMatchQuery,
+  MatchedProduct,
+  useFindMatchMutation,
+  buildFindMatchUserPayload,
+  type FindMatchResponse,
+} from "@/redux/features/api/SupplierDashboard/FindMatch";
 import { useSendMessageMutation } from "@/redux/features/api/userDashboard/messagesApi";
 import { useSelector } from "react-redux";
 import { selectCurrentUser } from "@/redux/features/slice/authSlice";
 import { toast } from "sonner";
+
+/** Chat APIs often use limited VARCHAR; long AI text commonly triggers 500 from the main API. */
+const MAX_SUGGEST_MESSAGE_CHARS = 2400;
+
+function prepareMessageForChatApi(raw: string): string {
+  const cleaned = raw.replace(/\u0000/g, "").trim();
+  if (cleaned.length <= MAX_SUGGEST_MESSAGE_CHARS) return cleaned;
+  return (
+    cleaned.slice(0, MAX_SUGGEST_MESSAGE_CHARS - 140).trim() +
+    "\n\n[Message trimmed to fit chat limits. Reply to your supplier for the full details.]"
+  );
+}
+
+function sendErrorToast(err: unknown, fallback: string) {
+  let detail = fallback;
+  if (typeof err === "object" && err !== null && "data" in err) {
+    const data = (err as { data?: unknown }).data;
+    if (typeof data === "string") detail = data;
+    else if (data && typeof data === "object") {
+      const o = data as Record<string, unknown>;
+      if (typeof o.message === "string") detail = o.message;
+      else if (typeof o.detail === "string") detail = o.detail;
+      else if (typeof o.error === "string") detail = o.error;
+    }
+  }
+  const status =
+    typeof err === "object" && err !== null && "status" in err
+      ? (err as { status?: number }).status
+      : undefined;
+  if (status === 500 && detail === fallback) {
+    detail = `${fallback} The chat server may reject very long messages; this flow now trims content automatically.`;
+  }
+  toast.error(detail.length > 220 ? `${detail.slice(0, 217)}…` : detail);
+}
 
 const getSafeImageSrc = (src: string | null | undefined) => {
   if (!src) return null;
@@ -64,7 +104,7 @@ export default function SupplementMatchModal({
       await findMatch({
         user_id: user.id.toString(),
         supplier_id: supplier_id.toString(),
-        user_data: user,
+        user_data: buildFindMatchUserPayload(user),
       }).unwrap();
       toast.success("AI Analysis completed and matches updated!");
       triggerGet({
@@ -77,24 +117,57 @@ export default function SupplementMatchModal({
     }
   };
 
-  const buildSupplementMessage = (supp: MatchedProduct): string => {
-    const benefits = supp.health_benefits
-      .slice(0, 3)
+  const buildSupplementMessage = (
+    supp: MatchedProduct,
+    ctx: FindMatchResponse | undefined,
+    options?: { includeOverallSummary?: boolean },
+  ): string => {
+    const benefits = (supp.health_benefits ?? [])
+      .slice(0, 8)
       .map((b) => `• ${b}`)
       .join("\n");
-    return [
-      `Recommended for You:`,
-      `${supp.name}`,
+    const warnings = (supp.warnings ?? [])
+      .filter(Boolean)
+      .map((w) => `• ${w}`)
+      .join("\n");
+    const lines: string[] = [
+      `Personalized supplement suggestion`,
+      ``,
+      `Product: ${supp.name}`,
+      `Category: ${supp.category}`,
+      `Match score: ${Math.round(supp.match_score)}%`,
       ``,
       `Why this is recommended`,
-      `${supp.match_reason}`,
+      supp.match_reason,
       ``,
-      `Key Benefits`,
-      benefits,
-      ``,
-      `Where to Get It`,
-      `${supp.redirect_url}`,
-    ].join("\n");
+    ];
+    if (benefits) {
+      lines.push(`Key benefits`, benefits, ``);
+    }
+    if (warnings) {
+      lines.push(`Important notes`, warnings, ``);
+    }
+    if (ctx?.completeness_warning) {
+      const pct =
+        ctx.profile_completeness != null
+          ? Math.round(Number(ctx.profile_completeness))
+          : null;
+      lines.push(
+        `Profile`,
+        pct != null
+          ? `${ctx.completeness_warning} (Profile completeness: ${pct}%).`
+          : ctx.completeness_warning,
+        ``,
+      );
+    }
+    if (options?.includeOverallSummary && ctx?.recommendation_summary) {
+      const summary = ctx.recommendation_summary;
+      const short =
+        summary.length > 600 ? `${summary.slice(0, 597).trim()}...` : summary;
+      lines.push(`Overall summary`, short, ``);
+    }
+    lines.push(`Learn more`, supp.redirect_url);
+    return lines.join("\n");
   };
 
   const handleSuggestToUser = async (supp: MatchedProduct) => {
@@ -103,18 +176,50 @@ export default function SupplementMatchModal({
       return;
     }
 
-    try {
-      const message = buildSupplementMessage(supp);
+    const fullMessage = prepareMessageForChatApi(
+      buildSupplementMessage(supp, matchData, {
+        includeOverallSummary: true,
+      }),
+    );
 
+    const compactMessage = prepareMessageForChatApi(
+      [
+        `Supplement suggestion: ${supp.name}`,
+        `Match: ${Math.round(supp.match_score)}%`,
+        supp.match_reason.length > 320 ? `${supp.match_reason.slice(0, 317)}...` : supp.match_reason,
+        ``,
+        `Link: ${supp.redirect_url}`,
+      ].join("\n"),
+    );
+
+    try {
       await sendMessage({
-        receiver_id: user.id,
-        message,
+        receiver_id: Number(user.id),
+        message: fullMessage,
       }).unwrap();
 
       toast.success(`Suggestion sent to ${user.name}`);
     } catch (error) {
       console.error(error);
-      toast.error("Failed to send suggestion");
+      const status =
+        typeof error === "object" && error !== null && "status" in error
+          ? (error as { status?: number }).status
+          : undefined;
+      if (status === 500) {
+        try {
+          await sendMessage({
+            receiver_id: Number(user.id),
+            message: compactMessage,
+          }).unwrap();
+          toast.success(`Suggestion sent to ${user.name} (short format)`);
+          return;
+        } catch (e2) {
+          console.error(e2);
+          sendErrorToast(e2, "Failed to send suggestion.");
+        }
+      } else {
+        sendErrorToast(error, "Failed to send suggestion.");
+      }
     }
   };
 
@@ -125,23 +230,34 @@ export default function SupplementMatchModal({
       const allSupps = matchData.matched_products;
 
       // Send one combined message with all supplements in the simplified format
-      const sections = allSupps.map((supp, index) =>
-        `— Recommendation ${index + 1} —\n` + buildSupplementMessage(supp)
+      const fullSummary = matchData?.recommendation_summary;
+      const summaryBlock =
+        fullSummary != null
+          ? `\n\nOverall summary\n${
+              fullSummary.length > 800
+                ? `${fullSummary.slice(0, 797).trim()}...`
+                : fullSummary
+            }\n\n`
+          : "\n\n";
+      const header = `Hi! I've analysed your profile and have ${allSupps.length} recommendation(s) for you.${summaryBlock}`;
+
+      const sections = allSupps.map(
+        (supp, index) =>
+          `- Recommendation ${index + 1} -\n` +
+          buildSupplementMessage(supp, matchData, { includeOverallSummary: false }),
       );
 
-      const message =
-        `Hi! I've analysed your profile and found ${allSupps.length} recommendations for you:\n\n` +
-        sections.join("\n\n" + "─".repeat(30) + "\n\n");
+      const message = prepareMessageForChatApi(header + sections.join("\n\n" + "-".repeat(28) + "\n\n"));
 
       await sendMessage({
-        receiver_id: user.id,
+        receiver_id: Number(user.id),
         message,
       }).unwrap();
 
       toast.success(`All suggestions sent to ${user.name}`);
     } catch (error) {
       console.error(error);
-      toast.error("Failed to send all suggestions");
+      sendErrorToast(error, "Failed to send all suggestions.");
     }
   };
 
@@ -205,6 +321,23 @@ export default function SupplementMatchModal({
               </Button>
             )}
           </div>
+
+          {matchData?.recommendation_summary && (
+            <div className="mb-6 p-5 rounded-2xl bg-[#F8FBFA] border border-[#D9E6FF] text-sm text-[#5F6F73] leading-relaxed">
+              <p className="text-[10px] font-black uppercase tracking-widest text-[#94A3B8] mb-2">
+                Overall summary
+              </p>
+              <p className="whitespace-pre-wrap">{matchData.recommendation_summary}</p>
+              {matchData.completeness_warning ? (
+                <p className="mt-3 text-xs font-semibold text-amber-800 bg-amber-50 border border-amber-100 rounded-xl px-3 py-2">
+                  {matchData.completeness_warning}
+                  {matchData.profile_completeness != null
+                    ? ` (${Math.round(Number(matchData.profile_completeness))}% profile complete)`
+                    : ""}
+                </p>
+              ) : null}
+            </div>
+          )}
 
           {matchData?.matched_products && matchData.matched_products.length > 2 && (
             <Button

@@ -45,6 +45,7 @@ import { Badge } from "@/components/ui/badge";
 
 import {
   useFindMatchMutation,
+  buildFindMatchUserPayload,
 } from "@/redux/features/api/SupplierDashboard/FindMatch";
 import { useSelector } from "react-redux";
 import { selectCurrentUser } from "@/redux/features/slice/authSlice";
@@ -88,7 +89,7 @@ export default function ClientTable({ users }: ClientTableProps) {
       await findMatch({
         user_id: user.id.toString(),
         supplier_id: supplier_id.toString(),
-        user_data: user,
+        user_data: buildFindMatchUserPayload(user),
       }).unwrap();
 
       // ✅ Step 2: Open modal AFTER AI done
@@ -246,7 +247,7 @@ export default function ClientTable({ users }: ClientTableProps) {
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={5} className="h-64 text-center">
+                <TableCell colSpan={6} className="h-64 text-center">
                   <div className="flex flex-col items-center justify-center text-[#94A3B8]">
                     <Search size={40} className="mb-4 opacity-20" />
                     <p className="text-lg font-medium">
