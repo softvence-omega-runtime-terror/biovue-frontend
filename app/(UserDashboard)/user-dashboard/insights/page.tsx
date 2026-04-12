@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -22,6 +22,8 @@ import { useSelector } from "react-redux";
 import { selectCurrentUser } from "@/redux/features/slice/authSlice";
 import { toast } from "sonner";
 import SubscriptionGuard from "@/components/common/SubscriptionGuard";
+import { useSubscriptionStatus } from "@/lib/hooks/useSubscriptionStatus";
+import { useGetProjectionGalleryQuery } from "@/redux/features/api/userDashboard/Projection/GalleryAPI";
 
 // Mock data removed in favor of API integration
 
@@ -39,6 +41,29 @@ export default function InsightsPage() {
   const [updateFutureInsights, { isLoading: isUpdatingFuture }] = useUpdateAiFutureInsightsMutation();
 
   const isUpdating = isUpdatingCurrent || isUpdatingFuture;
+
+  // Dynamic projection limit data
+  const { projection_limit = 0, diffDays = 0 } = useSubscriptionStatus();
+  const { data: galleryData } = useGetProjectionGalleryQuery();
+
+  const lastProjectionTime = useMemo(() => {
+    if (!galleryData?.data || galleryData.data.length === 0) return "Never";
+    
+    const sorted = [...galleryData.data].sort((a, b) => 
+      new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+    );
+    const lastDate = new Date(sorted[0].created_at);
+    
+    const diffMs = new Date().getTime() - lastDate.getTime();
+    const diffMins = Math.floor(diffMs / (1000 * 60));
+    const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+    const diffDaysActual = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+
+    if (diffMins < 1) return "Just now";
+    if (diffMins < 60) return `${diffMins} mins ago`;
+    if (diffHours < 24) return `${diffHours} hours ago`;
+    return `${diffDaysActual} days ago`;
+  }, [galleryData]);
 
   const handleRefreshInsights = async () => {
     if (!userId) {
@@ -426,23 +451,26 @@ export default function InsightsPage() {
                     <motion.div
                       className="absolute top-0 left-0 h-full bg-[#0FA4A9] rounded-full"
                       initial={{ width: 0 }}
-                      animate={{ width: "100%" }}
+                      animate={{ width: projection_limit > 0 ? "100%" : "0%" }}
                       transition={{ duration: 0.5, delay: 0.1 }}
                     />
                   </div>
 
                   <div className="flex items-center justify-between">
                     <div className="text-[13px] text-[#1F2D2E]">
-                      You&apos;ve used 2 of 2 projections
+                      {projection_limit > 0 
+                        ? `You have ${projection_limit} projections remaining`
+                        : "You have used all your projections"
+                      }
                     </div>
                     <div className="bg-gray-100 text-[#1F2D2E] px-2.5 py-1.5 rounded-md text-[11px] font-semibold flex items-center gap-1.5">
                       <Calendar size={12} />
-                      Resets in 8 days
+                      Resets in {diffDays} {diffDays === 1 ? "day" : "days"}
                     </div>
                   </div>
 
                   <div className="text-[#0FA4A9] font-medium text-[13px]">
-                    Last projection: 12 days ago
+                    Last projection: {lastProjectionTime}
                   </div>
                 </div>
               </motion.div>

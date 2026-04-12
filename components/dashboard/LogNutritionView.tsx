@@ -10,6 +10,7 @@ import {
   useGenerateMealMutation,
   useGetSavedMealPlanQuery,
   useGetSavedAiNutritionQuery,
+  useGetAiSuggestedTargetQuery,
 } from "@/redux/features/api/userDashboard/nutritionAiApi";
 import { useSelector } from "react-redux";
 import { selectCurrentUser } from "@/redux/features/slice/authSlice";
@@ -78,6 +79,8 @@ export default function FoodLogView({ onSave, onBack }: FoodLogViewProps) {
   const [postNutritionLog, { isLoading: isSaving }] =
     usePostNutritionLogMutation();
 
+  const { data: aiNutritionData } = useGetAiSuggestedTargetQuery(userId, { skip: !userId });
+
   const [activeTab, setActiveTab] = useState<"log" | "generate" | "history">("log");
   const [targetCalories, setTargetCalories] = useState(2000);
   const [targetProtein, setTargetProtein] = useState(150);
@@ -107,6 +110,26 @@ export default function FoodLogView({ onSave, onBack }: FoodLogViewProps) {
       ],
     },
   ]);
+
+  // Sync targets with AI suggestions
+  useEffect(() => {
+    if (aiNutritionData?.target_nutrition) {
+      const target = aiNutritionData.target_nutrition;
+      if (target.calories?.value) {
+        setTargetCalories(target.calories.value);
+        setCalorieTarget(target.calories.value);
+      }
+      if (target.macros?.protein?.value) {
+        setTargetProtein(target.macros.protein.value);
+      }
+      if (target.macros?.carbs?.value) {
+        setTargetCarbs(target.macros.carbs.value);
+      }
+      if (target.macros?.fat?.value) {
+        setTargetFat(target.macros.fat.value);
+      }
+    }
+  }, [aiNutritionData]);
 
   useEffect(() => {
     if (existingNutrition?.nutrition) {
