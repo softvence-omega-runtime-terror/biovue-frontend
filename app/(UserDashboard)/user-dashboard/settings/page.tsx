@@ -996,8 +996,6 @@ const SubscriptionView = ({ onBack, currentUser, router }: { onBack: () => void,
     type: currentUser?.role || "individual"
   });
   
-  console.log("plansData", plansData);
-
   const { data: paymentSummary } = useGetPaymentSummaryQuery();
 
   const plans = plansData?.data || [];
