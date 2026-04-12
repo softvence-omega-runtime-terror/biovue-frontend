@@ -5,7 +5,8 @@ import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { ArrowLeft, BarChart2, CheckCircle2, Bed, Apple, Footprints, Frown, Droplets, Plus, Activity as ActivityIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useGetCardDataQuery, useGetHabitsQuery } from "@/redux/features/api/userDashboard/habit";
+import { useGetCardDataQuery } from "@/redux/features/api/userDashboard/habit";
+import { useGetAiSavedHabitsQuery } from "@/redux/features/api/userDashboard/Projection/AIHabitsAPI";
 import { Loader2 } from "lucide-react";
 import LogHabitModal from "@/components/dashboard/LogHabitModal";
 import LogNutritionModal from "@/components/dashboard/LogNutritionModal";
@@ -98,7 +99,7 @@ export default function HabitDetailPage() {
   const userId = currentUser?.id || currentUser?.user_id;
 
   const { data: cardData, isLoading: isCardLoading } = useGetCardDataQuery();
-  const { data: habitData, isLoading: isHabitLoading } = useGetHabitsQuery(userId, { skip: !userId });
+  const { data: habitData, isLoading: isHabitLoading } = useGetAiSavedHabitsQuery(userId, { skip: !userId });
 
   const { data: sleepReport, isLoading: isSleepLoading } = useGetSleepReportQuery(7, { skip: habitId !== 'sleep' });
   const { data: activityReport, isLoading: isActivityLoading } = useGetActivityReportQuery(7, { skip: habitId !== 'activity' });
@@ -202,13 +203,24 @@ export default function HabitDetailPage() {
     })
   };
 
-  // Final cleanup for Hydration units if they come from API as "Glasses"
+  // Final cleanup for units from API based on habit type
   if (habitId === 'hydration') {
     if (typeof habit.avg === 'string') {
-      habit.avg = habit.avg.replace(/glasses/gi, "Ounces");
+      habit.avg = habit.avg.replace(/glasses|gls/gi, "Ounces");
     }
     if (typeof habit.target === 'string') {
-      habit.target = habit.target.replace(/glasses/gi, "Ounces");
+      habit.target = habit.target.replace(/glasses|gls/gi, "Ounces");
+    }
+  } else if (habitId === 'nutrition') {
+    if (typeof habit.avg === 'string') {
+      habit.avg = habit.avg.replace(/glasses|gls/gi, "kcal").replace(/kcal\s+kcal/gi, "kcal").trim();
+      // If the result is just a number or "0 kcal", ensure it looks professional
+      if (habit.avg === "0" || habit.avg === "0 kcal") {
+        habit.avg = "0 kcal";
+      }
+    }
+    if (typeof habit.target === 'string') {
+       habit.target = habit.target.replace(/glasses|gls/gi, "kcal").replace(/kcal\s+kcal/gi, "kcal").trim();
     }
   }
 

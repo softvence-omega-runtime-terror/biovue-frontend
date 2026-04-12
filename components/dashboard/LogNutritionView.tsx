@@ -1,17 +1,21 @@
-"use client";
-
 import { useState } from "react";
-import { Apple, X, ArrowLeft, Plus, Trash2, Loader2 } from "lucide-react";
+import { Apple, X, ArrowLeft, Plus, Trash2, Loader2, Sparkles, History, ChefHat, Target, ArrowRight, Save, Utensils } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
-  useCalculateNutritionMutation,
   usePostNutritionLogMutation,
   useGetNutritionShowQuery,
 } from "@/redux/features/api/userDashboard/nutrition";
+import {
+  useCalculateAiNutritionMutation,
+  useGenerateMealMutation,
+  useGetSavedMealPlanQuery,
+  useGetSavedAiNutritionQuery,
+} from "@/redux/features/api/userDashboard/nutritionAiApi";
 import { useSelector } from "react-redux";
 import { selectCurrentUser } from "@/redux/features/slice/authSlice";
 import { toast } from "sonner";
 import { useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 
 interface FoodItem {
   id: string;
@@ -65,10 +69,21 @@ export default function FoodLogView({ onSave, onBack }: FoodLogViewProps) {
 
   const { data: existingNutrition, isLoading: isLoadingExisting } =
     useGetNutritionShowQuery(undefined);
-  const [calculateNutrition, { isLoading: loadingAiCalories }] =
-    useCalculateNutritionMutation();
+  
+  const [calculateAiNutrition, { isLoading: loadingAiCalories }] =
+    useCalculateAiNutritionMutation();
+  const [generateMeal, { isLoading: isGeneratingMeal }] = 
+    useGenerateMealMutation();
+  
   const [postNutritionLog, { isLoading: isSaving }] =
     usePostNutritionLogMutation();
+
+  const [activeTab, setActiveTab] = useState<"log" | "generate" | "history">("log");
+  const [targetCalories, setTargetCalories] = useState(2000);
+  const [targetProtein, setTargetProtein] = useState(150);
+  const [targetCarbs, setTargetCarbs] = useState(200);
+  const [targetFat, setTargetFat] = useState(70);
+  const [generatedMealPlan, setGeneratedMealPlan] = useState<any>(null);
 
   const [calorieTarget, setCalorieTarget] = useState(2000);
   const [customUnitInput, setCustomUnitInput] = useState("");
@@ -200,7 +215,7 @@ export default function FoodLogView({ onSave, onBack }: FoodLogViewProps) {
     }
 
     try {
-      const response = await calculateNutrition({
+      const response = await calculateAiNutrition({
         user_id: userId,
         foods: [
           {
@@ -230,6 +245,58 @@ export default function FoodLogView({ onSave, onBack }: FoodLogViewProps) {
         "Unable to get calorie info. Please check food name and try again.",
       );
     }
+  };
+
+  const handleGenerateMeal = async () => {
+    if (!userId) {
+      toast.error("User ID not found");
+      return;
+    }
+
+    try {
+      const response = await generateMeal({
+        user_id: userId,
+        target_calorie: targetCalories,
+        target_protein: targetProtein,
+        target_carbs: targetCarbs,
+        target_fat: targetFat,
+      }).unwrap();
+
+      if (response && response.meals) {
+        setGeneratedMealPlan(response.meals);
+        toast.success("Meal plan generated successfully!");
+      } else {
+        toast.error("Failed to generate meal plan. Please try again.");
+      }
+    } catch (error) {
+      console.error("Meal generation error:", error);
+      toast.error("An error occurred while generating your meal plan.");
+    }
+  };
+
+  const applyGeneratedPlan = () => {
+    if (!generatedMealPlan) return;
+
+    const newMeals: MealEntry[] = generatedMealPlan.map((m: any, idx: number) => ({
+      id: `gen-${idx}-${Date.now()}`,
+      type: m.type as MealType,
+      time: "Suggested",
+      foods: m.items.map((item: any, i: number) => ({
+        id: `gen-food-${idx}-${i}-${Date.now()}`,
+        name: item.food,
+        quantity: item.quantity,
+        unit: item.unit,
+        caloriesPerUnit: 0, // AI doesn't provide per-item calories in generator yet
+        calories: 0,
+        protein: 0,
+        carbs: 0,
+        fat: 0,
+      }))
+    }));
+
+    setMeals(newMeals);
+    setActiveTab("log");
+    toast.success("Meal plan applied to today's log!");
   };
 
   const addFoodToMeal = (mealId: string) => {
