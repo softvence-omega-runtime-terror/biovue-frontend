@@ -2,16 +2,32 @@
 
 import { useMemo, useState } from "react";
 import Image from "next/image";
-import { X, Target, Dumbbell, Footprints, Moon, Droplets, Calendar, Edit2, Trash2, Plus, Save, Loader2 } from "lucide-react";
+import {
+  X,
+  Target,
+  Dumbbell,
+  Footprints,
+  Moon,
+  Droplets,
+  Calendar,
+  Edit2,
+  Trash2,
+  Plus,
+  Save,
+  Loader2,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { User } from "@/redux/features/api/SupplierDashboard/AllUsers";
-import { 
-  useGetSupplierNotesQuery, 
-  useAddSupplierNoteMutation, 
-  useUpdateSupplierNoteMutation, 
-  useDeleteSupplierNoteMutation 
+import {
+  useGetSupplierNotesQuery,
+  useAddSupplierNoteMutation,
+  useUpdateSupplierNoteMutation,
+  useDeleteSupplierNoteMutation,
 } from "@/redux/features/api/SupplierDashboard/SupplierNote";
-import { useGetTargetGoalQuery, type TargetGoal as ApiTargetGoal } from "@/redux/features/api/TrainerDashboard/Clients/TargetGoal/PostTargetGoal";
+import {
+  useGetTargetGoalQuery,
+  type TargetGoal as ApiTargetGoal,
+} from "@/redux/features/api/TrainerDashboard/Clients/TargetGoal/PostTargetGoal";
 import { toast } from "sonner";
 
 type GoalForDisplay = {
@@ -26,7 +42,9 @@ type GoalForDisplay = {
   supplement_recommendation?: string | string[] | null;
 };
 
-function goalFromEmbedded(g: NonNullable<User["target_goals"]>[number]): GoalForDisplay {
+function goalFromEmbedded(
+  g: NonNullable<User["target_goals"]>[number],
+): GoalForDisplay {
   return {
     id: g.id,
     target_weight: g.target_weight,
@@ -62,7 +80,11 @@ interface TargetGoalsModalProps {
 
 const getSafeImageSrc = (src: string | null | undefined) => {
   if (!src) return null;
-  if (src.startsWith("/") || src.startsWith("http://") || src.startsWith("https://")) {
+  if (
+    src.startsWith("/") ||
+    src.startsWith("http://") ||
+    src.startsWith("https://")
+  ) {
     try {
       if (src.startsWith("http")) {
         new URL(src);
@@ -93,21 +115,41 @@ function TargetGoalsModalContent({
   onClose: () => void;
   user: User;
 }) {
-  const { data: apiGoals = [], isLoading: goalsLoading } = useGetTargetGoalQuery(user.id);
+  // const { data: apiGoals = [], isLoading: goalsLoading } = useGetTargetGoalQuery(user.id);
 
+  // const mergedGoals = useMemo(() => {
+  //   const map = new Map<number, GoalForDisplay>();
+  //   for (const g of user.target_goals ?? []) {
+  //     map.set(g.id, goalFromEmbedded(g));
+  //   }
+  //   for (const g of apiGoals) {
+  //     map.set(g.id, goalFromApi(g));
+  //   }
+  //   return Array.from(map.values());
+  // }, [apiGoals, user.target_goals]);
+  const { data, isLoading: goalsLoading } = useGetTargetGoalQuery(user.id);
+
+  // const apiGoals = data?.data ?? [];
+const apiGoals = Array.isArray(data?.data) ? data.data : [];
   const mergedGoals = useMemo(() => {
     const map = new Map<number, GoalForDisplay>();
+
     for (const g of user.target_goals ?? []) {
       map.set(g.id, goalFromEmbedded(g));
     }
+
     for (const g of apiGoals) {
       map.set(g.id, goalFromApi(g));
     }
+
     return Array.from(map.values());
   }, [apiGoals, user.target_goals]);
-
   const sortedGoals = useMemo(
-    () => [...mergedGoals].sort((a, b) => new Date(a.start_date).getTime() - new Date(b.start_date).getTime()),
+    () =>
+      [...mergedGoals].sort(
+        (a, b) =>
+          new Date(a.start_date).getTime() - new Date(b.start_date).getTime(),
+      ),
     [mergedGoals],
   );
 
@@ -160,7 +202,9 @@ function TargetGoalsModalContent({
             <div className="space-y-6 mb-10">
               <div className="flex items-center gap-2 mb-4">
                 <Target className="text-[#3A86FF]" size={20} />
-                <h3 className="text-xl font-bold text-[#041228]">Target Goals</h3>
+                <h3 className="text-xl font-bold text-[#041228]">
+                  Target Goals
+                </h3>
               </div>
               {[...sortedGoals].reverse().map((goal, index) => (
                 <div
@@ -175,7 +219,8 @@ function TargetGoalsModalContent({
                       </span>
                     </div>
                     <span className="text-xs font-bold text-[#94A3B8]">
-                      {new Date(goal.start_date).toLocaleDateString()} – {new Date(goal.end_date).toLocaleDateString()}
+                      {new Date(goal.start_date).toLocaleDateString()} –{" "}
+                      {new Date(goal.end_date).toLocaleDateString()}
                     </span>
                   </div>
 
@@ -183,53 +228,80 @@ function TargetGoalsModalContent({
                     <div className="space-y-1">
                       <div className="flex items-center gap-2 text-[#94A3B8] mb-1">
                         <Target size={14} />
-                        <span className="text-[10px] font-black uppercase tracking-widest">Target Weight</span>
+                        <span className="text-[10px] font-black uppercase tracking-widest">
+                          Target Weight
+                        </span>
                       </div>
-                      <p className="text-xl font-bold text-[#041228]">{goal.target_weight}</p>
+                      <p className="text-xl font-bold text-[#041228]">
+                        {goal.target_weight}
+                      </p>
                     </div>
 
                     <div className="space-y-1">
                       <div className="flex items-center gap-2 text-[#94A3B8] mb-1">
                         <Dumbbell size={14} />
-                        <span className="text-[10px] font-black uppercase tracking-widest">Weekly Workouts</span>
+                        <span className="text-[10px] font-black uppercase tracking-widest">
+                          Weekly Workouts
+                        </span>
                       </div>
-                      <p className="text-xl font-bold text-[#041228]">{goal.weekly_workout_goal} sessions</p>
+                      <p className="text-xl font-bold text-[#041228]">
+                        {goal.weekly_workout_goal} sessions
+                      </p>
                     </div>
 
                     <div className="space-y-1">
                       <div className="flex items-center gap-2 text-[#94A3B8] mb-1">
                         <Footprints size={14} />
-                        <span className="text-[10px] font-black uppercase tracking-widest">Daily Steps</span>
+                        <span className="text-[10px] font-black uppercase tracking-widest">
+                          Daily Steps
+                        </span>
                       </div>
-                      <p className="text-xl font-bold text-[#041228]">{Number(goal.daily_step_goal).toLocaleString()}</p>
+                      <p className="text-xl font-bold text-[#041228]">
+                        {Number(goal.daily_step_goal).toLocaleString()}
+                      </p>
                     </div>
 
                     <div className="space-y-1">
                       <div className="flex items-center gap-2 text-[#94A3B8] mb-1">
                         <Moon size={14} />
-                        <span className="text-[10px] font-black uppercase tracking-widest">Sleep Target</span>
+                        <span className="text-[10px] font-black uppercase tracking-widest">
+                          Sleep Target
+                        </span>
                       </div>
-                      <p className="text-xl font-bold text-[#041228]">{goal.sleep_target}</p>
+                      <p className="text-xl font-bold text-[#041228]">
+                        {goal.sleep_target}
+                      </p>
                     </div>
 
-                    {goal.water_target != null && String(goal.water_target).length > 0 && (
-                      <div className="space-y-1">
-                        <div className="flex items-center gap-2 text-[#94A3B8] mb-1">
-                          <Droplets size={14} />
-                          <span className="text-[10px] font-black uppercase tracking-widest">Water Target</span>
+                    {goal.water_target != null &&
+                      String(goal.water_target).length > 0 && (
+                        <div className="space-y-1">
+                          <div className="flex items-center gap-2 text-[#94A3B8] mb-1">
+                            <Droplets size={14} />
+                            <span className="text-[10px] font-black uppercase tracking-widest">
+                              Water Target
+                            </span>
+                          </div>
+                          <p className="text-xl font-bold text-[#10B981]">
+                            {goal.water_target} ml
+                          </p>
                         </div>
-                        <p className="text-xl font-bold text-[#10B981]">{goal.water_target} ml</p>
-                      </div>
-                    )}
+                      )}
 
                     {(() => {
                       const sr = goal.supplement_recommendation;
-                      const text = Array.isArray(sr) ? sr.filter(Boolean).join(", ") : sr;
+                      const text = Array.isArray(sr)
+                        ? sr.filter(Boolean).join(", ")
+                        : sr;
                       if (!text) return null;
                       return (
                         <div className="space-y-1 col-span-2">
-                          <span className="text-[10px] font-black uppercase tracking-widest text-[#94A3B8]">Supplements</span>
-                          <p className="text-sm font-medium text-[#041228]">{text}</p>
+                          <span className="text-[10px] font-black uppercase tracking-widest text-[#94A3B8]">
+                            Supplements
+                          </span>
+                          <p className="text-sm font-medium text-[#041228]">
+                            {text}
+                          </p>
                         </div>
                       );
                     })()}
@@ -242,7 +314,9 @@ function TargetGoalsModalContent({
               <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mx-auto border border-gray-100">
                 <Target size={30} className="text-gray-200" />
               </div>
-              <p className="text-gray-400 font-medium">No target goals set for this user yet.</p>
+              <p className="text-gray-400 font-medium">
+                No target goals set for this user yet.
+              </p>
             </div>
           )}
 
@@ -267,8 +341,10 @@ function TargetGoalsModalContent({
 function SupplierNotesSection({ userId }: { userId: number }) {
   const { data: notesData, isLoading } = useGetSupplierNotesQuery(userId);
   const [addNote, { isLoading: isAdding }] = useAddSupplierNoteMutation();
-  const [updateNote, { isLoading: isUpdating }] = useUpdateSupplierNoteMutation();
-  const [deleteNote, { isLoading: isDeleting }] = useDeleteSupplierNoteMutation();
+  const [updateNote, { isLoading: isUpdating }] =
+    useUpdateSupplierNoteMutation();
+  const [deleteNote, { isLoading: isDeleting }] =
+    useDeleteSupplierNoteMutation();
 
   const [newNoteText, setNewNoteText] = useState("");
   const [editingNoteId, setEditingNoteId] = useState<number | null>(null);
@@ -288,7 +364,11 @@ function SupplierNotesSection({ userId }: { userId: number }) {
   const handleUpdateNote = async (noteId: number) => {
     if (!editingNoteText.trim()) return;
     try {
-      await updateNote({ note_id: noteId, note: editingNoteText, user_id: userId }).unwrap();
+      await updateNote({
+        note_id: noteId,
+        note: editingNoteText,
+        user_id: userId,
+      }).unwrap();
       setEditingNoteId(null);
       toast.success("Note updated successfully");
     } catch (error) {
@@ -314,7 +394,9 @@ function SupplierNotesSection({ userId }: { userId: number }) {
           <Edit2 className="text-[#0FA4A9]" size={20} />
           <h3 className="text-xl font-bold text-[#041228]">Supplier Notes</h3>
         </div>
-        <span className="text-xs font-bold text-[#94A3B8] uppercase tracking-widest">{notes.length} Notes</span>
+        <span className="text-xs font-bold text-[#94A3B8] uppercase tracking-widest">
+          {notes.length} Notes
+        </span>
       </div>
 
       {/* Add Note Input */}
@@ -331,7 +413,11 @@ function SupplierNotesSection({ userId }: { userId: number }) {
             disabled={isAdding || !newNoteText.trim()}
             className="bg-[#0FA4A9] hover:bg-[#0D9488] text-white rounded-xl px-6 h-10 font-bold transition-all cursor-pointer flex items-center gap-2"
           >
-            {isAdding ? <Loader2 size={16} className="animate-spin" /> : <Plus size={16} />}
+            {isAdding ? (
+              <Loader2 size={16} className="animate-spin" />
+            ) : (
+              <Plus size={16} />
+            )}
             Add Note
           </Button>
         </div>
@@ -345,7 +431,10 @@ function SupplierNotesSection({ userId }: { userId: number }) {
           </div>
         ) : notes.length > 0 ? (
           notes.map((note) => (
-            <div key={note.id} className="bg-white p-6 rounded-3xl border border-[#D9E6FF] group transition-all hover:shadow-md">
+            <div
+              key={note.id}
+              className="bg-white p-6 rounded-3xl border border-[#D9E6FF] group transition-all hover:shadow-md"
+            >
               {editingNoteId === note.id ? (
                 <div className="space-y-4">
                   <textarea
@@ -366,7 +455,11 @@ function SupplierNotesSection({ userId }: { userId: number }) {
                       disabled={isUpdating}
                       className="bg-[#3A86FF] hover:bg-[#2563EB] text-white rounded-xl px-6 h-10 font-bold transition-all flex items-center gap-2"
                     >
-                      {isUpdating ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
+                      {isUpdating ? (
+                        <Loader2 size={16} className="animate-spin" />
+                      ) : (
+                        <Save size={16} />
+                      )}
                       Save Changes
                     </Button>
                   </div>
@@ -399,7 +492,11 @@ function SupplierNotesSection({ userId }: { userId: number }) {
                   </div>
                   <div className="flex items-center gap-2 text-[10px] text-[#94A3B8] font-bold uppercase tracking-widest border-t border-[#F8FBFA] pt-4">
                     <Calendar size={12} />
-                    {new Date(note.created_at).toLocaleDateString()} at {new Date(note.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                    {new Date(note.created_at).toLocaleDateString()} at{" "}
+                    {new Date(note.created_at).toLocaleTimeString([], {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })}
                   </div>
                 </div>
               )}
@@ -407,11 +504,12 @@ function SupplierNotesSection({ userId }: { userId: number }) {
           ))
         ) : (
           <div className="py-10 text-center bg-[#F8FBFA] rounded-3xl border border-dashed border-[#D9E6FF]">
-            <p className="text-gray-400 text-sm italic font-medium">No supplier notes recorded for this client.</p>
+            <p className="text-gray-400 text-sm italic font-medium">
+              No supplier notes recorded for this client.
+            </p>
           </div>
         )}
       </div>
     </div>
   );
 }
-
