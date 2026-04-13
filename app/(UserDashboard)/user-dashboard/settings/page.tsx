@@ -724,8 +724,9 @@ const ProfileEditView = ({
       data.append("name", formData.name);
       data.append("age", formData.age);
       data.append("sex", formData.sex);
-      data.append("height", formData.height);
-      data.append("weight", formData.weight);
+      // Backend api strictly validates integers, so round them before submit
+      data.append("height", Math.round(parseFloat(formData.height || "0")).toString());
+      data.append("weight", Math.round(parseFloat(formData.weight || "0")).toString());
       data.append("location", formData.location);
       data.append("agreed_terms", "1");
       data.append("body_fat", formData.body_fat);
@@ -924,6 +925,7 @@ const ProfileEditView = ({
               <input
                 type="number"
                 name="height"
+                step="any"
                 value={formData.height}
                 onChange={handleInputChange}
                 className="w-full bg-white border border-gray-200 rounded-[12px] py-4 px-6 text-sm md:text-base outline-none"
@@ -936,6 +938,7 @@ const ProfileEditView = ({
               <input
                 type="number"
                 name="weight"
+                step="any"
                 value={formData.weight}
                 onChange={handleInputChange}
                 className="w-full bg-white border border-gray-200 rounded-[12px] py-4 px-6 text-sm md:text-base outline-none"
