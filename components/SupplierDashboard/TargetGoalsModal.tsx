@@ -129,6 +129,7 @@ function TargetGoalsModalContent({
   // }, [apiGoals, user.target_goals]);
   const { data, isLoading: goalsLoading } = useGetTargetGoalQuery(user.id, { skip: true });
 
+  // const apiGoals = data?.data ?? [];
   const apiGoals = Array.isArray(data) ? data : [];
   const mergedGoals = useMemo(() => {
     const map = new Map<number, GoalForDisplay>();
