@@ -50,6 +50,7 @@ const OnboardingStepsPage = () => {
     weight: "70",
     bodyFat: "",
     location: "Dublin",
+    zipcode: "",
     // Step 3
     smoking: "",
     alcohol: "",
@@ -111,6 +112,7 @@ const OnboardingStepsPage = () => {
       apiData.append("weight", Math.round(finalWeight).toString());
       apiData.append("body_fat", formData.bodyFat || "0");
       apiData.append("location", formData.location);
+      apiData.append("zipcode", formData.zipcode);
       apiData.append("agreed_terms", agreed ? "1" : "0");
 
       // Habits mapping
@@ -523,6 +525,23 @@ const OnboardingStepsPage = () => {
                     }
                     className="w-full bg-[#F8FAFF] border border-gray-100 rounded-xl py-4 px-5 text-gray-700 font-medium"
                     placeholder="Dublin"
+                  />
+                </div>
+
+                {/* Zip Code */}
+                <div className="space-y-3">
+                  <label className="flex items-center gap-2 text-[#041228] font-bold text-sm">
+                    <MapPin size={18} className="text-[#3A86FF]" />
+                    Zip Code <span className="text-red-400">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.zipcode}
+                    onChange={(e) =>
+                      setFormData({ ...formData, zipcode: e.target.value })
+                    }
+                    className="w-full bg-[#F8FAFF] border border-gray-100 rounded-xl py-4 px-5 text-gray-700 font-medium"
+                    placeholder="12345"
                   />
                 </div>
               </div>
