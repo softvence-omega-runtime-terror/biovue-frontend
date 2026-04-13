@@ -253,15 +253,21 @@ const SafeImage = ({
 const RecommendationCard = ({
   coach,
   onView,
+  isConnected,
 }: {
   coach: any;
   onView: () => void;
+  isConnected?: boolean;
 }) => {
   const [imgSrc, setImgSrc] = useState(coach.avatar);
 
   return (
-    <div className="bg-white rounded-[16px] p-6 border border-[#3A86FF]/25 shadow-[0_4px_20px_rgba(0,0,0,0.03)] flex flex-col gap-4">
-      <div className="flex items-start justify-between">
+    <div className="relative group rounded-[16px] h-full flex">
+      <div className={cn(
+        "bg-white rounded-[16px] p-6 border shadow-[0_4px_20px_rgba(0,0,0,0.03)] flex flex-col gap-4 w-full transition-all duration-300",
+        isConnected ? "border-gray-200 opacity-90" : "border-[#3A86FF]/25"
+      )}>
+        <div className="flex items-start justify-between">
         <div className="w-16 h-16 rounded-xl overflow-hidden bg-gray-50 flex items-center justify-center">
           <SafeImage
             src={coach.avatar}
@@ -294,14 +300,26 @@ const RecommendationCard = ({
       </div>
       <button
         onClick={onView}
-        className="w-full mt-auto py-3.5 rounded-xl font-bold flex items-center justify-center gap-2 transition-all group bg-[#6C91C2] text-white hover:bg-[#5a7da9] text-sm cursor-pointer"
+        disabled={isConnected}
+        className="w-full mt-auto py-3.5 rounded-xl font-bold flex items-center justify-center gap-2 transition-all group bg-[#6C91C2] text-white hover:bg-[#5a7da9] text-sm cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
       >
-        View Profile
-        <ArrowRight
-          size={16}
-          className="group-hover:translate-x-1 transition-transform"
-        />
+        {isConnected ? "Connected" : "View Profile"}
+        {!isConnected && (
+          <ArrowRight
+            size={16}
+            className="group-hover:translate-x-1 transition-transform"
+          />
+        )}
       </button>
+      </div>
+      {isConnected && (
+        <div className="absolute inset-0 bg-white/40 backdrop-blur-[2px] z-10 rounded-[16px] flex items-center justify-center border border-white/50 transition-all">
+          <div className="bg-white/95 px-5 py-2.5 rounded-xl shadow-xl border border-gray-100 flex items-center gap-2 transform transition-transform hover:scale-105">
+            <Check size={18} className="text-[#0FA4A9] stroke-[3]" />
+            <span className="text-sm font-bold text-[#1F2D2E]">Connected</span>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
@@ -366,12 +384,16 @@ const SupportTeamCard = ({
   );
 };
 
-const BrowseCard = ({ item, onView }: { item: any; onView: () => void }) => {
+const BrowseCard = ({ item, onView, isConnected }: { item: any; onView: () => void; isConnected?: boolean }) => {
   const [imgSrc, setImgSrc] = useState(item.avatar);
 
   return (
-    <div className="bg-white rounded-[16px] p-6 border border-[#3A86FF]/25 shadow-[0_4px_20px_rgba(0,0,0,0.03)] flex flex-col items-center text-center gap-4 min-w-[280px]">
-      <div className="w-16 h-16 rounded-xl overflow-hidden bg-gray-50 flex items-center justify-center">
+    <div className="relative group rounded-[16px] h-full flex min-w-[280px]">
+      <div className={cn(
+        "bg-white rounded-[16px] p-6 border shadow-[0_4px_20px_rgba(0,0,0,0.03)] flex flex-col items-center text-center gap-4 w-full transition-all duration-300",
+        isConnected ? "border-gray-200 opacity-90" : "border-[#3A86FF]/25"
+      )}>
+        <div className="w-16 h-16 rounded-xl overflow-hidden bg-gray-50 flex items-center justify-center">
         <SafeImage
           src={item.avatar}
           alt={item.name}
@@ -395,14 +417,26 @@ const BrowseCard = ({ item, onView }: { item: any; onView: () => void }) => {
       </div>
       <button
         onClick={onView}
-        className="w-full bg-[#6C91C2] text-white py-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-2 hover:bg-[#5a7da9] transition-all group cursor-pointer"
+        disabled={isConnected}
+        className="w-full bg-[#6C91C2] text-white py-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-2 hover:bg-[#5a7da9] transition-all group cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
       >
-        {item.isShop ? "View Shop" : "View Profile"}
-        <ArrowRight
-          size={14}
-          className="group-hover:translate-x-1 transition-transform"
-        />
+        {isConnected ? "Connected" : item.isShop ? "View Shop" : "View Profile"}
+        {!isConnected && (
+          <ArrowRight
+            size={14}
+            className="group-hover:translate-x-1 transition-transform"
+          />
+        )}
       </button>
+      </div>
+      {isConnected && (
+        <div className="absolute inset-0 bg-white/40 backdrop-blur-[2px] z-10 rounded-[16px] flex items-center justify-center border border-white/50 transition-all min-w-[280px]">
+          <div className="bg-white/95 px-5 py-2.5 rounded-xl shadow-xl border border-gray-100 flex items-center gap-2 transform transition-transform hover:scale-105">
+            <Check size={18} className="text-[#0FA4A9] stroke-[3]" />
+            <span className="text-sm font-bold text-[#1F2D2E]">Connected</span>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
@@ -411,7 +445,7 @@ const BrowseCard = ({ item, onView }: { item: any; onView: () => void }) => {
 
 const SupportPage = () => {
   const user = useSelector(selectCurrentUser);
-  const [nearTab, setNearTab] = useState<"local" | "remote">("local");
+  const [nearTab, setNearTab] = useState<"local" | "remote" | "both">("local");
   const { data: recommendationsData, isLoading: isLoadingRecommendations } =
     useGetAiRecommendedProfessionalsQuery(user?.id, { skip: !user?.id });
 
@@ -454,23 +488,11 @@ const SupportPage = () => {
       .filter((item) => item.length > 0);
   };
 
-  const suggestions = recommendationsData?.suggestions || [];
-  const connectedProfessions = connectedData?.data || [];
-
-  const displaySupportTeam = (
-    Array.isArray(connectedProfessions) ? connectedProfessions : []
-  ).map((item: any) => ({
-    id: item.professional_info?.id || item.id,
-    name: item.professional_info?.name || item.name,
-    role: "COACH",
-    avatar: getFullImageUrl(
-      item.professional_info?.profile_image || item.image_url,
-      "https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=300&h=300&auto=format&fit=crop",
-    ),
-    status: "Active",
-  }));
-
-  const recommendedCoaches = suggestions.slice(0, 3).map((item: any) => ({
+  const onsite = recommendationsData?.onsite || [];
+  const remote = recommendationsData?.remote || [];
+  const both = recommendationsData?.both || [];
+  
+  const mapProfessional = (item: any) => ({
     ...item,
     id: item.professional?.id || item.id,
     name: item.professional?.name || item.name,
@@ -498,8 +520,15 @@ const SupportPage = () => {
           ? "text-[#F59E0B] bg-[#FFFBEB]"
           : "text-[#6B7280] bg-[#F3F4FB]",
     description: item.match_reason || "Based on your clinical health data.",
+    rating: item.relevance_score
+      ? (item.relevance_score / 20).toFixed(1)
+      : "4.8",
+    isShop:
+      item.professional_type === "supplement_supplier" ||
+      item.professional?.profession_type === "supplement_supplier",
     bio:
       item.professional?.profile?.bio ||
+      item.bio ||
       "Helps busy professionals improve body composition, energy, and consistency through data-driven lifestyle adjustments.",
     specialties: item.professional?.profile?.specialties?.length
       ? sanitizeArrayField(item.professional.profile.specialties)
@@ -512,45 +541,46 @@ const SupportPage = () => {
           "Provide weekly guidance",
           "Adjust targets based on your data",
         ],
-  }));
+  });
 
-  const browseProfessionals = suggestions.slice(3).map((item: any) => ({
-    ...item,
-    id: item.professional?.id || item.id,
-    name: item.professional?.name || item.name,
-    role: (
-      item.professional_type ||
-      item.professional?.profession_type ||
-      "coach"
-    )
-      .replace(/_/g, " ")
-      .toUpperCase(),
+  const formattedOnsite = onsite.map(mapProfessional);
+  const formattedRemote = remote.map(mapProfessional);
+  const formattedBoth = both.map(mapProfessional);
+
+  const allProfessionals = [
+    ...formattedBoth,
+    ...formattedRemote,
+    ...formattedOnsite,
+  ];
+  const connectedProfessions = connectedData?.data || [];
+
+  const displaySupportTeam = (
+    Array.isArray(connectedProfessions) ? connectedProfessions : []
+  ).map((item: any) => ({
+    id: item.professional_info?.id || item.id,
+    name: item.professional_info?.name || item.name,
+    role: "COACH",
     avatar: getFullImageUrl(
-      item.professional?.profile?.image || item.professional?.profile_image,
-      "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=300&h=300&auto=format&fit=crop",
+      item.professional_info?.profile_image || item.image_url,
+      "https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=300&h=300&auto=format&fit=crop",
     ),
-    rating: item.relevance_score
-      ? (item.relevance_score / 20).toFixed(1)
-      : "4.8",
-    isShop:
-      item.professional_type === "supplement_supplier" ||
-      item.professional?.profession_type === "supplement_supplier",
-    bio:
-      item.professional?.profile?.bio ||
-      item.bio ||
-      "Quality products tailored to your needs.",
-    specialties: item.professional?.profile?.specialties?.length
-      ? sanitizeArrayField(item.professional.profile.specialties)
-      : ["Supplementation", "Recovery"],
-    services: item.professional?.profile?.services?.length
-      ? sanitizeArrayField(item.professional.profile.services)
-      : ["Provide quality products", "Nutrition advice"],
+    status: "Active",
   }));
 
-  const displayRecommended =
-    suggestions.length > 0 ? recommendedCoaches : RECOMMENDED_COACHES;
+  const connectedIds = displaySupportTeam.map((c: any) => c.id);
+
+  const displayRecommended = (
+    nearTab === "local" ? formattedOnsite :
+    nearTab === "remote" ? formattedRemote :
+    formattedBoth
+  ).slice(0, 3);
+
   const displayBrowse =
-    suggestions.length > 0 ? browseProfessionals : ALL_PROFESSIONALS;
+    allProfessionals.length > 0 ? allProfessionals : ALL_PROFESSIONALS;
+
+  const dynamicLocal = formattedOnsite;
+  const dynamicRemote = formattedRemote;
+  const dynamicBoth = formattedBoth;
 
   const [view, setView] = useState<
     "dashboard" | "chat" | "goals" | "detail" | "success"
@@ -606,10 +636,13 @@ const SupportPage = () => {
     if (!selectedCoach?.id) return;
     try {
       await connectProfession({ profession_id: selectedCoach.id }).unwrap();
+      toast.success(`Successfully connected with ${selectedCoach.name}!`);
       setView("success");
-    } catch (error) {
+    } catch (error: any) {
       console.error("Failed to connect:", error);
-      toast.error("Failed to connect with coach");
+      const errorMessage =
+        error?.data?.message || error?.data?.error || "Failed to connect with coach";
+      toast.error(errorMessage);
     }
   };
 
@@ -1210,14 +1243,70 @@ const SupportPage = () => {
                   </p>
                 </div>
 
+                {/* Category Toggles */}
+                <div className="flex items-center gap-2 bg-[#F3F4F6] p-1 rounded-xl w-fit">
+                  <button
+                    onClick={() => setNearTab("local")}
+                    className={cn(
+                      "px-6 py-2 rounded-lg cursor-pointer hover:opacity-80 text-xs font-bold transition-all whitespace-nowrap",
+                      nearTab === "local"
+                        ? "bg-white shadow text-[#0FA4A9]"
+                        : "text-[#5F6F73]",
+                    )}
+                  >
+                    Local
+                  </button>
+
+                  <button
+                    onClick={() => setNearTab("remote")}
+                    className={cn(
+                      "px-6 py-2 rounded-lg cursor-pointer hover:opacity-80 text-xs font-bold transition-all whitespace-nowrap",
+                      nearTab === "remote"
+                        ? "bg-white shadow text-[#0FA4A9]"
+                        : "text-[#5F6F73]",
+                    )}
+                  >
+                    Remote
+                  </button>
+
+                  <button
+                    onClick={() => setNearTab("both")}
+                    className={cn(
+                      "px-6 py-2 rounded-lg cursor-pointer hover:opacity-80 text-xs font-bold transition-all whitespace-nowrap",
+                      nearTab === "both"
+                        ? "bg-white shadow text-[#0FA4A9]"
+                        : "text-[#5F6F73]",
+                    )}
+                  >
+                    Both
+                  </button>
+                </div>
+
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {displayRecommended.map((coach: any) => (
-                    <RecommendationCard
-                      key={coach.id}
-                      coach={coach}
-                      onView={() => handleSelectCoach(coach)}
-                    />
-                  ))}
+                  {displayRecommended.length > 0 ? (
+                    displayRecommended.map((coach: any) => (
+                      <RecommendationCard
+                        key={coach.id}
+                        coach={coach}
+                        onView={() => handleSelectCoach(coach)}
+                        isConnected={connectedIds.includes(coach.id)}
+                      />
+                    ))
+                  ) : (
+                    <div className="col-span-1 md:col-span-2 lg:col-span-3 bg-white/50 backdrop-blur-sm rounded-3xl p-12 border border-dashed border-[#3A86FF]/20 flex flex-col items-center text-center gap-4">
+                      <div className="w-16 h-16 rounded-2xl bg-[#F3F4FB] flex items-center justify-center">
+                        <Info size={32} className="text-[#3A86FF]/40" />
+                      </div>
+                      <div className="flex flex-col gap-1">
+                        <h3 className="text-lg font-bold text-[#1F2D2E]">
+                          No {nearTab === "local" ? "Local" : nearTab === "remote" ? "Remote" : "Hybrid"} Professionals Found
+                        </h3>
+                        <p className="text-[#5F6F73] text-sm max-w-xs">
+                          We couldn't find any {nearTab === "local" ? "onsite" : nearTab === "remote" ? "remote" : "both onsite and remote"} professionals tailored to your data right now.
+                        </p>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -1323,61 +1412,9 @@ const SupportPage = () => {
                         key={item.id}
                         item={item}
                         onView={() => handleSelectCoach(item)}
+                        isConnected={connectedIds.includes(item.id)}
                       />
                     ))}
-                </div>
-              </div>
-              {/* Near You Section */}
-              <div className="flex flex-col gap-6 pb-8">
-                <div className="flex flex-col gap-2">
-                  <h2 className="text-xl font-bold text-[#1F2D2E]">
-                    See who is near you
-                  </h2>
-                  <p className="text-[#5F6F73] text-sm">
-                    Discover professionals based on your location or work
-                    remotely.
-                  </p>
-                </div>
-
-                {/* Tabs */}
-                <div className="flex items-center gap-2 bg-[#F3F4F6] p-1 rounded-xl w-fit">
-                  <button
-                    onClick={() => setNearTab("local")}
-                    className={cn(
-                      "px-4 py-2 rounded-lg cursor-pointer hover:opacity-80 text-xs font-bold transition-all",
-                      nearTab === "local"
-                        ? "bg-white shadow text-[#0FA4A9]"
-                        : "text-[#5F6F73]",
-                    )}
-                  >
-                    Local Professionals
-                  </button>
-
-                  <button
-                    onClick={() => setNearTab("remote")}
-                    className={cn(
-                      "px-4 py-2 rounded-lg cursor-pointer hover:opacity-80 text-xs font-bold transition-all",
-                      nearTab === "remote"
-                        ? "bg-white shadow text-[#0FA4A9]"
-                        : "text-[#5F6F73]",
-                    )}
-                  >
-                    Remote Professionals
-                  </button>
-                </div>
-
-                {/* List */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {(nearTab === "local"
-                    ? LOCAL_PROFESSIONALS
-                    : REMOTE_PROFESSIONALS
-                  ).map((item) => (
-                    <BrowseCard
-                      key={item.id}
-                      item={item}
-                      onView={() => handleSelectCoach(item)}
-                    />
-                  ))}
                 </div>
               </div>
               {/* Footer Banner */}
