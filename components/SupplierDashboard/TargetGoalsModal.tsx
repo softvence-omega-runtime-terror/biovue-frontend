@@ -130,7 +130,7 @@ function TargetGoalsModalContent({
   const { data, isLoading: goalsLoading } = useGetTargetGoalQuery(user.id);
 
   // const apiGoals = data?.data ?? [];
-const apiGoals = Array.isArray(data?.data) ? data.data : [];
+  const apiGoals = Array.isArray(data) ? data : [];
   const mergedGoals = useMemo(() => {
     const map = new Map<number, GoalForDisplay>();
 
