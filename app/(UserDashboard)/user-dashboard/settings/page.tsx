@@ -683,34 +683,11 @@ const ProfileEditView = ({
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  // const toggleField = (field: string) => {
-  //   setFormData((prev) => ({
-  //     ...prev,
-  //     [field]: (prev as any)[field] === 1 ? 0 : 1,
-  //   }));
-  // };
-  const wellnessKeys = [
-    "is_athletic",
-    "toned",
-    "lean",
-    "muscular",
-    "curvy_fit",
-  ];
-
   const toggleField = (field: string) => {
-    setFormData((prev) => {
-      const updated: any = { ...prev };
-
-      // Reset all to 0
-      wellnessKeys.forEach((key) => {
-        updated[key] = 0;
-      });
-
-      // Set only selected one to 1
-      updated[field] = 1;
-
-      return updated;
-    });
+    setFormData((prev) => ({
+      ...prev,
+      [field]: (prev as any)[field] === 1 ? 0 : 1,
+    }));
   };
 
   const handleSubmit = async () => {
@@ -1119,7 +1096,7 @@ const ProfileEditView = ({
               key={item.key}
               onClick={() => toggleField(item.key)}
               className={cn(
-                "px-6 py-3 cursor-pointer rounded-xl font-bold text-sm transition-all border",
+                "px-6 py-3 rounded-xl font-bold text-sm transition-all border",
                 (formData as any)[item.key] === 1
                   ? "bg-[#EAFBF7] border-[#0FA4A9] text-[#0FA4A9] shadow-sm"
                   : "bg-white border-gray-100 text-[#94A3B8] hover:bg-gray-50",
