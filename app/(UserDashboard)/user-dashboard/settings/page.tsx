@@ -683,11 +683,28 @@ const ProfileEditView = ({
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
+  const wellnessKeys = [
+    "is_athletic",
+    "toned",
+    "lean",
+    "muscular",
+    "curvy_fit",
+  ];
+
   const toggleField = (field: string) => {
-    setFormData((prev) => ({
-      ...prev,
-      [field]: (prev as any)[field] === 1 ? 0 : 1,
-    }));
+    setFormData((prev) => {
+      const updated: any = { ...prev };
+
+      // Reset all to 0
+      wellnessKeys.forEach((key) => {
+        updated[key] = 0;
+      });
+
+      // Set only selected one to 1
+      updated[field] = 1;
+
+      return updated;
+    });
   };
 
   const handleSubmit = async () => {
