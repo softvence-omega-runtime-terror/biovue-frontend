@@ -127,23 +127,47 @@ function TargetGoalsModalContent({
   //   }
   //   return Array.from(map.values());
   // }, [apiGoals, user.target_goals]);
-  const { data, isLoading: goalsLoading } = useGetTargetGoalQuery(user.id);
+  // const { data, isLoading: goalsLoading } = useGetTargetGoalQuery(user.id, { skip: true });
 
   // const apiGoals = data?.data ?? [];
-  const apiGoals = Array.isArray(data) ? data : [];
+  // const apiGoals = Array.isArray(data) ? data : [];
+
+  const embeddedGoals = Array.isArray(user.target_goals)
+    ? user.target_goals
+    : user.target_goals
+      ? [user.target_goals]
+      : [];
   const mergedGoals = useMemo(() => {
     const map = new Map<number, GoalForDisplay>();
 
-    for (const g of user.target_goals ?? []) {
+    const embeddedGoals = Array.isArray(user.target_goals)
+      ? user.target_goals
+      : user.target_goals
+        ? [user.target_goals]
+        : [];
+
+    for (const g of embeddedGoals) {
       map.set(g.id, goalFromEmbedded(g));
     }
 
-    for (const g of apiGoals) {
-      map.set(g.id, goalFromApi(g));
-    }
-
     return Array.from(map.values());
-  }, [apiGoals, user.target_goals]);
+  }, [user.target_goals]);
+  // const mergedGoals = useMemo(() => {
+  //   const map = new Map<number, GoalForDisplay>();
+
+  //   const embeddedGoals = Array.isArray(user.target_goals)
+  //     ? user.target_goals
+  //     : [];
+  //   for (const g of embeddedGoals) {
+  //     map.set(g.id, goalFromEmbedded(g));
+  //   }
+
+  //   for (const g of apiGoals) {
+  //     map.set(g.id, goalFromApi(g));
+  //   }
+
+  //   return Array.from(map.values());
+  // }, [apiGoals, user.target_goals]);
   const sortedGoals = useMemo(
     () =>
       [...mergedGoals].sort(
@@ -152,6 +176,8 @@ function TargetGoalsModalContent({
       ),
     [mergedGoals],
   );
+
+  const goalsLoading = false;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4 animate-in fade-in duration-200">

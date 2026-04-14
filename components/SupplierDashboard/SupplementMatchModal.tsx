@@ -185,10 +185,10 @@ export default function SupplementMatchModal({
     const compactMessage = prepareMessageForChatApi(
       [
         `Supplement suggestion: ${supp.name}`,
-        `Match: ${Math.round(supp.match_score)}%`,
-        supp.match_reason.length > 320 ? `${supp.match_reason.slice(0, 317)}...` : supp.match_reason,
+        `Match: ${Math.round(supp.match_score || 0)}%`,
+        (supp.match_reason || "").length > 320 ? `${supp.match_reason.slice(0, 317)}...` : (supp.match_reason || ""),
         ``,
-        `Link: ${supp.redirect_url}`,
+        `Link: ${supp.redirect_url || ""}`,
       ].join("\n"),
     );
 
@@ -218,7 +218,16 @@ export default function SupplementMatchModal({
           sendErrorToast(e2, "Failed to send suggestion.");
         }
       } else {
-        sendErrorToast(error, "Failed to send suggestion.");
+        // Fallback for ANY OTHER status code (e.g. 422 Payload Too Large) just in case
+        try {
+          await sendMessage({
+            receiver_id: Number(user.id),
+            message: compactMessage,
+          }).unwrap();
+          toast.success(`Suggestion sent to ${user.name} (short format)`);
+        } catch (e3) {
+          sendErrorToast(e3, "Failed to send suggestion.");
+        }
       }
     }
   };
@@ -257,7 +266,18 @@ export default function SupplementMatchModal({
       toast.success(`All suggestions sent to ${user.name}`);
     } catch (error) {
       console.error(error);
-      sendErrorToast(error, "Failed to send all suggestions.");
+      
+      // Fallback to sending extremely minimal suggestion message if the huge one fails
+      try {
+        const minimalSummary = matchData?.matched_products?.map(p => `- ${p.name}`).join("\n");
+        await sendMessage({
+           receiver_id: Number(user.id),
+           message: `Hi ${user.name}, I've analysed your profile and found ${matchData?.matched_products?.length} match(es) for you:\n${minimalSummary}\n\nPlease check my specific suggestions or the AI matching section for details.`
+        }).unwrap();
+        toast.success(`Brief match summary sent to ${user.name}`);
+      } catch (errFallback) {
+         sendErrorToast(errFallback, "Failed to send all suggestions.");
+      }
     }
   };
 
