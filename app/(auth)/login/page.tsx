@@ -9,6 +9,7 @@ import { useLoginMutation } from "@/redux/features/api/auth/authApi";
 import { toast } from "sonner";
 import { useDispatch } from "react-redux";
 import { setCredentials } from "@/redux/features/slice/authSlice";
+<<<<<<< HEAD
 import { useUpdateAiSuggestedTargetMutation } from "@/redux/features/api/userDashboard/nutritionAiApi";
 import { 
   useUpdateProfessionalRecommendationsMutation, 
@@ -16,16 +17,21 @@ import {
   useUpdateNutritionistUserRecommendationsMutation, 
   useUpdateSupplierUserRecommendationsMutation 
 } from "@/redux/features/api/recommendation/recommendationApi";
+=======
+>>>>>>> 410dd532ee996539727df3ca07ef1dda727893f5
 
 const LoginPage = () => {
   const router = useRouter();
   const dispatch = useDispatch();
   const [login, { isLoading }] = useLoginMutation();
+<<<<<<< HEAD
   const [updateAiSuggestedTarget] = useUpdateAiSuggestedTargetMutation();
   const [updateProfessionalRecommendations] = useUpdateProfessionalRecommendationsMutation();
   const [updateTrainerUserRecommendations] = useUpdateTrainerUserRecommendationsMutation();
   const [updateNutritionistUserRecommendations] = useUpdateNutritionistUserRecommendationsMutation();
   const [updateSupplierUserRecommendations] = useUpdateSupplierUserRecommendationsMutation();
+=======
+>>>>>>> 410dd532ee996539727df3ca07ef1dda727893f5
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
     email: "",
@@ -63,6 +69,7 @@ const LoginPage = () => {
         const professionType = userData?.profession_type;
         const isProfileCompleted = userData?.is_profile_completed;
 
+<<<<<<< HEAD
         console.log("User Data for Routing:", { userRole, userType, professionType, isProfileCompleted });
 
         if (userRole === "admin") {
@@ -76,25 +83,38 @@ const LoginPage = () => {
           
           if (professionType === "trainer_coach") {
             updateTrainerUserRecommendations({ trainer_id: userId });
+=======
+        if (userRole === "admin") {
+          router.push("/admin-dashboard/overview");
+        } else if (userType === "professional" || userRole === "professional") {
+          if (professionType === "trainer_coach") {
+>>>>>>> 410dd532ee996539727df3ca07ef1dda727893f5
             if (isProfileCompleted === "Your profile is complete.") {
               router.push("/trainer-dashboard/overview");
             } else {
               router.push("/trainer-profile");
             }
           } else if (professionType === "supplement_supplier") {
+<<<<<<< HEAD
             updateSupplierUserRecommendations({ supplier_id: userId });
+=======
+>>>>>>> 410dd532ee996539727df3ca07ef1dda727893f5
             if (isProfileCompleted === "Your profile is complete.") {
               router.push("/supplier-dashboard");
             } else {
               router.push("/register/business/profile-setup");
             }
           } else if (professionType === "nutritionist") {
+<<<<<<< HEAD
             updateNutritionistUserRecommendations({ nutritionist_id: userId });
+=======
+>>>>>>> 410dd532ee996539727df3ca07ef1dda727893f5
             router.push("/nutritionist-dashboard/overview");
           } else {
             router.push("/personalize-journey/onboarding");
           }
         } else if (userRole === "individual") {
+<<<<<<< HEAD
           const userId = userData?.id || userData?.user_id;
           
           // Trigger AI suggested target update
@@ -102,6 +122,8 @@ const LoginPage = () => {
           // Trigger professional recommendations
           updateProfessionalRecommendations({ user_id: userId });
           
+=======
+>>>>>>> 410dd532ee996539727df3ca07ef1dda727893f5
           if (isProfileCompleted === "Your profile is complete.") {
             router.push("/user-dashboard");
           } else {

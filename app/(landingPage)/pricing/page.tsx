@@ -138,6 +138,16 @@ const PricingPage = () => {
     }
   };
 
+  const getDisplayPrice = (price: string | number) => {
+    const numericPrice = Number(price);
+
+    if (billingCycle === "annual") {
+      return (numericPrice * 12).toFixed(0);
+    }
+
+    return numericPrice.toString();
+  };
+
   return (
     <div className="min-h-screen bg-[#F9FAFB] font-sans pb-20">
       {/* Header */}
@@ -248,8 +258,13 @@ const PricingPage = () => {
                 <PricingCard
                   key={plan.id}
                   title={plan.name}
+                  // price={
+                  //   plan.price === "0.00" || plan.price === 0 ? "0" : plan.price
+                  // }
                   price={
-                    plan.price === "0.00" || plan.price === 0 ? "0" : plan.price
+                    plan.price === "0.00" || plan.price === 0
+                      ? "0"
+                      : getDisplayPrice(plan.price)
                   }
                   // period={
                   //   plan.name.toLowerCase().includes("free trial")
@@ -257,14 +272,17 @@ const PricingPage = () => {
                   //     : "/Month"
                   // }
                   period={
-                    plan.name?.toLowerCase().includes("free trial")
-                      ? `for ${plan.duration || 0} days`
-                      : billingCycle === "monthly"
-                        ? "/Month"
-                        : "/Annual"
+                    plan.name.toLowerCase().includes("free trial")
+                      ? `for ${plan.duration} days`
+                      : "/Month"
                   }
+                  // subtext={
+                  //   plan.name.toLowerCase().includes("free trial")
+                  //     ? "Then auto-bills based on selected plan"
+                  //     : ""
+                  // }
                   subtext={
-                    plan.name?.toLowerCase().includes("free trial")
+                    plan.name.toLowerCase().includes("free trial")
                       ? "Then auto-bills based on selected plan"
                       : ""
                   }
@@ -343,22 +361,27 @@ const PricingPage = () => {
                       ? `Up to ${plan.member_limit} clients`
                       : "Unlimited clients"
                   }
+                  // price={
+                  //   plan.price === "0.00" || plan.price === 0
+                  //     ? "Custom"
+                  //     : plan.price
+                  // }
                   price={
                     plan.price === "0.00" || plan.price === 0
                       ? "Custom"
-                      : plan.price
+                      : getDisplayPrice(plan.price)
                   }
                   // period={
                   //   plan.price === "0.00" || plan.price === 0 ? "" : "/Month"
                   // }
                   period={
-                    plan.price === "0.00" || plan.price === 0
-                      ? ""
-                      : billingCycle === "monthly"
-                        ? "/Month"
-                        : "/Annual"
+                    plan.price === "0.00" || plan.price === 0 ? "" : "/Month"
                   }
-                  subtext=""
+                  subtext={
+                    plan.price !== "0.00" && plan.price !== 0
+                      ? "7 days free trial"
+                      : ""
+                  }
                   features={(() => {
                     const overrideTexts = [
                       "Dedicated account manager",
@@ -424,11 +447,11 @@ const PricingPage = () => {
                   //     : "Start 7-Day Free Trial"
                   // }
                   cta={
-                    plan.name?.toLowerCase().includes("enterprise")
+                    plan.name.toLowerCase().includes("enterprise") ||
+                    plan.price === "0.00" ||
+                    plan.price === 0
                       ? "Contact Via Mail"
-                      : plan.name?.toLowerCase().includes("tier 1")
-                        ? "Buy Now"
-                        : `Update to ${plan.name || ""}`
+                      : "Start 7-Day Free Trial"
                   }
                   active={false}
                   ctaColor="bg-[#0FA4A9]"
