@@ -458,7 +458,7 @@ const PricingPage = () => {
                     plan.name.toLowerCase().includes("enterprise") ||
                     plan.price === "0.00" ||
                     plan.price === 0
-                      ? "Contact Via Mail"
+                      ? "Contact Sales"
                       : "Start 7-Day Free Trial"
                   }
                   ctaColor="bg-[#0FA4A9]"
