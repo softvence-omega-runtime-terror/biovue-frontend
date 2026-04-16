@@ -10,7 +10,17 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { MoreVertical, Eye, Gift } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { ClientTableItem } from "@/redux/features/api/TrainerDashboard/trainerOverviewApi";
+import GiftProjectionModal from "./GiftProjectionModal";
 
 type ClientsTableProps = {
   limit?: number;
@@ -18,6 +28,10 @@ type ClientsTableProps = {
 };
 
 export default function ClientsTable({ clients, limit }: ClientsTableProps) {
+  const router = useRouter();
+  const [isGiftModalOpen, setIsGiftModalOpen] = useState(false);
+  const [selectedUserId, setSelectedUserId] = useState<number | null>(null);
+  const [selectedUserName, setSelectedUserName] = useState<string>("");
   const statusConfig: Record<string, { label: string, className: string }> = {
     "on-track": {
       label: "On track",
@@ -94,11 +108,32 @@ export default function ClientsTable({ clients, limit }: ClientsTableProps) {
                     {client.activity || "Recent"}
                   </TableCell>
                   <TableCell className="py-3 text-base md:text-lg">
-                    <Link href={`/trainer-dashboard/clients/${client.user_id}`}>
-                      <button className="flex gap-5 items-center cursor-pointer hover:opacity-80  border px-4 py-1 rounded-full border-[#0D9488] text-[#0D9488] font-medium transition-all">
-                        View
-                      </button>
-                    </Link>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <button className="p-2 hover:bg-[#F8FBFA] rounded-full transition-colors text-[#5F6F73] focus:outline-none">
+                          <MoreVertical size={20} />
+                        </button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end" className="w-48 p-2 rounded-xl border-[#E4EFFF] shadow-md bg-white">
+                        <DropdownMenuItem
+                          className="flex items-center gap-2 cursor-pointer p-2 rounded-lg hover:bg-[#F8FBFA] text-sm text-[#041228] font-medium transition-colors"
+                          onClick={() => router.push(`/trainer-dashboard/clients/${client.user_id}`)}
+                        >
+                          <Eye size={16} className="text-[#0FA4A9]" />
+                          View Details
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          className="flex items-center gap-2 cursor-pointer p-2 rounded-lg hover:bg-[#F8FBFA] text-sm text-[#041228] font-medium transition-colors mt-1"
+                          onClick={() => {
+                            setSelectedUserId(client.user_id);
+                            setIsGiftModalOpen(true);
+                          }}
+                        >
+                          <Gift size={16} className="text-[#0FA4A9]" />
+                          Gift Projection
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   </TableCell>
                 </TableRow>
               );
@@ -106,6 +141,15 @@ export default function ClientsTable({ clients, limit }: ClientsTableProps) {
           </TableBody>
         </Table>
       </div>
+      
+      <GiftProjectionModal
+        isOpen={isGiftModalOpen}
+        onClose={() => {
+          setIsGiftModalOpen(false);
+          setSelectedUserId(null);
+        }}
+        preselectedUserId={selectedUserId}
+      />
     </div>
   );
 }
