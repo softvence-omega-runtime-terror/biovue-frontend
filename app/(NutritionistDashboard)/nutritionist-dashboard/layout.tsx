@@ -11,7 +11,7 @@ export default function NutritionistDashboardLayout({
 }) {
   return (
     <ProtectedRoute allowedRoles={["professional"]} allowedProfessions={["nutritionist"]}>
-      <div className={`flex min-h-screen ${poppins.className}`}>
+      <div className={`flex min-h-screen bg-[#F4FBFA] ${poppins.className}`}>
         {/* Sidebar */}
         <Suspense fallback={<div className="w-20 md:w-65 border-r border-gray-200" />}>
         <Sidebar role="nutritionist" />

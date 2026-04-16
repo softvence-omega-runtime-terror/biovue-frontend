@@ -10,20 +10,25 @@ import {
   useGetPlansQuery,
   Plan,
 } from "@/redux/features/api/adminDashboard/plan";
-import { useProcessPaymentMutation } from "@/redux/features/api/paymentApi";
+import {
+  useProcessPaymentMutation,
+} from "@/redux/features/api/paymentApi";
 import { useSendMessageMutation } from "@/redux/features/api/contactApi";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import {
   selectCurrentToken,
   selectCurrentUser,
+  updateUser,
 } from "@/redux/features/slice/authSlice";
 import { toast } from "sonner";
 import { X } from "lucide-react";
+import Swal from "sweetalert2";
 
 const PricingPage = () => {
   const router = useRouter();
   const token = useSelector(selectCurrentToken);
   const user = useSelector(selectCurrentUser);
+  const dispatch = useDispatch();
   const [processPayment] = useProcessPaymentMutation();
   const [sendMessage, { isLoading: isSending }] = useSendMessageMutation();
   const [loadingPlanId, setLoadingPlanId] = useState<number | null>(null);
@@ -35,6 +40,9 @@ const PricingPage = () => {
   const [contactMessage, setContactMessage] = useState("");
 
   const { data: plans = [], isLoading } = useGetPlansQuery(billingCycle);
+
+
+  console.log("Plans:", plans);
 
   // Filter Individual Plans
   const filteredIndividualPlans = plans
@@ -52,6 +60,7 @@ const PricingPage = () => {
       if (!aEnt && bEnt) return -1;
       return (Number(a.price) || 0) - (Number(b.price) || 0);
     });
+
 
   const handlePlanSelection = async (plan: Plan) => {
     // Enterprise and Custom plan special handling
@@ -136,6 +145,16 @@ const PricingPage = () => {
         error?.data?.message || "An error occurred while sending your message.",
       );
     }
+  };
+
+  const getDisplayPrice = (price: string | number) => {
+    const numericPrice = Number(price);
+
+    if (billingCycle === "annual") {
+      return (numericPrice * 12).toFixed(0);
+    }
+
+    return numericPrice.toString();
   };
 
   return (
@@ -248,8 +267,13 @@ const PricingPage = () => {
                 <PricingCard
                   key={plan.id}
                   title={plan.name}
+                  // price={
+                  //   plan.price === "0.00" || plan.price === 0 ? "0" : plan.price
+                  // }
                   price={
-                    plan.price === "0.00" || plan.price === 0 ? "0" : plan.price
+                    plan.price === "0.00" || plan.price === 0
+                      ? "0"
+                      : getDisplayPrice(plan.price)
                   }
                   // period={
                   //   plan.name.toLowerCase().includes("free trial")
@@ -257,14 +281,17 @@ const PricingPage = () => {
                   //     : "/Month"
                   // }
                   period={
-                    plan.name?.toLowerCase().includes("free trial")
-                      ? `for ${plan.duration || 0} days`
-                      : billingCycle === "monthly"
-                        ? "/Month"
-                        : "/Annual"
+                    plan.name.toLowerCase().includes("free trial")
+                      ? `for ${plan.duration} days`
+                      : "/Month"
                   }
+                  // subtext={
+                  //   plan.name.toLowerCase().includes("free trial")
+                  //     ? "Then auto-bills based on selected plan"
+                  //     : ""
+                  // }
                   subtext={
-                    plan.name?.toLowerCase().includes("free trial")
+                    plan.name.toLowerCase().includes("free trial")
                       ? "Then auto-bills based on selected plan"
                       : ""
                   }
@@ -292,7 +319,6 @@ const PricingPage = () => {
                       ? `Start ${plan.duration || 0}-Day Trial`
                       : `Upgrade To ${plan.name || ""}`
                   }
-                  active={false}
                   ctaColor="bg-[#0FA4A9]"
                   specialFeature={
                     plan.name?.toLowerCase().includes("premium")
@@ -343,22 +369,27 @@ const PricingPage = () => {
                       ? `Up to ${plan.member_limit} clients`
                       : "Unlimited clients"
                   }
+                  // price={
+                  //   plan.price === "0.00" || plan.price === 0
+                  //     ? "Custom"
+                  //     : plan.price
+                  // }
                   price={
                     plan.price === "0.00" || plan.price === 0
                       ? "Custom"
-                      : plan.price
+                      : getDisplayPrice(plan.price)
                   }
                   // period={
                   //   plan.price === "0.00" || plan.price === 0 ? "" : "/Month"
                   // }
                   period={
-                    plan.price === "0.00" || plan.price === 0
-                      ? ""
-                      : billingCycle === "monthly"
-                        ? "/Month"
-                        : "/Annual"
+                    plan.price === "0.00" || plan.price === 0 ? "" : "/Month"
                   }
-                  subtext=""
+                  subtext={
+                    plan.price !== "0.00" && plan.price !== 0
+                      ? "7 days free trial"
+                      : ""
+                  }
                   features={(() => {
                     const overrideTexts = [
                       "Dedicated account manager",
@@ -424,13 +455,12 @@ const PricingPage = () => {
                   //     : "Start 7-Day Free Trial"
                   // }
                   cta={
-                    plan.name?.toLowerCase().includes("enterprise")
+                    plan.name.toLowerCase().includes("enterprise") ||
+                    plan.price === "0.00" ||
+                    plan.price === 0
                       ? "Contact Via Mail"
-                      : plan.name?.toLowerCase().includes("tier 1")
-                        ? "Buy Now"
-                        : `Update to ${plan.name || ""}`
+                      : "Start 7-Day Free Trial"
                   }
-                  active={false}
                   ctaColor="bg-[#0FA4A9]"
                   onSelect={() => handlePlanSelection(plan)}
                   isLoading={loadingPlanId === plan.id}
@@ -623,7 +653,9 @@ const PricingCard = ({
   ctaColor,
   priceSize = "text-5xl",
   onSelect,
+  onCancel,
   isLoading,
+  isCancelling,
   ...props
 }: any) => {
   return (
@@ -634,7 +666,14 @@ const PricingCard = ({
       )}
     >
       <div className="mb-6">
-        <h3 className="text-lg font-bold text-[#3A86FF] mb-2">{title}</h3>
+        <div className="flex justify-between items-start">
+          <h3 className="text-lg font-bold text-[#3A86FF] mb-2">{title}</h3>
+          {active && (
+            <span className="bg-[#EAFBF7] text-[#0FA4A9] text-[10px] font-bold px-2 py-1 rounded-full uppercase tracking-wider flex items-center gap-1">
+              <Check size={10} /> Active
+            </span>
+          )}
+        </div>
         {capacity && (
           <p className="text-sm font-bold text-[#1F2D2E] mb-4">{capacity}</p>
         )}
@@ -708,19 +747,24 @@ const PricingCard = ({
       </div>
 
       <button
-        onClick={onSelect}
-        disabled={isLoading}
+        onClick={active ? onCancel : onSelect}
+        disabled={isLoading || isCancelling}
         className={cn(
           "w-full text-center py-3.5 rounded-xl font-bold text-sm text-white hover:bg-opacity-90 transition-all shadow-md group flex items-center justify-center gap-2 cursor-pointer",
-          ctaColor || "bg-[#3A86FF] shadow-[0_4px_14px_0_rgba(58,134,255,0.3)]",
-          isLoading && "opacity-70 cursor-not-allowed",
+          active
+            ? "bg-red-500 shadow-[0_4px_14px_0_rgba(239,68,68,0.3)]"
+            : ctaColor ||
+                "bg-[#3A86FF] shadow-[0_4px_14px_0_rgba(58,134,255,0.3)]",
+          (isLoading || isCancelling) && "opacity-70 cursor-not-allowed",
         )}
       >
-        {isLoading ? (
+        {isLoading || isCancelling ? (
           <>
             <Loader2 className="animate-spin" size={18} />
-            Processing...
+            {isCancelling ? "Cancelling..." : "Processing..."}
           </>
+        ) : active ? (
+          "Cancel Plan"
         ) : (
           cta || props.cta
         )}
