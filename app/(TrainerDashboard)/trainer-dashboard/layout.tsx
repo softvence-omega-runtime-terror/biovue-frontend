@@ -11,7 +11,7 @@ export default function TrainerDashboardLayout({
 }) {
   return (
     <ProtectedRoute allowedRoles={["professional"]} allowedProfessions={["trainer_coach"]}>
-      <div className={`flex min-h-screen bg-[#F3F8FF] ${poppins.className}`}>
+      <div className={`flex min-h-screen bg-[#F4FBFA] ${poppins.className}`}>
         {/* Sidebar */}
         <Suspense fallback={<div className="w-20 md:w-65 border-r border-gray-200" />}>
         <Sidebar role="trainer" />

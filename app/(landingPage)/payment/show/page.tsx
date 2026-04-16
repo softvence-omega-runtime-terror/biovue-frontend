@@ -6,17 +6,30 @@ import Image from "next/image";
 import { CheckCircle2, ArrowRight, Home, LayoutDashboard, Loader2, Receipt } from "lucide-react";
 import { useGetPaymentSummaryQuery } from "@/redux/features/api/paymentApi";
 import { cn } from "@/lib/utils";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { baseApi } from "@/redux/features/api/baseApi";
 import { useEffect } from "react";
+import { updateUser, selectCurrentUser } from "@/redux/features/slice/authSlice";
 
 const PaymentSuccessPage = () => {
   const { data, isLoading, isError } = useGetPaymentSummaryQuery();
   const dispatch = useDispatch();
+  const currentUser = useSelector(selectCurrentUser);
 
   useEffect(() => {
     if (data?.success) {
-      console.log("Payment successful, invalidating tags...");
+      console.log("Payment successful, updating user and invalidating tags...");
+      
+      // Update local Redux state with latest user info from payment summary
+      if (data.user) {
+        dispatch(updateUser({
+          ...data.user,
+          plan_id: data.latest_payment?.plan?.id,
+          plan_name: data.latest_payment?.plan?.name,
+          // You might want to add other fields here if needed
+        }));
+      }
+      
       dispatch(baseApi.util.invalidateTags(["Projection", "Profile"]));
     }
   }, [data, dispatch]);

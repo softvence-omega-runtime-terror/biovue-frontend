@@ -1,3 +1,5 @@
+"use client";
+
 import { poppins } from "@/app/font";
 import Sidebar from "@/components/Sidebar";
 import { Suspense } from "react";
@@ -7,12 +9,37 @@ import { Crown } from "lucide-react";
 import ProjectionLimitIndicator from "@/components/dashboard/ProjectionLimitIndicator";
 import NotificationBell from "@/components/dashboard/NotificationBell";
 import ProfileDropdown from "@/components/dashboard/ProfileDropdown";
+import { usePathname } from "next/navigation";
+import React, { useState, useEffect } from "react";
 
 export default function UserDashboardLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const pathname = usePathname();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const getPageTitle = () => {
+    if (!mounted) return "Dashboard";
+    const path = pathname?.toLowerCase();
+    if (path === "/user-dashboard") return "Dashboard";
+    if (path.includes("/user-dashboard/projections")) return "Projections";
+    if (path.includes("/user-dashboard/projection-galary")) return "Projection Galary";
+    if (path.includes("/user-dashboard/insights")) return "Insights";
+    if (path.includes("/user-dashboard/habits")) return "Habits";
+    if (path.includes("/user-dashboard/support")) return "Support";
+    if (path.includes("/user-dashboard/messages")) return "Message";
+    if (path.includes("/user-dashboard/settings")) return "Settings";
+    if (path.includes("/user-dashboard/upgrade")) return "Upgrade";
+    if (path.includes("/user-dashboard/notifications")) return "Notifications";
+    return "Dashboard";
+  };
+
   return (
     <ProtectedRoute allowedRoles={["individual"]} allowedProfessions={[null]}>
       <div className={`flex min-h-screen bg-[#F4FBFA] ${poppins.className}`}>
@@ -26,7 +53,9 @@ export default function UserDashboardLayout({
         <div className="flex flex-col flex-1 min-w-0">
           {/* Header - Now persistent in Layout */}
           <header className="sticky top-0 z-20 flex items-center justify-between py-4 bg-white border-b border-gray-100 px-6 w-full">
-            <h1 className="text-xl font-semibold text-[#1F2D2E]">Dashboard</h1>
+            <h1 className="text-xl font-semibold text-[#1F2D2E]">
+              {getPageTitle()}
+            </h1>
             <div className="flex items-center gap-6 ml-auto">
               <ProjectionLimitIndicator />
               <NotificationBell />
