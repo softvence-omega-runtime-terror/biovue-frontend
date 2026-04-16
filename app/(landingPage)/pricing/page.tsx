@@ -425,7 +425,7 @@ const PricingPage = () => {
                   // }
                   cta={
                     plan.name?.toLowerCase().includes("enterprise")
-                      ? "Contact Via Mail"
+                      ? "Contact Sales"
                       : plan.name?.toLowerCase().includes("tier 1")
                         ? "Buy Now"
                         : `Update to ${plan.name || ""}`

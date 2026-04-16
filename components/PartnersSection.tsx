@@ -15,7 +15,7 @@ const PartnersSection = () => {
     return null;
   }
 
-  // Duplicate partners for a seamless loop
+
   const displayPartners = [...partners, ...partners, ...partners];
 
   return (
