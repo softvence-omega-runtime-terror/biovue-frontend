@@ -1,13 +1,15 @@
 "use client";
 
 import React, { useState, useEffect, useMemo } from "react";
-import { useSelector } from "react-redux";
-import { selectCurrentUser } from "@/redux/features/slice/authSlice";
+import { useSelector, useDispatch } from "react-redux";
+import { selectCurrentUser, updateUser } from "@/redux/features/slice/authSlice";
 
 import {
   useGetSubscriptionPlansQuery,
   useGetPaymentSummaryQuery,
+  useCancelSubscriptionMutation,
 } from "@/redux/features/api/paymentApi";
+import Swal from "sweetalert2";
 import {
   useGetNotificationsQuery,
   useGetNotificationSettingsQuery,
@@ -1213,6 +1215,7 @@ const SubscriptionView = ({
   currentUser: any;
   router: any;
 }) => {
+  const dispatch = useDispatch();
   const [billingCycle, setBillingCycle] = useState<"monthly" | "annual">(
     "monthly",
   );
@@ -1223,19 +1226,79 @@ const SubscriptionView = ({
       type: currentUser?.role || "individual",
     });
 
+
+    console.log("Plans Data:",plansData)
+
   const { data: paymentSummary } = useGetPaymentSummaryQuery();
 
+  console.log("Payment Summary:", paymentSummary);
+
+  
+  const [cancelSubscription, { isLoading: isCancelling }] =
+    useCancelSubscriptionMutation();
+
   const plans = plansData?.data || [];
-  const currentPlanId = currentUser?.plan_id;
+
+  // Determine active plan ID - source of truth is either the summary (if active status) or the auth user data
+  const ACTIVE_STATUSES = ["active", "succeeded", "paid", "complete", "completed"];
+  const activePlanFromSummary =
+    paymentSummary?.latest_payment &&
+    ACTIVE_STATUSES.includes(
+      (paymentSummary.latest_payment.status ?? "").toLowerCase()
+    )
+      ? paymentSummary.latest_payment.plan.id
+      : null;
+
+  // Final active plan ID to use for UI highlights
+  const activePlanId = activePlanFromSummary || currentUser?.plan_id;
+  const activePlanName = paymentSummary?.latest_payment?.plan?.name || currentUser?.plan_name || (activePlanId ? "Active Plan" : "Free Trial");
+
+  // Logic to help the user find their plan if it's on a different cycle
+  useEffect(() => {
+    if (activePlanId && plans.length > 0) {
+      const foundInCurrentCycle = plans.some(p => Number(p.id) === Number(activePlanId));
+      if (!foundInCurrentCycle) {
+        // If we have an active plan but it's not in the currently displayed (monthly/annual) list,
+        // we might want to tell the user or auto-switch?
+        // For now, let's just log it.
+        console.log("Active plan not in current cycle view");
+      }
+    }
+  }, [activePlanId, plans]);
 
   // Calculate if the subscription is more than 6 months old
   const canCancel = useMemo(() => {
-    if (!paymentSummary?.latest_payment?.created_at) return false;
+    // If no summary available yet, default to allowing cancel if they have a plan_id (or as per business logic)
+    if (!paymentSummary?.latest_payment) return true; 
+    
+    if (!paymentSummary.latest_payment.created_at) return false;
     const createdAt = new Date(paymentSummary.latest_payment.created_at);
     const sixMonthsAgo = new Date();
     sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
     return createdAt <= sixMonthsAgo;
   }, [paymentSummary]);
+
+  const handleCancelSubscription = async () => {
+    const result = await Swal.fire({
+      title: "Are you sure?",
+      text: "Do you really want to cancel your subscription?",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#0FA4A9",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Yes, cancel it!",
+    });
+
+    if (result.isConfirmed) {
+      try {
+        await cancelSubscription().unwrap();
+        dispatch(updateUser({ plan_id: null, plan_name: null, plan_duration: null }));
+        toast.success("Subscription cancelled successfully");
+      } catch (error: any) {
+        toast.error(error?.data?.message || "Failed to cancel subscription");
+      }
+    }
+  };
 
   return (
     <div className="flex flex-col gap-8 p-6 md:p-8 w-full min-h-screen pb-24">
@@ -1265,24 +1328,24 @@ const SubscriptionView = ({
                 Current Plan
               </span>
               <h2 className="text-3xl font-extrabold">
-                {currentUser?.plan_name || "Free Trial"}
+                {activePlanName}
               </h2>
             </div>
             <div className="flex flex-col items-end gap-2">
               <span className="text-xs font-bold opacity-80 uppercase tracking-widest">
                 {currentUser?.plan_duration
                   ? `${currentUser.plan_duration} Days Left`
-                  : "No Active Plan"}
+                  : activePlanId ? "Active Plan" : "No Active Plan"}
               </span>
               <div className="bg-white/20 backdrop-blur-md px-4 py-1.5 rounded-full flex items-center gap-2">
                 <div
                   className={cn(
                     "w-2 h-2 rounded-full",
-                    currentUser?.plan_id ? "bg-[#4ADE80]" : "bg-gray-400",
+                    activePlanId ? "bg-[#4ADE80]" : "bg-gray-400",
                   )}
                 />
                 <span className="text-[10px] font-extrabold uppercase tracking-widest">
-                  {currentUser?.plan_id ? "Active" : "Inactive"}
+                  {activePlanId ? "Active" : "Inactive"}
                 </span>
               </div>
             </div>
@@ -1290,24 +1353,30 @@ const SubscriptionView = ({
           <div className="h-px bg-white/20 w-full" />
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold opacity-80">
-              Plan: {currentUser?.plan_name || "None"}
+              Plan: {activePlanName}
             </span>
             <div className="flex flex-col items-end gap-1">
-              <button
-                disabled={!canCancel}
-                className={cn(
-                  "text-[10px] font-extrabold uppercase tracking-widest border px-4 py-1.5 rounded-lg transition-all",
-                  canCancel
-                    ? "border-white/40 hover:bg-white/10"
-                    : "border-white/20 text-white/40 cursor-not-allowed opacity-50 grayscale",
-                )}
-              >
-                Cancel Subscription
-              </button>
-              {!canCancel && (
-                <span className="text-[8px] font-bold text-white/50 uppercase tracking-tighter">
-                  6 months commitment required
-                </span>
+              {/* Show cancel button if ANY active plan is detected */}
+              {(activePlanId || currentUser?.plan_id) && (
+                <>
+                  <button
+                    onClick={handleCancelSubscription}
+                    disabled={isCancelling}
+                    className={cn(
+                      "text-[10px] font-extrabold uppercase tracking-widest border px-4 py-1.5 rounded-lg transition-all",
+                      !isCancelling
+                        ? "border-white/40 hover:bg-white/10 cursor-pointer"
+                        : "border-white/20 text-white/40 cursor-not-allowed opacity-50 grayscale",
+                    )}
+                  >
+                    {isCancelling ? "Cancelling..." : "Cancel Subscription"}
+                  </button>
+                  {!canCancel && activePlanId && (
+                    <span className="text-[8px] font-bold text-white/50 uppercase tracking-tighter">
+                      6 months commitment required
+                    </span>
+                  )}
+                </>
               )}
             </div>
           </div>
@@ -1368,7 +1437,7 @@ const SubscriptionView = ({
           </div>
         ) : (
           plans.map((plan: any) => {
-            const isActive = Number(currentPlanId) === Number(plan.id);
+            const isActive = Number(activePlanId) === Number(plan.id);
             return (
               <div
                 key={plan.id}
@@ -1436,9 +1505,25 @@ const SubscriptionView = ({
                       </span>
                     </span>
                     {isActive && (
-                      <span className="text-[10px] font-bold text-[#0FA4A9] uppercase tracking-widest flex items-center gap-1">
-                        <Check size={10} /> Active Plan
-                      </span>
+                      <div className="flex flex-col items-end gap-2">
+                        <span className="text-[10px] font-bold text-[#0FA4A9] uppercase tracking-widest flex items-center gap-1">
+                          <Check size={10} /> Active Plan
+                        </span>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleCancelSubscription();
+                          }}
+                          disabled={!canCancel || isCancelling}
+                          className={cn(
+                            "text-[10px] font-bold text-red-500 hover:text-red-600 uppercase tracking-widest flex items-center gap-1 px-3 py-1.5 rounded-lg border border-red-100 hover:bg-red-50 transition-all",
+                            (!canCancel || isCancelling) &&
+                              "opacity-50 cursor-not-allowed",
+                          )}
+                        >
+                          <Trash2 size={10} /> Cancel
+                        </button>
+                      </div>
                     )}
                   </div>
                 </div>
@@ -1448,7 +1533,7 @@ const SubscriptionView = ({
         )}
       </div>
 
-      <div className="flex items-center gap-4">
+      {/* <div className="flex items-center gap-4">
         <button className="flex-[2] bg-[#0FA4A9] text-white py-4 rounded-[12px] font-bold text-base hover:bg-[#0d8e92] transition-all cursor-pointer shadow-lg shadow-[#0FA4A9]/20">
           Confirm Changes
         </button>
@@ -1458,7 +1543,7 @@ const SubscriptionView = ({
         >
           Back To Settings
         </button>
-      </div>
+      </div> */}
     </div>
   );
 };

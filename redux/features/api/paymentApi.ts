@@ -76,11 +76,19 @@ export const paymentApi = baseApi.injectEndpoints({
     }),
     getPaymentSummary: builder.query<PaymentSummaryResponse, void>({
       query: () => "/payment/show",
+      providesTags: ["PaymentSummary"],
+    }),
+    cancelSubscription: builder.mutation<{ success: boolean; message: string }, void>({
+      query: () => ({
+        url: "/payment/cancel",
+        method: "POST",
+      }),
+      invalidatesTags: ["PaymentSummary", "Plans", "Profile"],
     }),
   }),
   overrideExisting: false,
 });
 
-export const { useGetSubscriptionPlansQuery, useProcessPaymentMutation, useGetPaymentSummaryQuery } = paymentApi;
+export const { useGetSubscriptionPlansQuery, useProcessPaymentMutation, useGetPaymentSummaryQuery, useCancelSubscriptionMutation } = paymentApi;
 
 export default paymentApi;
