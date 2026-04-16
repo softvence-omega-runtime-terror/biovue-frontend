@@ -526,8 +526,3 @@ export default function SupplementMatchModal({
     </div>
   );
 }
-        </div>
-      </div>
-    </div>
-  );
-}

@@ -58,4 +58,3 @@ export const {
   useGetMessagesByUserIdQuery,
   useSendMessageMutation,
 } = messagesApi;
-} = messagesApi;
