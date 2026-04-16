@@ -2,7 +2,14 @@
 
 import Image from "next/image";
 import { useEffect } from "react";
-import { X, Sparkles, CheckCircle2, Send, Loader2, RefreshCw } from "lucide-react";
+import {
+  X,
+  Sparkles,
+  CheckCircle2,
+  Send,
+  Loader2,
+  RefreshCw,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { User } from "@/redux/features/api/SupplierDashboard/AllUsers";
 import {
@@ -53,7 +60,11 @@ function sendErrorToast(err: unknown, fallback: string) {
 
 const getSafeImageSrc = (src: string | null | undefined) => {
   if (!src) return null;
-  if (src.startsWith("/") || src.startsWith("http://") || src.startsWith("https://")) {
+  if (
+    src.startsWith("/") ||
+    src.startsWith("http://") ||
+    src.startsWith("https://")
+  ) {
     try {
       if (src.startsWith("http")) {
         new URL(src);
@@ -80,7 +91,10 @@ export default function SupplementMatchModal({
   const currentUser = useSelector(selectCurrentUser);
   const supplier_id = currentUser?.id;
 
-  const [triggerGet, { data: matchData, isLoading: isMatchLoading, isFetching: isMatchFetching }] = useLazyGetSavedMatchQuery();
+  const [
+    triggerGet,
+    { data: matchData, isLoading: isMatchLoading, isFetching: isMatchFetching },
+  ] = useLazyGetSavedMatchQuery();
   const [findMatch, { isLoading: isMatching }] = useFindMatchMutation();
   const [sendMessage, { isLoading: isSending }] = useSendMessageMutation();
 
@@ -186,7 +200,9 @@ export default function SupplementMatchModal({
       [
         `Supplement suggestion: ${supp.name}`,
         `Match: ${Math.round(supp.match_score || 0)}%`,
-        (supp.match_reason || "").length > 320 ? `${supp.match_reason.slice(0, 317)}...` : (supp.match_reason || ""),
+        (supp.match_reason || "").length > 320
+          ? `${supp.match_reason.slice(0, 317)}...`
+          : supp.match_reason || "",
         ``,
         `Link: ${supp.redirect_url || ""}`,
       ].join("\n"),
@@ -195,6 +211,7 @@ export default function SupplementMatchModal({
     try {
       await sendMessage({
         receiver_id: Number(user.id),
+        email: user.email,
         message: fullMessage,
       }).unwrap();
 
@@ -209,6 +226,7 @@ export default function SupplementMatchModal({
         try {
           await sendMessage({
             receiver_id: Number(user.id),
+            email: user.email,
             message: compactMessage,
           }).unwrap();
           toast.success(`Suggestion sent to ${user.name} (short format)`);
@@ -222,6 +240,7 @@ export default function SupplementMatchModal({
         try {
           await sendMessage({
             receiver_id: Number(user.id),
+            email: user.email,
             message: compactMessage,
           }).unwrap();
           toast.success(`Suggestion sent to ${user.name} (short format)`);
@@ -253,30 +272,38 @@ export default function SupplementMatchModal({
       const sections = allSupps.map(
         (supp, index) =>
           `- Recommendation ${index + 1} -\n` +
-          buildSupplementMessage(supp, matchData, { includeOverallSummary: false }),
+          buildSupplementMessage(supp, matchData, {
+            includeOverallSummary: false,
+          }),
       );
 
-      const message = prepareMessageForChatApi(header + sections.join("\n\n" + "-".repeat(28) + "\n\n"));
+      const message = prepareMessageForChatApi(
+        header + sections.join("\n\n" + "-".repeat(28) + "\n\n"),
+      );
 
       await sendMessage({
         receiver_id: Number(user.id),
+        email: user.email,
         message,
       }).unwrap();
 
       toast.success(`All suggestions sent to ${user.name}`);
     } catch (error) {
       console.error(error);
-      
+
       // Fallback to sending extremely minimal suggestion message if the huge one fails
       try {
-        const minimalSummary = matchData?.matched_products?.map(p => `- ${p.name}`).join("\n");
+        const minimalSummary = matchData?.matched_products
+          ?.map((p) => `- ${p.name}`)
+          .join("\n");
         await sendMessage({
-           receiver_id: Number(user.id),
-           message: `Hi ${user.name}, I've analysed your profile and found ${matchData?.matched_products?.length} match(es) for you:\n${minimalSummary}\n\nPlease check my specific suggestions or the AI matching section for details.`
+          receiver_id: Number(user.id),
+          email: user.email,
+          message: `Hi ${user.name}, I've analysed your profile and found ${matchData?.matched_products?.length} match(es) for you:\n${minimalSummary}\n\nPlease check my specific suggestions or the AI matching section for details.`,
         }).unwrap();
         toast.success(`Brief match summary sent to ${user.name}`);
       } catch (errFallback) {
-         sendErrorToast(errFallback, "Failed to send all suggestions.");
+        sendErrorToast(errFallback, "Failed to send all suggestions.");
       }
     }
   };
@@ -325,21 +352,29 @@ export default function SupplementMatchModal({
             <div className="flex items-center gap-2 text-[#0FA4A9]">
               <Sparkles size={20} fill="currentColor" />
               <h3 className="text-lg font-bold uppercase tracking-wider">
-                {isMatchLoading || isMatchFetching ? "Fetching..." : isMatching ? "Analysing..." : "Suggested Matches"}
+                {isMatchLoading || isMatchFetching
+                  ? "Fetching..."
+                  : isMatching
+                    ? "Analysing..."
+                    : "Suggested Matches"}
               </h3>
             </div>
-            {matchData?.matched_products && matchData.matched_products.length > 0 && (
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                disabled={isMatching || isMatchFetching}
-                onClick={handleRunAnalysis}
-                className="text-[#0FA4A9] hover:text-[#0FA4A9] hover:bg-[#0FA4A9]/10 rounded-xl px-4 flex items-center gap-2 font-bold transition-all cursor-pointer"
-              >
-                <RefreshCw size={16} className={isMatching ? "animate-spin" : ""} />
-                Regenerate AI
-              </Button>
-            )}
+            {matchData?.matched_products &&
+              matchData.matched_products.length > 0 && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  disabled={isMatching || isMatchFetching}
+                  onClick={handleRunAnalysis}
+                  className="text-[#0FA4A9] hover:text-[#0FA4A9] hover:bg-[#0FA4A9]/10 rounded-xl px-4 flex items-center gap-2 font-bold transition-all cursor-pointer"
+                >
+                  <RefreshCw
+                    size={16}
+                    className={isMatching ? "animate-spin" : ""}
+                  />
+                  Regenerate AI
+                </Button>
+              )}
           </div>
 
           {matchData?.recommendation_summary && (
@@ -347,7 +382,9 @@ export default function SupplementMatchModal({
               <p className="text-[10px] font-black uppercase tracking-widest text-[#94A3B8] mb-2">
                 Overall summary
               </p>
-              <p className="whitespace-pre-wrap">{matchData.recommendation_summary}</p>
+              <p className="whitespace-pre-wrap">
+                {matchData.recommendation_summary}
+              </p>
               {matchData.completeness_warning ? (
                 <p className="mt-3 text-xs font-semibold text-amber-800 bg-amber-50 border border-amber-100 rounded-xl px-3 py-2">
                   {matchData.completeness_warning}
@@ -359,16 +396,22 @@ export default function SupplementMatchModal({
             </div>
           )}
 
-          {matchData?.matched_products && matchData.matched_products.length > 2 && (
-            <Button
-              onClick={handleSuggestAll}
-              disabled={isSending}
-              className="w-full mb-6 bg-[#0FA4A9]/10 hover:bg-[#0FA4A9] text-[#0FA4A9] hover:text-white border border-[#0FA4A9]/20 rounded-2xl py-6 h-auto font-bold flex items-center justify-center gap-3 transition-all cursor-pointer group"
-            >
-              <Send size={18} className="group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
-              {isSending ? "Sending All..." : `Send All ${matchData.matched_products.length} Suggestions at Once`}
-            </Button>
-          )}
+          {matchData?.matched_products &&
+            matchData.matched_products.length > 2 && (
+              <Button
+                onClick={handleSuggestAll}
+                disabled={isSending}
+                className="w-full mb-6 bg-[#0FA4A9]/10 hover:bg-[#0FA4A9] text-[#0FA4A9] hover:text-white border border-[#0FA4A9]/20 rounded-2xl py-6 h-auto font-bold flex items-center justify-center gap-3 transition-all cursor-pointer group"
+              >
+                <Send
+                  size={18}
+                  className="group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform"
+                />
+                {isSending
+                  ? "Sending All..."
+                  : `Send All ${matchData.matched_products.length} Suggestions at Once`}
+              </Button>
+            )}
 
           <div className="space-y-4 max-h-100 overflow-y-auto pr-2 custom-scrollbar">
             {isMatchLoading || (isMatching && !matchData?.matched_products) ? (
@@ -376,12 +419,17 @@ export default function SupplementMatchModal({
                 <Loader2 className="w-12 h-12 text-[#0FA4A9] animate-spin" />
                 <div>
                   <p className="text-[#041228] font-bold text-lg mb-1">
-                    {isMatching ? "AI Intelligence at Work" : "Retrieving Matches"}
+                    {isMatching
+                      ? "AI Intelligence at Work"
+                      : "Retrieving Matches"}
                   </p>
-                  <p className="text-[#94A3B8] text-sm">Analyzing profile and product inventory...</p>
+                  <p className="text-[#94A3B8] text-sm">
+                    Analyzing profile and product inventory...
+                  </p>
                 </div>
               </div>
-            ) : matchData?.matched_products && matchData.matched_products.length > 0 ? (
+            ) : matchData?.matched_products &&
+              matchData.matched_products.length > 0 ? (
               matchData.matched_products.map((supp: MatchedProduct) => (
                 <div
                   key={supp.product_id}
@@ -418,12 +466,16 @@ export default function SupplementMatchModal({
                         In Stock
                       </span>
                     </div>
-                    <Button 
+                    <Button
                       disabled={isSending}
                       onClick={() => handleSuggestToUser(supp)}
                       className="bg-[#0FA4A9] hover:bg-[#0D9488] text-white rounded-xl px-6 h-9 flex items-center gap-2 transition-all cursor-pointer disabled:opacity-50"
                     >
-                      {isSending ? <Loader2 size={16} className="animate-spin" /> : <Send size={16} />}
+                      {isSending ? (
+                        <Loader2 size={16} className="animate-spin" />
+                      ) : (
+                        <Send size={16} />
+                      )}
                       Suggest to User
                     </Button>
                   </div>
@@ -435,17 +487,24 @@ export default function SupplementMatchModal({
                   <Sparkles size={40} className="text-[#94A3B8]" />
                 </div>
                 <div>
-                  <h4 className="text-xl font-bold text-[#041228] mb-2">No AI Matches Found</h4>
+                  <h4 className="text-xl font-bold text-[#041228] mb-2">
+                    No AI Matches Found
+                  </h4>
                   <p className="text-[#94A3B8] max-w-xs mx-auto text-sm font-medium">
-                    We haven&apos;t analyzed this user&apos;s profile yet. Click below to run the AI matching engine.
+                    We haven&apos;t analyzed this user&apos;s profile yet. Click
+                    below to run the AI matching engine.
                   </p>
                 </div>
-                <Button 
+                <Button
                   disabled={isMatching}
                   onClick={handleRunAnalysis}
                   className="bg-[#0FA4A9] hover:bg-[#0D9488] text-white rounded-2xl px-10 py-6 h-auto text-sm font-bold flex items-center gap-3 transition-all hover:shadow-lg active:scale-95 cursor-pointer shadow-md"
                 >
-                  {isMatching ? <Loader2 className="w-5 h-5 animate-spin" /> : <Sparkles className="w-5 h-5 fill-white" />}
+                  {isMatching ? (
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                  ) : (
+                    <Sparkles className="w-5 h-5 fill-white" />
+                  )}
                   Run AI Magic
                 </Button>
               </div>
@@ -462,6 +521,11 @@ export default function SupplementMatchModal({
           >
             Close
           </Button>
+        </div>
+      </div>
+    </div>
+  );
+}
         </div>
       </div>
     </div>

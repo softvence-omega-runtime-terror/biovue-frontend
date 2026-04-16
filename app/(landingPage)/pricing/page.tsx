@@ -455,11 +455,19 @@ const PricingPage = () => {
                   //     : "Start 7-Day Free Trial"
                   // }
                   cta={
+<<<<<<< HEAD
+                    plan.name?.toLowerCase().includes("enterprise")
+                      ? "Contact Sales"
+                      : plan.name?.toLowerCase().includes("tier 1")
+                        ? "Buy Now"
+                        : `Update to ${plan.name || ""}`
+=======
                     plan.name.toLowerCase().includes("enterprise") ||
                     plan.price === "0.00" ||
                     plan.price === 0
                       ? "Contact Via Mail"
                       : "Start 7-Day Free Trial"
+>>>>>>> 539267a8833ed39b51957f59359a35b7dd39e92b
                   }
                   ctaColor="bg-[#0FA4A9]"
                   onSelect={() => handlePlanSelection(plan)}
