@@ -7,16 +7,32 @@ import { Mail, ChevronLeft, ArrowRight } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useForgotPasswordMutation } from "@/redux/features/api/auth/authApi";
 import { toast } from "sonner";
+import { useGoogleReCaptcha } from "react-google-recaptcha-v3";
 
 const ForgotPasswordPage = () => {
+  const { executeRecaptcha } = useGoogleReCaptcha();
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [forgotPassword, { isLoading }] = useForgotPasswordMutation();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!executeRecaptcha) {
+      toast.info("Security check is taking longer than expected. Please wait a moment or refresh the page.");
+      console.error("reCAPTCHA Error: executeRecaptcha is NOT available. Possible reasons: Adblocker, invalid Site Key, or network issue.");
+      return;
+    }
+
     try {
-      const res = await forgotPassword({ email }).unwrap();
+      const token = await executeRecaptcha("forgot_password");
+      console.log("reCAPTCHA Token generated successfully");
+      
+      if (!token) {
+        toast.error("Security verification failed. Please refresh the page.");
+        return;
+      }
+      const res = await forgotPassword({ email, "g-recaptcha-response": token }).unwrap();
       if (res?.success || res?.status === "success") {
         toast.success(res?.message || "Password reset link sent to your email!");
         router.push(`/reset-password?email=${email}`);

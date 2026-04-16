@@ -16,8 +16,17 @@ import {
   useUpdateNutritionistUserRecommendationsMutation, 
   useUpdateSupplierUserRecommendationsMutation 
 } from "@/redux/features/api/recommendation/recommendationApi";
+import { useGoogleReCaptcha } from "react-google-recaptcha-v3";
 
 const LoginPage = () => {
+  const { executeRecaptcha } = useGoogleReCaptcha();
+
+  React.useEffect(() => {
+    if (executeRecaptcha) {
+      console.log("reCAPTCHA: executeRecaptcha is now available in LoginPage");
+    }
+  }, [executeRecaptcha]);
+
   const router = useRouter();
   const dispatch = useDispatch();
   const [login, { isLoading }] = useLoginMutation();
@@ -42,9 +51,29 @@ const LoginPage = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!executeRecaptcha) {
+      toast.info("Security check is taking longer than expected. Please wait a moment or refresh the page.");
+      console.error("reCAPTCHA Error: executeRecaptcha is NOT available. Possible reasons: Adblocker, invalid Site Key, or network issue.");
+      return;
+    }
+
     try {
+      const token = await executeRecaptcha("login");
+      console.log("reCAPTCHA Token generated successfully");
+      
+      if (!token) {
+        toast.error("Security verification failed. Please refresh the page.");
+        return;
+      }
+
+      const payload = {
+        ...formData,
+        "g-recaptcha-response": token,
+      };
+
       console.log("Attempting login with:", formData.email);
-      const res = await login(formData).unwrap();
+      const res = await login(payload).unwrap();
       console.log("Login Successful:", res);
 
       if (res?.success || res?.status === "success") {
@@ -131,6 +160,7 @@ const LoginPage = () => {
           alt="BioVue Logo"
           width={150}
           height={60}
+          style={{ height: "auto" }}
           className="object-contain"
           priority
         />
