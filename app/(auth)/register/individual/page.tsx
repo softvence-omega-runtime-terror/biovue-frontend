@@ -16,8 +16,10 @@ import { cn } from "@/lib/utils";
 import { useRegisterMutation } from "@/redux/features/api/auth/authApi";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
+import { useGoogleReCaptcha } from "react-google-recaptcha-v3";
 
 const IndividualRegister = () => {
+  const { executeRecaptcha } = useGoogleReCaptcha();
   const router = useRouter();
   const [register, { isLoading }] = useRegisterMutation();
   const [showPassword, setShowPassword] = useState(false);
@@ -40,19 +42,34 @@ const IndividualRegister = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    const payload = {
-      name: formData.name,
-      email: formData.email,
-      password: formData.password,
-      password_confirmation: formData.confirmPassword,
-      role: "individual",
-      terms_accepted: formData.acceptTerms,
-      user_type: "individual",
-      profession_type: "",
-    };
+
+    if (!executeRecaptcha) {
+      toast.info("Security check is taking longer than expected. Please wait a moment or refresh the page.");
+      console.error("reCAPTCHA Error: executeRecaptcha is NOT available. Possible reasons: Adblocker, invalid Site Key, or network issue.");
+      return;
+    }
 
     try {
+      const token = await executeRecaptcha("individual_register");
+      console.log("reCAPTCHA Token generated successfully");
+      
+      if (!token) {
+        toast.error("Security verification failed. Please refresh the page.");
+        return;
+      }
+
+      const payload = {
+        name: formData.name,
+        email: formData.email,
+        password: formData.password,
+        password_confirmation: formData.confirmPassword,
+        role: "individual",
+        terms_accepted: formData.acceptTerms,
+        user_type: "individual",
+        profession_type: "",
+        "g-recaptcha-response": token,
+      };
+
       const res = await register(payload).unwrap();
       if (res?.success || res?.status === "success") {
         toast.success(res?.message || "Registration successful! Please verify your OTP.");
@@ -72,6 +89,7 @@ const IndividualRegister = () => {
           alt="BioVue Logo"
           width={150}
           height={60}
+          style={{ height: "auto" }}
           className="object-contain"
           priority
         />

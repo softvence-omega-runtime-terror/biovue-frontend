@@ -16,12 +16,14 @@ import { useRouter } from "next/navigation";
 import { useRegisterMutation } from "@/redux/features/api/auth/authApi";
 import { toast } from "sonner";
 import { User } from "lucide-react";
+import { useGoogleReCaptcha } from "react-google-recaptcha-v3";
 
 /**
  * BusinessRegister Component
  * Redesigned for a compact, zero-scroll experience with a 2-column grid layout.
  */
 const BusinessRegister = () => {
+  const { executeRecaptcha } = useGoogleReCaptcha();
   const router = useRouter();
   const [register, { isLoading }] = useRegisterMutation();
   const [showPassword, setShowPassword] = useState(false);
@@ -51,20 +53,35 @@ const BusinessRegister = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    const payload = {
-      name: formData.name,
-      email: formData.email,
-      password: formData.password,
-      password_confirmation: formData.confirmPassword,
-      role: "professional",
-      terms_accepted: formData.acceptTerms,
-      user_type: "professional",
-      profession_type: formData.professionType,
-      zipcode: formData.zipcode,
-      prof_service_type: formData.prof_service_type,
-    };
+    if (!executeRecaptcha) {
+      toast.info("Security check is taking longer than expected. Please wait a moment or refresh the page.");
+      console.error("reCAPTCHA Error: executeRecaptcha is NOT available. Possible reasons: Adblocker, invalid Site Key, or network issue.");
+      return;
+    }
 
     try {
+      const token = await executeRecaptcha("business_register");
+      console.log("reCAPTCHA Token generated successfully");
+      
+      if (!token) {
+        toast.error("Security verification failed. Please refresh the page.");
+        return;
+      }
+
+      const payload = {
+        name: formData.name,
+        email: formData.email,
+        password: formData.password,
+        password_confirmation: formData.confirmPassword,
+        role: "professional",
+        terms_accepted: formData.acceptTerms,
+        user_type: "professional",
+        profession_type: formData.professionType,
+        zipcode: formData.zipcode,
+        prof_service_type: formData.prof_service_type,
+        "g-recaptcha-response": token,
+      };
+
       const res = await register(payload).unwrap();
       if (res?.success || res?.status === "success") {
         toast.success(
@@ -89,6 +106,7 @@ const BusinessRegister = () => {
           alt="BioVue Logo"
           width={120}
           height={50}
+          style={{ height: "auto" }}
           className="object-contain"
           priority
         />
