@@ -17,6 +17,7 @@ import { useRegisterMutation } from "@/redux/features/api/auth/authApi";
 import { toast } from "sonner";
 import { User } from "lucide-react";
 import { useGoogleReCaptcha } from "react-google-recaptcha-v3";
+import { getRecaptchaToken } from "@/lib/recaptcha";
 
 /**
  * BusinessRegister Component
@@ -24,6 +25,9 @@ import { useGoogleReCaptcha } from "react-google-recaptcha-v3";
  */
 const BusinessRegister = () => {
   const { executeRecaptcha } = useGoogleReCaptcha();
+  const siteKey = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY;
+  const useEnterprise =
+    process.env.NEXT_PUBLIC_RECAPTCHA_USE_ENTERPRISE === "true";
   const router = useRouter();
   const [register, { isLoading }] = useRegisterMutation();
   const [showPassword, setShowPassword] = useState(false);
@@ -53,20 +57,11 @@ const BusinessRegister = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!executeRecaptcha) {
-      toast.info("Security check is taking longer than expected. Please wait a moment or refresh the page.");
-      console.error("reCAPTCHA Error: executeRecaptcha is NOT available. Possible reasons: Adblocker, invalid Site Key, or network issue.");
-      return;
-    }
-
     try {
-      const token = await executeRecaptcha("business_register");
-      console.log("reCAPTCHA Token generated successfully");
-      
-      if (!token) {
-        toast.error("Security verification failed. Please refresh the page.");
-        return;
-      }
+      const token = await getRecaptchaToken(executeRecaptcha, "business_register", {
+        siteKey,
+        useEnterprise,
+      });
 
       const payload = {
         name: formData.name,
@@ -90,6 +85,22 @@ const BusinessRegister = () => {
           router.push(`/register-otp-verify?email=${formData.email}`);
       }
     } catch (err: unknown) {
+      const isScriptUnavailableError =
+        err instanceof Error && err.message === "RECAPTCHA_SCRIPT_NOT_AVAILABLE";
+      if (isScriptUnavailableError) {
+        toast.error(
+          "Security service is unavailable right now. Please refresh the page or contact support.",
+        );
+        return;
+      }
+
+      const isRecaptchaReadyError =
+        err instanceof Error && err.message === "RECAPTCHA_NOT_READY";
+      if (isRecaptchaReadyError) {
+        toast.error("Security verification is still loading. Please wait a few seconds and try again.");
+        return;
+      }
+
       const errorMessage =
         (err as { data?: { message?: string } })?.data?.message ??
         "Registration failed. Please try again.";

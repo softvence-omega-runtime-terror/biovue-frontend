@@ -7,26 +7,22 @@ import React from "react";
 
 export default function Providers({ children }: { children: React.ReactNode }) {
   const recaptchaKey = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY;
+  const useEnterprise =
+    process.env.NEXT_PUBLIC_RECAPTCHA_USE_ENTERPRISE === "true";
+  const useRecaptchaNet =
+    process.env.NEXT_PUBLIC_RECAPTCHA_USE_RECAPTCHA_NET === "true";
 
   React.useEffect(() => {
     if (!recaptchaKey) {
       console.error("reCAPTCHA Error: NEXT_PUBLIC_RECAPTCHA_SITE_KEY is missing from environment variables.");
-    } else {
-      console.log("reCAPTCHA: Provider initialized with key:", recaptchaKey.substring(0, 6) + "...");
     }
   }, [recaptchaKey]);
 
   return (
     <GoogleReCaptchaProvider
       reCaptchaKey={recaptchaKey || ""}
-      useRecaptchaNet={true}
-      useEnterprise={false}
-      container={{
-        parameters: {
-          badge: "bottomright",
-          theme: "light",
-        }
-      }}
+      useEnterprise={useEnterprise}
+      useRecaptchaNet={useRecaptchaNet}
       scriptProps={{
         async: true,
         defer: true,
