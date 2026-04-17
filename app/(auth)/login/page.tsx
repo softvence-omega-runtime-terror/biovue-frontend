@@ -17,15 +17,13 @@ import {
   useUpdateSupplierUserRecommendationsMutation 
 } from "@/redux/features/api/recommendation/recommendationApi";
 import { useGoogleReCaptcha } from "react-google-recaptcha-v3";
+import { getRecaptchaToken } from "@/lib/recaptcha";
 
 const LoginPage = () => {
   const { executeRecaptcha } = useGoogleReCaptcha();
-
-  React.useEffect(() => {
-    if (executeRecaptcha) {
-      console.log("reCAPTCHA: executeRecaptcha is now available in LoginPage");
-    }
-  }, [executeRecaptcha]);
+  const siteKey = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY;
+  const useEnterprise =
+    process.env.NEXT_PUBLIC_RECAPTCHA_USE_ENTERPRISE === "true";
 
   const router = useRouter();
   const dispatch = useDispatch();
@@ -52,20 +50,11 @@ const LoginPage = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!executeRecaptcha) {
-      toast.info("Security check is taking longer than expected. Please wait a moment or refresh the page.");
-      console.error("reCAPTCHA Error: executeRecaptcha is NOT available. Possible reasons: Adblocker, invalid Site Key, or network issue.");
-      return;
-    }
-
     try {
-      const token = await executeRecaptcha("login");
-      console.log("reCAPTCHA Token generated successfully");
-      
-      if (!token) {
-        toast.error("Security verification failed. Please refresh the page.");
-        return;
-      }
+      const token = await getRecaptchaToken(executeRecaptcha, "login", {
+        siteKey,
+        useEnterprise,
+      });
 
       const payload = {
         ...formData,
@@ -144,8 +133,21 @@ const LoginPage = () => {
         toast.error(res?.message || "Login failed. Please check your credentials.");
       }
     } catch (err: any) {
-      console.error("Login Error Captured:", err);
-      // Show server message if available, else default
+      const isScriptUnavailableError =
+        err?.message === "RECAPTCHA_SCRIPT_NOT_AVAILABLE";
+      if (isScriptUnavailableError) {
+        toast.error(
+          "Security service is unavailable right now. Please refresh the page or contact support.",
+        );
+        return;
+      }
+
+      const isRecaptchaReadyError = err?.message === "RECAPTCHA_NOT_READY";
+      if (isRecaptchaReadyError) {
+        toast.error("Security verification is still loading. Please wait a few seconds and try again.");
+        return;
+      }
+
       const serverMessage = err?.data?.message || err?.message || "Login failed. Please check your credentials.";
       toast.error(serverMessage);
     }
