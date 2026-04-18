@@ -149,11 +149,6 @@ const PricingPage = () => {
 
   const getDisplayPrice = (price: string | number) => {
     const numericPrice = Number(price);
-
-    if (billingCycle === "annual") {
-      return (numericPrice * 12).toFixed(0);
-    }
-
     return numericPrice.toString();
   };
 
@@ -283,7 +278,7 @@ const PricingPage = () => {
                   period={
                     plan.name.toLowerCase().includes("free trial")
                       ? `for ${plan.duration} days`
-                      : "/Month"
+                      : billingCycle === "monthly" ? "/Month" : "/Year"
                   }
                   // subtext={
                   //   plan.name.toLowerCase().includes("free trial")
@@ -383,7 +378,9 @@ const PricingPage = () => {
                   //   plan.price === "0.00" || plan.price === 0 ? "" : "/Month"
                   // }
                   period={
-                    plan.price === "0.00" || plan.price === 0 ? "" : "/Month"
+                    plan.price === "0.00" || plan.price === 0 
+                      ? "" 
+                      : billingCycle === "monthly" ? "/Month" : "/Year"
                   }
                   subtext={
                     plan.price !== "0.00" && plan.price !== 0
@@ -523,7 +520,7 @@ const PricingPage = () => {
                   compact
                   title={plan.name}
                   price={plan.price}
-                  period="/Month"
+                  period={billingCycle === "monthly" ? "/Month" : "/Year"}
                   features={[
                     { text: plan.projections, included: true },
                     { text: plan.users, included: true },
