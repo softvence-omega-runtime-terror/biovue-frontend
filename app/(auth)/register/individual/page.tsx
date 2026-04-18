@@ -12,7 +12,6 @@ import {
   ArrowRight,
   User,
 } from "lucide-react";
-import { cn } from "@/lib/utils";
 import { useRegisterMutation } from "@/redux/features/api/auth/authApi";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
@@ -48,10 +47,11 @@ const IndividualRegister = () => {
     e.preventDefault();
 
     try {
-      const token = await getRecaptchaToken(executeRecaptcha, "individual_register", {
-        siteKey,
-        useEnterprise,
-      });
+      const token = await getRecaptchaToken(
+        executeRecaptcha,
+        "individual_register",
+        { siteKey, useEnterprise }
+      );
 
       const payload = {
         name: formData.name,
@@ -67,38 +67,47 @@ const IndividualRegister = () => {
 
       const res = await register(payload).unwrap();
       if (res?.success || res?.status === "success") {
-        toast.success(res?.message || "Registration successful! Please verify your OTP.");
+        toast.success(
+          res?.message || "Registration successful! Please verify your OTP."
+        );
         router.push(`/register-otp-verify?email=${formData.email}`);
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       const isScriptUnavailableError =
-        err?.message === "RECAPTCHA_SCRIPT_NOT_AVAILABLE";
+        err instanceof Error &&
+        err.message === "RECAPTCHA_SCRIPT_NOT_AVAILABLE";
       if (isScriptUnavailableError) {
         toast.error(
-          "Security service is unavailable right now. Please refresh the page or contact support.",
+          "Security service is unavailable right now. Please refresh the page or contact support."
         );
         return;
       }
 
-      const isRecaptchaReadyError = err?.message === "RECAPTCHA_NOT_READY";
+      const isRecaptchaReadyError =
+        err instanceof Error && err.message === "RECAPTCHA_NOT_READY";
       if (isRecaptchaReadyError) {
-        toast.error("Security verification is still loading. Please wait a few seconds and try again.");
+        toast.error(
+          "Security verification is still loading. Please wait a few seconds and try again."
+        );
         return;
       }
 
-      toast.error(err?.data?.message || "Registration failed. Please try again.");
+      toast.error(
+        (err as { data?: { message?: string } })?.data?.message ||
+          "Registration failed. Please try again."
+      );
     }
   };
 
   return (
-    <div className="flex flex-col items-center w-full max-w-[500px] mx-auto py-5">
-      {/* Logo at the top */}
-      <div className="mb-8">
+    <div className="flex flex-col items-center w-full max-w-[480px] mx-auto py-3">
+      {/* Logo */}
+      <div className="mb-2">
         <Image
           src="/images/logo.png"
           alt="BioVue Logo"
-          width={150}
-          height={60}
+          width={130}
+          height={54}
           style={{ height: "auto" }}
           className="object-contain"
           priority
@@ -106,38 +115,38 @@ const IndividualRegister = () => {
       </div>
 
       {/* Main Card */}
-      <div className="w-full bg-white rounded-xl p-8 border border-[rgba(58,134,255,0.5)] shadow-[0_4px_24px_rgba(58,134,255,0.04)]">
+      <div className="w-full bg-white rounded-3xl p-6 md:p-8 border border-[#D9E6FF] shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
         {/* Back Button */}
-        <div className="flex justify-center mb-6">
+        <div className="flex justify-center mb-4">
           <Link
             href="/register"
-            className="inline-flex items-center gap-2 text-[#3A86FF] hover:opacity-80 transition-opacity font-bold text-xs tracking-wider uppercase"
+            className="inline-flex items-center gap-2 text-[#3A86FF] hover:opacity-80 transition-opacity font-bold text-sm tracking-wider uppercase"
           >
-            <ArrowLeft size={18} strokeWidth={2.5} />
+            <ArrowLeft size={20} strokeWidth={2.5} />
             Back to account type
           </Link>
         </div>
 
         {/* Header */}
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-extrabold text-[#041228] mb-3">
+        <div className="text-center mb-5">
+          <h1 className="text-3xl md:text-[32px] font-bold text-[#041228] mb-2">
             Create Your Account
           </h1>
-          <p className="text-[#98A2B3] text-lg font-medium">
+          <p className="text-[#98A2B3] text-base">
             Setting up your individual profile.
           </p>
         </div>
 
         {/* Form */}
-        <form onSubmit={handleSubmit} className="space-y-3">
+        <form onSubmit={handleSubmit} className="space-y-4">
+          {/* Name */}
           <div className="space-y-2">
             <label className="text-sm font-bold text-[#041228] block ml-1">
-              Name
+              Full Name
             </label>
             <div className="relative">
               <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[#98A2B3]">
-                <User size={22} strokeWidth={1.5} />{" "}
-                {/* Make sure you import the User icon */}
+                <User size={22} strokeWidth={1.5} />
               </span>
               <input
                 type="text"
@@ -150,6 +159,7 @@ const IndividualRegister = () => {
               />
             </div>
           </div>
+
           {/* Email */}
           <div className="space-y-2">
             <label className="text-sm font-bold text-[#041228] block ml-1">
@@ -192,7 +202,7 @@ const IndividualRegister = () => {
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-4 top-1/2 -translate-y-1/2 text-[#98A2B3] hover:text-[#5F6F73] transition-colors"
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-[#98A2B3] hover:text-[#5F6F73] transition-colors cursor-pointer"
               >
                 {showPassword ? (
                   <EyeOff size={22} strokeWidth={1.5} />
@@ -224,7 +234,7 @@ const IndividualRegister = () => {
               <button
                 type="button"
                 onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                className="absolute right-4 top-1/2 -translate-y-1/2 text-[#98A2B3] hover:text-[#5F6F73] transition-colors"
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-[#98A2B3] hover:text-[#5F6F73] transition-colors cursor-pointer"
               >
                 {showConfirmPassword ? (
                   <EyeOff size={22} strokeWidth={1.5} />
@@ -236,33 +246,30 @@ const IndividualRegister = () => {
           </div>
 
           {/* Terms */}
-          <div className="flex items-center gap-3 ml-1 mt-4">
+          <div className="flex items-center gap-3 mt-2">
             <input
               id="terms"
               type="checkbox"
               name="acceptTerms"
               checked={formData.acceptTerms}
               onChange={handleChange}
-              className="w-4 h-4 text-[#3A86FF] border-[#E5E9EA] rounded-md focus:ring-[#3A86FF] cursor-pointer"
+              className="w-5 h-5 accent-[#0FA4A9] border-[#E5E9EA] rounded-md cursor-pointer"
               required
             />
-            <label
-              htmlFor="terms"
-              className="text-sm text-[#041228] font-medium"
-            >
+            <label htmlFor="terms" className="text-[15px] text-[#041228] font-bold">
               I agree to the{" "}
               <span className="text-[#3A86FF] cursor-pointer hover:underline">
-                Terms & Privacy Policy
+                Terms &amp; Privacy Policy
               </span>
             </label>
           </div>
 
           {/* Submit Button */}
-          <div className="pt-3">
+          <div className="pt-2">
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full bg-primary text-white py-3 rounded-xl font-bold text-lg hover:bg-opacity-90 transition-all flex items-center justify-center gap-2 group shadow-lg shadow-[#0FA4A9]/10 cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed"
+              className="w-full bg-primary text-white py-3 rounded-xl font-bold text-xl hover:bg-opacity-90 transition-all flex items-center justify-center gap-2 group shadow-lg shadow-[#0FA4A9]/10 cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed"
             >
               {isLoading ? "Registering..." : "Continue"}
               {!isLoading && (
@@ -276,8 +283,8 @@ const IndividualRegister = () => {
         </form>
 
         {/* Footer */}
-        <div className="mt-10 text-center">
-          <p className="text-[#041228] text-sm font-semibold">
+        <div className="mt-4 text-center">
+          <p className="text-[#041228] text-[15px] font-bold">
             Already have an account?{" "}
             <Link href="/login" className="text-[#3A86FF] hover:underline ml-1">
               Sign in
