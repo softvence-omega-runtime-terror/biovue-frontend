@@ -452,11 +452,18 @@ const PricingPage = () => {
                   //     : "Start 7-Day Free Trial"
                   // }
                   cta={
-                    plan.name.toLowerCase().includes("enterprise") ||
-                    plan.price === "0.00" ||
-                    plan.price === 0
-                      ? "Contact Sales"
-                      : "Start 7-Day Free Trial"
+                    idx === 0
+                      ? "Buy Now"
+                      : idx === 1
+                        ? "Update to Tier 2"
+                        : idx === 2
+                          ? "Update to Tier 3"
+                          : idx === filteredProfessionalPlans.length - 1 ||
+                              plan.name.toLowerCase().includes("enterprise") ||
+                              plan.price === "0.00" ||
+                              plan.price === 0
+                            ? "Contact Via Mail"
+                            : "Start 7-Day Free Trial"
                   }
                   ctaColor="bg-[#0FA4A9]"
                   onSelect={() => handlePlanSelection(plan)}
