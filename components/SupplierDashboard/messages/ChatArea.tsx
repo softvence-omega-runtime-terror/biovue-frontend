@@ -13,12 +13,14 @@ interface ChatAreaProps {
   clientId: string;
   clientName: string;
   clientAvatar?: string;
+  clientEmail?: string;
 }
 
 export default function ChatArea({
   clientId,
   clientName,
   clientAvatar,
+  clientEmail,
 }: ChatAreaProps) {
   const {
     data: messagesData,
@@ -42,6 +44,7 @@ export default function ChatArea({
     try {
       await sendMessage({
         receiver_id: Number(clientId),
+        email: clientEmail || "",
         message: inputValue,
       }).unwrap();
       setInputValue("");

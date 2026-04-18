@@ -7,21 +7,47 @@ import { Mail, ChevronLeft, ArrowRight } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useForgotPasswordMutation } from "@/redux/features/api/auth/authApi";
 import { toast } from "sonner";
+import { useGoogleReCaptcha } from "react-google-recaptcha-v3";
+import { getRecaptchaToken } from "@/lib/recaptcha";
 
 const ForgotPasswordPage = () => {
+  const { executeRecaptcha } = useGoogleReCaptcha();
+  const siteKey = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY;
+  const useEnterprise =
+    process.env.NEXT_PUBLIC_RECAPTCHA_USE_ENTERPRISE === "true";
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [forgotPassword, { isLoading }] = useForgotPasswordMutation();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
     try {
-      const res = await forgotPassword({ email }).unwrap();
+      const token = await getRecaptchaToken(executeRecaptcha, "forgot_password", {
+        siteKey,
+        useEnterprise,
+      });
+      const res = await forgotPassword({ email, "g-recaptcha-response": token }).unwrap();
       if (res?.success || res?.status === "success") {
         toast.success(res?.message || "Password reset link sent to your email!");
         router.push(`/reset-password?email=${email}`);
       }
     } catch (err: any) {
+      const isScriptUnavailableError =
+        err?.message === "RECAPTCHA_SCRIPT_NOT_AVAILABLE";
+      if (isScriptUnavailableError) {
+        toast.error(
+          "Security service is unavailable right now. Please refresh the page or contact support.",
+        );
+        return;
+      }
+
+      const isRecaptchaReadyError = err?.message === "RECAPTCHA_NOT_READY";
+      if (isRecaptchaReadyError) {
+        toast.error("Security verification is still loading. Please wait a few seconds and try again.");
+        return;
+      }
+
       toast.error(err?.data?.message || "Failed to send reset link. Please try again.");
     }
   };

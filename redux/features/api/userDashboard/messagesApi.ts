@@ -21,6 +21,7 @@ export interface Message {
 
 export interface SendMessagePayload {
   receiver_id: number;
+  email?: string;
   message: string;
 }
 

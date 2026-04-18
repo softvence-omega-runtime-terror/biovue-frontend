@@ -16,8 +16,18 @@ import { useRouter } from "next/navigation";
 import { useRegisterMutation } from "@/redux/features/api/auth/authApi";
 import { toast } from "sonner";
 import { User } from "lucide-react";
+import { useGoogleReCaptcha } from "react-google-recaptcha-v3";
+import { getRecaptchaToken } from "@/lib/recaptcha";
 
+/**
+ * BusinessRegister Component
+ * Redesigned for a compact, zero-scroll experience with a 2-column grid layout.
+ */
 const BusinessRegister = () => {
+  const { executeRecaptcha } = useGoogleReCaptcha();
+  const siteKey = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY;
+  const useEnterprise =
+    process.env.NEXT_PUBLIC_RECAPTCHA_USE_ENTERPRISE === "true";
   const router = useRouter();
   const [register, { isLoading }] = useRegisterMutation();
   const [showPassword, setShowPassword] = useState(false);
@@ -28,6 +38,8 @@ const BusinessRegister = () => {
     password: "",
     confirmPassword: "",
     professionType: "trainer_coach",
+    zipcode: "",
+    prof_service_type: "local",
     acceptTerms: false,
   });
 
@@ -45,36 +57,53 @@ const BusinessRegister = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    const payload = {
-      name: formData.name,
-      email: formData.email,
-      password: formData.password,
-      password_confirmation: formData.confirmPassword,
-      role: "individual", // Keeping role as individual per payload example
-      terms_accepted: formData.acceptTerms,
-      user_type: "professional",
-      profession_type: formData.professionType,
-    };
-
     try {
+      const token = await getRecaptchaToken(executeRecaptcha, "business_register", {
+        siteKey,
+        useEnterprise,
+      });
+
+      const payload = {
+        name: formData.name,
+        email: formData.email,
+        password: formData.password,
+        password_confirmation: formData.confirmPassword,
+        role: "professional",
+        terms_accepted: formData.acceptTerms,
+        user_type: "professional",
+        profession_type: formData.professionType,
+        zipcode: formData.zipcode,
+        prof_service_type: formData.prof_service_type,
+        "g-recaptcha-response": token,
+      };
+
       const res = await register(payload).unwrap();
       if (res?.success || res?.status === "success") {
         toast.success(
           res?.message || "Registration successful! Please verify your OTP.",
         );
-        // CONDITIONAL REDIRECT
-        // if (formData.professionType === "trainer_coach") {
-        //   router.push("/trainer-profile");
-        // } 
-   
           router.push(`/register-otp-verify?email=${formData.email}`);
-       
       }
     } catch (err: unknown) {
+      const isScriptUnavailableError =
+        err instanceof Error && err.message === "RECAPTCHA_SCRIPT_NOT_AVAILABLE";
+      if (isScriptUnavailableError) {
+        toast.error(
+          "Security service is unavailable right now. Please refresh the page or contact support.",
+        );
+        return;
+      }
+
+      const isRecaptchaReadyError =
+        err instanceof Error && err.message === "RECAPTCHA_NOT_READY";
+      if (isRecaptchaReadyError) {
+        toast.error("Security verification is still loading. Please wait a few seconds and try again.");
+        return;
+      }
+
       const errorMessage =
         (err as { data?: { message?: string } })?.data?.message ??
         "Registration failed. Please try again.";
-
       toast.error(errorMessage);
     }
   };
@@ -82,12 +111,13 @@ const BusinessRegister = () => {
   return (
     <div className="flex flex-col items-center w-full max-w-150 mx-auto py-3">
       {/* Logo at the top */}
-      <div className="mb-3">
+      <div className="mb-2">
         <Image
           src="/images/logo.png"
           alt="BioVue Logo"
-          width={150}
-          height={60}
+          width={120}
+          height={50}
+          style={{ height: "auto" }}
           className="object-contain"
           priority
         />
@@ -120,7 +150,7 @@ const BusinessRegister = () => {
         <form onSubmit={handleSubmit} className="space-y-2">
           {/* Name */}
           <div className="space-y-2">
-            <label className="text-lg font-bold text-[#041228] block">
+            <label className="text-sm font-bold text-[#041228] block ml-1">
               Full Name
             </label>
             <div className="relative">
@@ -133,14 +163,14 @@ const BusinessRegister = () => {
                 value={formData.name}
                 onChange={handleChange}
                 placeholder="John Doe"
-                className="w-full bg-[#F5F5F5] border-none rounded-xl py-3.5 pl-12 pr-4 focus:outline-none focus:ring-2 focus:ring-[#3A86FF]/10 text-[#041228] placeholder:text-[#98A2B3] font-medium"
+                className="w-full bg-[#F5F5F5] border-none rounded-xl py-3 pl-12 pr-4 focus:outline-none focus:ring-2 focus:ring-[#3A86FF]/10 text-[#041228] placeholder:text-[#98A2B3] font-medium"
                 required
               />
             </div>
           </div>
           {/* Email */}
           <div className="space-y-2">
-            <label className="text-lg font-bold text-[#041228] block">
+            <label className="text-sm font-bold text-[#041228] block ml-1">
               Email address
             </label>
             <div className="relative">
@@ -161,7 +191,7 @@ const BusinessRegister = () => {
 
           {/* Password */}
           <div className="space-y-2">
-            <label className="text-lg font-bold text-[#041228] block">
+            <label className="text-sm font-bold text-[#041228] block ml-1">
               Password
             </label>
             <div className="relative">
@@ -193,7 +223,7 @@ const BusinessRegister = () => {
 
           {/* Confirm Password */}
           <div className="space-y-2">
-            <label className="text-lg font-bold text-[#041228] block">
+            <label className="text-sm font-bold text-[#041228] block ml-1">
               Confirm password
             </label>
             <div className="relative">
@@ -225,7 +255,7 @@ const BusinessRegister = () => {
 
           {/* Profession Type */}
           <div className="space-y-2">
-            <label className="text-lg font-bold text-[#041228] block">
+            <label className="text-sm font-bold text-[#041228] block ml-1">
               Select Profession Type
             </label>
             <div className="relative">
@@ -247,8 +277,51 @@ const BusinessRegister = () => {
             </div>
           </div>
 
+          {/* Zip Code and Service Type Row */}
+          <div className="flex gap-4">
+            {/* Zip Code */}
+            <div className="space-y-2 flex-1">
+              <label className="text-sm font-bold text-[#041228] block ml-1">
+                Zip Code
+              </label>
+              <div className="relative">
+                <input
+                  type="text"
+                  name="zipcode"
+                  value={formData.zipcode}
+                  onChange={handleChange}
+                  placeholder="12345"
+                  className="w-full bg-[#F5F5F5] border-none rounded-xl py-3 px-4 focus:outline-none focus:ring-2 focus:ring-[#3A86FF]/10 text-[#041228] placeholder:text-[#98A2B3] font-medium"
+                  required
+                />
+              </div>
+            </div>
+
+            {/* Service Type */}
+            <div className="space-y-2 flex-1">
+              <label className="text-sm font-bold text-[#041228] block ml-1">
+                Service Type
+              </label>
+              <div className="relative">
+                <select
+                  name="prof_service_type"
+                  value={formData.prof_service_type}
+                  onChange={handleChange}
+                  className="w-full bg-[#F5F5F5] border-none rounded-xl py-3 px-4 pr-10 focus:outline-none focus:ring-2 focus:ring-[#3A86FF]/10 text-[#98A2B3] font-medium appearance-none cursor-pointer"
+                >
+                  <option value="local">Local</option>
+                  <option value="remote">Remote</option>
+                  <option value="both">Both</option>
+                </select>
+                <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[#98A2B3] pointer-events-none">
+                  <ChevronDown size={20} />
+                </span>
+              </div>
+            </div>
+          </div>
+
           {/* Terms */}
-          <div className="flex items-center gap-3 mt-4">
+          <div className="flex items-center gap-3 mt-2">
             <input
               id="terms"
               type="checkbox"
@@ -270,7 +343,7 @@ const BusinessRegister = () => {
           </div>
 
           {/* Submit Button */}
-          <div className="pt-3">
+          <div className="pt-2">
             <button
               type="submit"
               disabled={isLoading}
@@ -288,7 +361,7 @@ const BusinessRegister = () => {
         </form>
 
         {/* Footer */}
-        <div className="mt-4 text-center">
+        <div className="mt-2 text-center">
           <p className="text-[#041228] text-[15px] font-bold">
             Already have an account?{" "}
             <Link href="/login" className="text-[#3A86FF] hover:underline ml-1">

@@ -2,18 +2,69 @@
 
 import Image from "next/image";
 import { useEffect } from "react";
-import { X, Sparkles, CheckCircle2, Send, Loader2, RefreshCw } from "lucide-react";
+import {
+  X,
+  Sparkles,
+  CheckCircle2,
+  Send,
+  Loader2,
+  RefreshCw,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { User } from "@/redux/features/api/SupplierDashboard/AllUsers";
-import { useLazyGetSavedMatchQuery, MatchedProduct, useFindMatchMutation } from "@/redux/features/api/SupplierDashboard/FindMatch";
+import {
+  useLazyGetSavedMatchQuery,
+  MatchedProduct,
+  useFindMatchMutation,
+  buildFindMatchUserPayload,
+  type FindMatchResponse,
+} from "@/redux/features/api/SupplierDashboard/FindMatch";
 import { useSendMessageMutation } from "@/redux/features/api/userDashboard/messagesApi";
 import { useSelector } from "react-redux";
 import { selectCurrentUser } from "@/redux/features/slice/authSlice";
 import { toast } from "sonner";
 
+/** Chat APIs often use limited VARCHAR; long AI text commonly triggers 500 from the main API. */
+const MAX_SUGGEST_MESSAGE_CHARS = 2400;
+
+function prepareMessageForChatApi(raw: string): string {
+  const cleaned = raw.replace(/\u0000/g, "").trim();
+  if (cleaned.length <= MAX_SUGGEST_MESSAGE_CHARS) return cleaned;
+  return (
+    cleaned.slice(0, MAX_SUGGEST_MESSAGE_CHARS - 140).trim() +
+    "\n\n[Message trimmed to fit chat limits. Reply to your supplier for the full details.]"
+  );
+}
+
+function sendErrorToast(err: unknown, fallback: string) {
+  let detail = fallback;
+  if (typeof err === "object" && err !== null && "data" in err) {
+    const data = (err as { data?: unknown }).data;
+    if (typeof data === "string") detail = data;
+    else if (data && typeof data === "object") {
+      const o = data as Record<string, unknown>;
+      if (typeof o.message === "string") detail = o.message;
+      else if (typeof o.detail === "string") detail = o.detail;
+      else if (typeof o.error === "string") detail = o.error;
+    }
+  }
+  const status =
+    typeof err === "object" && err !== null && "status" in err
+      ? (err as { status?: number }).status
+      : undefined;
+  if (status === 500 && detail === fallback) {
+    detail = `${fallback} The chat server may reject very long messages; this flow now trims content automatically.`;
+  }
+  toast.error(detail.length > 220 ? `${detail.slice(0, 217)}…` : detail);
+}
+
 const getSafeImageSrc = (src: string | null | undefined) => {
   if (!src) return null;
-  if (src.startsWith("/") || src.startsWith("http://") || src.startsWith("https://")) {
+  if (
+    src.startsWith("/") ||
+    src.startsWith("http://") ||
+    src.startsWith("https://")
+  ) {
     try {
       if (src.startsWith("http")) {
         new URL(src);
@@ -40,7 +91,10 @@ export default function SupplementMatchModal({
   const currentUser = useSelector(selectCurrentUser);
   const supplier_id = currentUser?.id;
 
-  const [triggerGet, { data: matchData, isLoading: isMatchLoading, isFetching: isMatchFetching }] = useLazyGetSavedMatchQuery();
+  const [
+    triggerGet,
+    { data: matchData, isLoading: isMatchLoading, isFetching: isMatchFetching },
+  ] = useLazyGetSavedMatchQuery();
   const [findMatch, { isLoading: isMatching }] = useFindMatchMutation();
   const [sendMessage, { isLoading: isSending }] = useSendMessageMutation();
 
@@ -64,7 +118,7 @@ export default function SupplementMatchModal({
       await findMatch({
         user_id: user.id.toString(),
         supplier_id: supplier_id.toString(),
-        user_data: user,
+        user_data: buildFindMatchUserPayload(user),
       }).unwrap();
       toast.success("AI Analysis completed and matches updated!");
       triggerGet({
@@ -77,33 +131,123 @@ export default function SupplementMatchModal({
     }
   };
 
+  const buildSupplementMessage = (
+    supp: MatchedProduct,
+    ctx: FindMatchResponse | undefined,
+    options?: { includeOverallSummary?: boolean },
+  ): string => {
+    const benefits = (supp.health_benefits ?? [])
+      .slice(0, 8)
+      .map((b) => `• ${b}`)
+      .join("\n");
+    const warnings = (supp.warnings ?? [])
+      .filter(Boolean)
+      .map((w) => `• ${w}`)
+      .join("\n");
+    const lines: string[] = [
+      `Personalized supplement suggestion`,
+      ``,
+      `Product: ${supp.name}`,
+      `Category: ${supp.category}`,
+      `Match score: ${Math.round(supp.match_score)}%`,
+      ``,
+      `Why this is recommended`,
+      supp.match_reason,
+      ``,
+    ];
+    if (benefits) {
+      lines.push(`Key benefits`, benefits, ``);
+    }
+    if (warnings) {
+      lines.push(`Important notes`, warnings, ``);
+    }
+    if (ctx?.completeness_warning) {
+      const pct =
+        ctx.profile_completeness != null
+          ? Math.round(Number(ctx.profile_completeness))
+          : null;
+      lines.push(
+        `Profile`,
+        pct != null
+          ? `${ctx.completeness_warning} (Profile completeness: ${pct}%).`
+          : ctx.completeness_warning,
+        ``,
+      );
+    }
+    if (options?.includeOverallSummary && ctx?.recommendation_summary) {
+      const summary = ctx.recommendation_summary;
+      const short =
+        summary.length > 600 ? `${summary.slice(0, 597).trim()}...` : summary;
+      lines.push(`Overall summary`, short, ``);
+    }
+    lines.push(`Learn more`, supp.redirect_url);
+    return lines.join("\n");
+  };
+
   const handleSuggestToUser = async (supp: MatchedProduct) => {
     if (!supplier_id) {
       toast.error("Supplier ID missing");
       return;
     }
 
+    const fullMessage = prepareMessageForChatApi(
+      buildSupplementMessage(supp, matchData, {
+        includeOverallSummary: true,
+      }),
+    );
+
+    const compactMessage = prepareMessageForChatApi(
+      [
+        `Supplement suggestion: ${supp.name}`,
+        `Match: ${Math.round(supp.match_score || 0)}%`,
+        (supp.match_reason || "").length > 320
+          ? `${supp.match_reason.slice(0, 317)}...`
+          : supp.match_reason || "",
+        ``,
+        `Link: ${supp.redirect_url || ""}`,
+      ].join("\n"),
+    );
+
     try {
-      // ✅ Ensure AI data exists (optional safety)
-      if (!matchData?.matched_products?.length) {
-        await findMatch({
-          user_id: user.id.toString(),
-          supplier_id: supplier_id.toString(),
-          user_data: user,
-        }).unwrap();
-      }
-
-      const message = `I recommend ${supp.name} for you.\n\nReason: ${supp.match_reason}\n\nBenefits: ${supp.health_benefits.join(", ")}\n\nView: ${supp.redirect_url}`;
-
       await sendMessage({
-        receiver_id: user.id,
-        message,
+        receiver_id: Number(user.id),
+        email: user.email,
+        message: fullMessage,
       }).unwrap();
 
       toast.success(`Suggestion sent to ${user.name}`);
     } catch (error) {
       console.error(error);
-      toast.error("Failed to send suggestion");
+      const status =
+        typeof error === "object" && error !== null && "status" in error
+          ? (error as { status?: number }).status
+          : undefined;
+      if (status === 500) {
+        try {
+          await sendMessage({
+            receiver_id: Number(user.id),
+            email: user.email,
+            message: compactMessage,
+          }).unwrap();
+          toast.success(`Suggestion sent to ${user.name} (short format)`);
+          return;
+        } catch (e2) {
+          console.error(e2);
+          sendErrorToast(e2, "Failed to send suggestion.");
+        }
+      } else {
+        // Fallback for ANY OTHER status code (e.g. 422 Payload Too Large) just in case
+        try {
+          await sendMessage({
+            receiver_id: Number(user.id),
+            email: user.email,
+            message: compactMessage,
+          }).unwrap();
+          toast.success(`Suggestion sent to ${user.name} (short format)`);
+        } catch (e3) {
+          sendErrorToast(e3, "Failed to send suggestion.");
+        }
+      }
     }
   };
 
@@ -112,22 +256,55 @@ export default function SupplementMatchModal({
 
     try {
       const allSupps = matchData.matched_products;
-      const intro = `I have analyzed your profile and found ${allSupps.length} supplement matches for you:\n\n`;
-      const details = allSupps.map((supp, index) => 
-        `${index + 1}. ${supp.name}\nReason: ${supp.match_reason}\nBenefits: ${supp.health_benefits.join(", ")}\nView: ${supp.redirect_url}`
-      ).join("\n\n---\n\n");
-      
-      const message = intro + details;
+
+      // Send one combined message with all supplements in the simplified format
+      const fullSummary = matchData?.recommendation_summary;
+      const summaryBlock =
+        fullSummary != null
+          ? `\n\nOverall summary\n${
+              fullSummary.length > 800
+                ? `${fullSummary.slice(0, 797).trim()}...`
+                : fullSummary
+            }\n\n`
+          : "\n\n";
+      const header = `Hi! I've analysed your profile and have ${allSupps.length} recommendation(s) for you.${summaryBlock}`;
+
+      const sections = allSupps.map(
+        (supp, index) =>
+          `- Recommendation ${index + 1} -\n` +
+          buildSupplementMessage(supp, matchData, {
+            includeOverallSummary: false,
+          }),
+      );
+
+      const message = prepareMessageForChatApi(
+        header + sections.join("\n\n" + "-".repeat(28) + "\n\n"),
+      );
 
       await sendMessage({
-        receiver_id: user.id,
+        receiver_id: Number(user.id),
+        email: user.email,
         message,
       }).unwrap();
 
       toast.success(`All suggestions sent to ${user.name}`);
     } catch (error) {
       console.error(error);
-      toast.error("Failed to send all suggestions");
+
+      // Fallback to sending extremely minimal suggestion message if the huge one fails
+      try {
+        const minimalSummary = matchData?.matched_products
+          ?.map((p) => `- ${p.name}`)
+          .join("\n");
+        await sendMessage({
+          receiver_id: Number(user.id),
+          email: user.email,
+          message: `Hi ${user.name}, I've analysed your profile and found ${matchData?.matched_products?.length} match(es) for you:\n${minimalSummary}\n\nPlease check my specific suggestions or the AI matching section for details.`,
+        }).unwrap();
+        toast.success(`Brief match summary sent to ${user.name}`);
+      } catch (errFallback) {
+        sendErrorToast(errFallback, "Failed to send all suggestions.");
+      }
     }
   };
 
@@ -175,33 +352,66 @@ export default function SupplementMatchModal({
             <div className="flex items-center gap-2 text-[#0FA4A9]">
               <Sparkles size={20} fill="currentColor" />
               <h3 className="text-lg font-bold uppercase tracking-wider">
-                {isMatchLoading || isMatchFetching ? "Fetching..." : isMatching ? "Analysing..." : "Suggested Matches"}
+                {isMatchLoading || isMatchFetching
+                  ? "Fetching..."
+                  : isMatching
+                    ? "Analysing..."
+                    : "Suggested Matches"}
               </h3>
             </div>
-            {matchData?.matched_products && matchData.matched_products.length > 0 && (
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                disabled={isMatching || isMatchFetching}
-                onClick={handleRunAnalysis}
-                className="text-[#0FA4A9] hover:text-[#0FA4A9] hover:bg-[#0FA4A9]/10 rounded-xl px-4 flex items-center gap-2 font-bold transition-all cursor-pointer"
-              >
-                <RefreshCw size={16} className={isMatching ? "animate-spin" : ""} />
-                Regenerate AI
-              </Button>
-            )}
+            {matchData?.matched_products &&
+              matchData.matched_products.length > 0 && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  disabled={isMatching || isMatchFetching}
+                  onClick={handleRunAnalysis}
+                  className="text-[#0FA4A9] hover:text-[#0FA4A9] hover:bg-[#0FA4A9]/10 rounded-xl px-4 flex items-center gap-2 font-bold transition-all cursor-pointer"
+                >
+                  <RefreshCw
+                    size={16}
+                    className={isMatching ? "animate-spin" : ""}
+                  />
+                  Regenerate AI
+                </Button>
+              )}
           </div>
 
-          {matchData?.matched_products && matchData.matched_products.length > 2 && (
-            <Button
-              onClick={handleSuggestAll}
-              disabled={isSending}
-              className="w-full mb-6 bg-[#0FA4A9]/10 hover:bg-[#0FA4A9] text-[#0FA4A9] hover:text-white border border-[#0FA4A9]/20 rounded-2xl py-6 h-auto font-bold flex items-center justify-center gap-3 transition-all cursor-pointer group"
-            >
-              <Send size={18} className="group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
-              {isSending ? "Sending All..." : `Send All ${matchData.matched_products.length} Suggestions at Once`}
-            </Button>
+          {matchData?.recommendation_summary && (
+            <div className="mb-6 p-5 rounded-2xl bg-[#F8FBFA] border border-[#D9E6FF] text-sm text-[#5F6F73] leading-relaxed">
+              <p className="text-[10px] font-black uppercase tracking-widest text-[#94A3B8] mb-2">
+                Overall summary
+              </p>
+              <p className="whitespace-pre-wrap">
+                {matchData.recommendation_summary}
+              </p>
+              {matchData.completeness_warning ? (
+                <p className="mt-3 text-xs font-semibold text-amber-800 bg-amber-50 border border-amber-100 rounded-xl px-3 py-2">
+                  {matchData.completeness_warning}
+                  {matchData.profile_completeness != null
+                    ? ` (${Math.round(Number(matchData.profile_completeness))}% profile complete)`
+                    : ""}
+                </p>
+              ) : null}
+            </div>
           )}
+
+          {matchData?.matched_products &&
+            matchData.matched_products.length > 2 && (
+              <Button
+                onClick={handleSuggestAll}
+                disabled={isSending}
+                className="w-full mb-6 bg-[#0FA4A9]/10 hover:bg-[#0FA4A9] text-[#0FA4A9] hover:text-white border border-[#0FA4A9]/20 rounded-2xl py-6 h-auto font-bold flex items-center justify-center gap-3 transition-all cursor-pointer group"
+              >
+                <Send
+                  size={18}
+                  className="group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform"
+                />
+                {isSending
+                  ? "Sending All..."
+                  : `Send All ${matchData.matched_products.length} Suggestions at Once`}
+              </Button>
+            )}
 
           <div className="space-y-4 max-h-100 overflow-y-auto pr-2 custom-scrollbar">
             {isMatchLoading || (isMatching && !matchData?.matched_products) ? (
@@ -209,12 +419,17 @@ export default function SupplementMatchModal({
                 <Loader2 className="w-12 h-12 text-[#0FA4A9] animate-spin" />
                 <div>
                   <p className="text-[#041228] font-bold text-lg mb-1">
-                    {isMatching ? "AI Intelligence at Work" : "Retrieving Matches"}
+                    {isMatching
+                      ? "AI Intelligence at Work"
+                      : "Retrieving Matches"}
                   </p>
-                  <p className="text-[#94A3B8] text-sm">Analyzing profile and product inventory...</p>
+                  <p className="text-[#94A3B8] text-sm">
+                    Analyzing profile and product inventory...
+                  </p>
                 </div>
               </div>
-            ) : matchData?.matched_products && matchData.matched_products.length > 0 ? (
+            ) : matchData?.matched_products &&
+              matchData.matched_products.length > 0 ? (
               matchData.matched_products.map((supp: MatchedProduct) => (
                 <div
                   key={supp.product_id}
@@ -251,12 +466,16 @@ export default function SupplementMatchModal({
                         In Stock
                       </span>
                     </div>
-                    <Button 
+                    <Button
                       disabled={isSending}
                       onClick={() => handleSuggestToUser(supp)}
                       className="bg-[#0FA4A9] hover:bg-[#0D9488] text-white rounded-xl px-6 h-9 flex items-center gap-2 transition-all cursor-pointer disabled:opacity-50"
                     >
-                      {isSending ? <Loader2 size={16} className="animate-spin" /> : <Send size={16} />}
+                      {isSending ? (
+                        <Loader2 size={16} className="animate-spin" />
+                      ) : (
+                        <Send size={16} />
+                      )}
                       Suggest to User
                     </Button>
                   </div>
@@ -268,17 +487,24 @@ export default function SupplementMatchModal({
                   <Sparkles size={40} className="text-[#94A3B8]" />
                 </div>
                 <div>
-                  <h4 className="text-xl font-bold text-[#041228] mb-2">No AI Matches Found</h4>
+                  <h4 className="text-xl font-bold text-[#041228] mb-2">
+                    No AI Matches Found
+                  </h4>
                   <p className="text-[#94A3B8] max-w-xs mx-auto text-sm font-medium">
-                    We haven&apos;t analyzed this user&apos;s profile yet. Click below to run the AI matching engine.
+                    We haven&apos;t analyzed this user&apos;s profile yet. Click
+                    below to run the AI matching engine.
                   </p>
                 </div>
-                <Button 
+                <Button
                   disabled={isMatching}
                   onClick={handleRunAnalysis}
                   className="bg-[#0FA4A9] hover:bg-[#0D9488] text-white rounded-2xl px-10 py-6 h-auto text-sm font-bold flex items-center gap-3 transition-all hover:shadow-lg active:scale-95 cursor-pointer shadow-md"
                 >
-                  {isMatching ? <Loader2 className="w-5 h-5 animate-spin" /> : <Sparkles className="w-5 h-5 fill-white" />}
+                  {isMatching ? (
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                  ) : (
+                    <Sparkles className="w-5 h-5 fill-white" />
+                  )}
                   Run AI Magic
                 </Button>
               </div>

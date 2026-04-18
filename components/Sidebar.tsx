@@ -6,9 +6,11 @@ import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { LogOut, Menu, X, ChevronDown } from "lucide-react";
 import { SIDEBAR_MENU, MenuItem } from "./SidebarMenu";
+import Tooltip from "@/components/Tooltip";
 
-import { useDispatch } from "react-redux";
-import { logout } from "@/redux/features/slice/authSlice";
+import { useDispatch, useSelector } from "react-redux";
+import { logout, selectCurrentUser } from "@/redux/features/slice/authSlice";
+import { useSubscriptionStatus } from "@/lib/hooks/useSubscriptionStatus";
 
 type Role = "user" | "trainer" | "admin" | "nutritionist";
 
@@ -21,11 +23,26 @@ export default function Sidebar({ role }: SidebarProps) {
   const searchParams = useSearchParams();
   const router = useRouter();
   const dispatch = useDispatch();
+  const user = useSelector(selectCurrentUser);
   const menu = SIDEBAR_MENU[role] as MenuItem[];
 
   const [isExpanded, setIsExpanded] = useState(false);
   const [openSubmenus, setOpenSubmenus] = useState<string[]>([]);
   const [mounted, setMounted] = useState(false);
+
+  const restrictionState = useSubscriptionStatus();
+  const isRestricted = role === "user" ? restrictionState.restricted : false;
+
+  const restrictedLabels = ["Projections", "Projection Galary", "Insights", "Habits", "Support", "Message"];
+
+  const getTooltipMessage = (reason: string) => {
+    switch (reason) {
+      case "low_credits_or_expiring_soon": return "Low credits or subscription expiring soon! Please upgrade to maintain access.";
+      case "subscription_expired_or_no_credits": return "Subscription expired or no credits remaining! Please upgrade your plan to continue.";
+      case "trial_ended": return "Trial period ended. Please choose a plan to continue.";
+      default: return "To access this feature, you need an active subscription plan.";
+    }
+  };
 
   useEffect(() => {
     setMounted(true);
@@ -127,25 +144,35 @@ export default function Sidebar({ role }: SidebarProps) {
 
             const hasChildren = item.children && item.children.length > 0;
             const isOpen = openSubmenus.includes(item.label);
+            const isItemRestricted = isRestricted && restrictedLabels.includes(item.label);
 
             return (
               <div key={item.label} className="w-full">
                 {/* Parent Menu Item */}
                 <div className="flex items-center group relative">
-                  <Link
-                    href={item.href}
-                    onClick={() => setIsExpanded(false)}
-                    className={`flex-1 cursor-pointer flex items-center gap-3 px-2 py-2.5 rounded-lg text-sm font-medium transition-all duration-300 whitespace-nowrap ${
-                      isActive
-                        ? "bg-[#3A86FF25] text-black"
-                        : "text-gray-600 hover:bg-gray-100"
-                    }`}
-                  >
-                    <Icon size={20} className="shrink-0" />
-                    {showContent && (
-                      <span>{item.label}</span>
-                    )}
-                  </Link>
+                  {isItemRestricted ? (
+                    <Tooltip message={getTooltipMessage(restrictionState.reason)}>
+                      <div
+                        className={`flex-1 flex items-center gap-3 px-2 py-2.5 rounded-lg text-sm font-medium transition-all duration-300 whitespace-nowrap text-gray-400 opacity-50 cursor-not-allowed`}
+                      >
+                        <Icon size={20} className="shrink-0" />
+                        {showContent && <span>{item.label}</span>}
+                      </div>
+                    </Tooltip>
+                  ) : (
+                    <Link
+                      href={item.href}
+                      onClick={() => setIsExpanded(false)}
+                      className={`flex-1 cursor-pointer flex items-center gap-3 px-2 py-2.5 rounded-lg text-sm font-medium transition-all duration-300 whitespace-nowrap ${
+                        isActive
+                          ? "bg-[#3A86FF25] text-black"
+                          : "text-gray-600 hover:bg-gray-100"
+                      }`}
+                    >
+                      <Icon size={20} className="shrink-0" />
+                      {showContent && <span>{item.label}</span>}
+                    </Link>
+                  )}
 
                   {hasChildren && showContent && (
                     <button
@@ -167,6 +194,20 @@ export default function Sidebar({ role }: SidebarProps) {
                       {item.children?.map((child) => {
                         const fullPath = pathname + (searchParams.toString() ? `?${searchParams.toString()}` : "");
                         const isChildActive = fullPath === child.href;
+                        const isChildRestricted = isRestricted && restrictedLabels.includes(child.label);
+
+                        if (isChildRestricted) {
+                          return (
+                            <Tooltip key={child.label} message={getTooltipMessage(restrictionState.reason)}>
+                              <div
+                                className={`px-4 py-2 text-xs font-medium rounded-lg transition-colors text-gray-400 opacity-50 cursor-not-allowed`}
+                              >
+                                - {child.label}
+                              </div>
+                            </Tooltip>
+                          );
+                        }
+
                         return (
                           <Link
                             key={child.label}

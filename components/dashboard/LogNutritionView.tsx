@@ -1,17 +1,22 @@
-"use client";
-
 import { useState } from "react";
-import { Apple, X, ArrowLeft, Plus, Trash2, Loader2 } from "lucide-react";
+import { Apple, X, ArrowLeft, Plus, Trash2, Loader2, Sparkles, History, ChefHat, Target, ArrowRight, Save, Utensils } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
-  useCalculateNutritionMutation,
   usePostNutritionLogMutation,
   useGetNutritionShowQuery,
+  useCalculateNutritionMutation,
 } from "@/redux/features/api/userDashboard/nutrition";
+import {
+  useGenerateMealMutation,
+  useGetSavedMealPlanQuery,
+  useGetSavedAiNutritionQuery,
+  useGetAiSuggestedTargetQuery,
+} from "@/redux/features/api/userDashboard/nutritionAiApi";
 import { useSelector } from "react-redux";
 import { selectCurrentUser } from "@/redux/features/slice/authSlice";
 import { toast } from "sonner";
 import { useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 
 interface FoodItem {
   id: string;
@@ -65,10 +70,23 @@ export default function FoodLogView({ onSave, onBack }: FoodLogViewProps) {
 
   const { data: existingNutrition, isLoading: isLoadingExisting } =
     useGetNutritionShowQuery(undefined);
-  const [calculateNutrition, { isLoading: loadingAiCalories }] =
+  
+  const [calculateNutrition, { isLoading: loadingCalories }] =
     useCalculateNutritionMutation();
+  const [generateMeal, { isLoading: isGeneratingMeal }] = 
+    useGenerateMealMutation();
+  
   const [postNutritionLog, { isLoading: isSaving }] =
     usePostNutritionLogMutation();
+
+  const { data: aiNutritionData } = useGetAiSuggestedTargetQuery(userId, { skip: !userId });
+
+  const [activeTab, setActiveTab] = useState<"log" | "generate" | "history">("log");
+  const [targetCalories, setTargetCalories] = useState(2000);
+  const [targetProtein, setTargetProtein] = useState(150);
+  const [targetCarbs, setTargetCarbs] = useState(200);
+  const [targetFat, setTargetFat] = useState(70);
+  const [generatedMealPlan, setGeneratedMealPlan] = useState<any>(null);
 
   const [calorieTarget, setCalorieTarget] = useState(2000);
   const [customUnitInput, setCustomUnitInput] = useState("");
@@ -93,11 +111,31 @@ export default function FoodLogView({ onSave, onBack }: FoodLogViewProps) {
     },
   ]);
 
+  // Sync targets with AI suggestions
+  useEffect(() => {
+    if (aiNutritionData?.target_nutrition) {
+      const target = aiNutritionData.target_nutrition;
+      if (target.calories?.value) {
+        setTargetCalories(target.calories.value);
+        setCalorieTarget(target.calories.value);
+      }
+      if (target.macros?.protein?.value) {
+        setTargetProtein(target.macros.protein.value);
+      }
+      if (target.macros?.carbs?.value) {
+        setTargetCarbs(target.macros.carbs.value);
+      }
+      if (target.macros?.fat?.value) {
+        setTargetFat(target.macros.fat.value);
+      }
+    }
+  }, [aiNutritionData]);
+
   useEffect(() => {
     if (existingNutrition?.nutrition) {
       const nutri = existingNutrition.nutrition;
 
-      // Update calorie target if available in API (assuming a field exists or using fallback)
+      // Update calorie target if available in API
       if (nutri.daily_target) {
         setCalorieTarget(nutri.daily_target);
       }
@@ -108,13 +146,13 @@ export default function FoodLogView({ onSave, onBack }: FoodLogViewProps) {
           name: f.food,
           quantity: f.quantity,
           unit: f.unit,
-          // Since the API response gives a summary nutrition object, we use its values
-          calories: Number(nutri.calories.value),
-          protein: Number(nutri.macros.protein.value),
-          carbs: Number(nutri.macros.carbs.value),
-          fat: Number(nutri.macros.fat.value),
-          // We divide by quantity to get per-unit if needed for edits, but usually it's a fixed log
-          caloriesPerUnit: Number(nutri.calories.value) / f.quantity,
+          // Individual items are kept at 0 to avoid double-counting in getTotalMacros
+          // as we prioritize the backend summary totals for display.
+          calories: 0,
+          protein: 0,
+          carbs: 0,
+          fat: 0,
+          caloriesPerUnit: 0,
         }));
 
         setMeals([
@@ -144,6 +182,18 @@ export default function FoodLogView({ onSave, onBack }: FoodLogViewProps) {
   } | null>(null);
 
   const getTotalMacros = () => {
+    // If we have backend summary data, prioritize it for the totals display
+    if (existingNutrition?.nutrition) {
+      const nutri = existingNutrition.nutrition;
+      return {
+        // Use 'total' from backend as requested
+        calories: Number(nutri.total || nutri.calories?.value || 0),
+        protein: Number(nutri.macros?.protein?.value || 0),
+        carbs: Number(nutri.macros?.carbs?.value || 0),
+        fat: Number(nutri.macros?.fat?.value || 0),
+      };
+    }
+
     const total = { calories: 0, protein: 0, carbs: 0, fat: 0 };
     meals.forEach((meal) => {
       meal.foods.forEach((food) => {
@@ -192,8 +242,8 @@ export default function FoodLogView({ onSave, onBack }: FoodLogViewProps) {
     return Math.min((actual / target) * 100, 100);
   };
 
-  // Fetch calorie info and macro breakdown from AI
-  const fetchAiCalories = async () => {
+  // Backend calculation will be handled at the end or automatically
+  const fetchBackendCalories = async () => {
     if (!foodNameInput.trim() || !foodQuantityInput) {
       toast.error("Please enter food name and quantity");
       return;
@@ -202,6 +252,7 @@ export default function FoodLogView({ onSave, onBack }: FoodLogViewProps) {
     try {
       const response = await calculateNutrition({
         user_id: userId,
+        log_date: new Date().toISOString().split("T")[0],
         foods: [
           {
             food: foodNameInput,
@@ -226,15 +277,65 @@ export default function FoodLogView({ onSave, onBack }: FoodLogViewProps) {
       }
     } catch (error) {
       console.error("Nutrition calculation error:", error);
-      toast.error(
-        "Unable to get calorie info. Please check food name and try again.",
-      );
+      toast.error("Unable to get calorie info.");
     }
   };
 
+  const handleGenerateMeal = async () => {
+    if (!userId) {
+      toast.error("User ID not found");
+      return;
+    }
+
+    try {
+      const response = await generateMeal({
+        user_id: userId,
+        target_calorie: targetCalories,
+        target_protein: targetProtein,
+        target_carbs: targetCarbs,
+        target_fat: targetFat,
+      }).unwrap();
+
+      if (response && response.meals) {
+        setGeneratedMealPlan(response.meals);
+        toast.success("Meal plan generated successfully!");
+      } else {
+        toast.error("Failed to generate meal plan. Please try again.");
+      }
+    } catch (error) {
+      console.error("Meal generation error:", error);
+      toast.error("An error occurred while generating your meal plan.");
+    }
+  };
+
+  const applyGeneratedPlan = () => {
+    if (!generatedMealPlan) return;
+
+    const newMeals: MealEntry[] = generatedMealPlan.map((m: any, idx: number) => ({
+      id: `gen-${idx}-${Date.now()}`,
+      type: m.type as MealType,
+      time: "Suggested",
+      foods: m.items.map((item: any, i: number) => ({
+        id: `gen-food-${idx}-${i}-${Date.now()}`,
+        name: item.food,
+        quantity: item.quantity,
+        unit: item.unit,
+        caloriesPerUnit: 0, // AI doesn't provide per-item calories in generator yet
+        calories: 0,
+        protein: 0,
+        carbs: 0,
+        fat: 0,
+      }))
+    }));
+
+    setMeals(newMeals);
+    setActiveTab("log");
+    toast.success("Meal plan applied to today's log!");
+  };
+
   const addFoodToMeal = (mealId: string) => {
-    if (!aiCalorieResult) {
-      alert("Please fetch calorie information first");
+    if (!foodNameInput.trim() || !foodQuantityInput) {
+      toast.error("Please enter food name and quantity");
       return;
     }
 
@@ -249,23 +350,15 @@ export default function FoodLogView({ onSave, onBack }: FoodLogViewProps) {
                   id: Math.random().toString(),
                   name: foodNameInput,
                   quantity: parseFloat(foodQuantityInput),
-                  // unit: foodUnitInput,
                   unit:
                     foodUnitInput === "custom"
                       ? customUnitInput
                       : foodUnitInput,
-                  caloriesPerUnit:
-                    aiCalorieResult.calories / parseFloat(foodQuantityInput),
-                  calories: Math.round(aiCalorieResult.calories),
-                  protein: aiCalorieResult.protein,
-                  carbs: aiCalorieResult.carbs,
-                  fat: aiCalorieResult.fat,
-                  macroBreakdown: {
-                    mainIngredients: aiCalorieResult.mainIngredients || [],
-                    proteinSources: aiCalorieResult.proteinSources || [],
-                    carbSources: aiCalorieResult.carbSources || [],
-                    fatSources: aiCalorieResult.fatSources || [],
-                  },
+                  caloriesPerUnit: 0,
+                  calories: 0,
+                  protein: 0,
+                  carbs: 0,
+                  fat: 0,
                 },
               ],
             }
@@ -314,6 +407,28 @@ export default function FoodLogView({ onSave, onBack }: FoodLogViewProps) {
 
     try {
       const today = new Date().toISOString().split("T")[0]; // YYYY-MM-DD
+      
+      // Collect all foods for calculation
+      const allFoods = meals.flatMap(m => m.foods.map(f => ({
+        food: f.name,
+        quantity: f.quantity,
+        unit: f.unit
+      })));
+
+      // Call backend calculate first
+      toast.loading("Calculating nutrition...", { id: "log-status" });
+      const calculation = await calculateNutrition({
+        user_id: userId,
+        log_date: today,
+        foods: allFoods
+      }).unwrap();
+
+      if (!calculation.nutrition) {
+        toast.error("Calculation failed", { id: "log-status" });
+        return;
+      }
+
+      toast.loading("Saving food log...", { id: "log-status" });
       const payload = {
         log_date: today,
         user_id: userId,
@@ -323,42 +438,26 @@ export default function FoodLogView({ onSave, onBack }: FoodLogViewProps) {
             food: f.name,
             quantity: f.quantity,
             unit: f.unit,
-            calories: f.calories,
-            protein: f.protein,
-            carbs: f.carbs,
-            fat: f.fat,
+            // Use results from calculation if needed, 
+            // though backend might calculate again on POST
+            calories: 0, 
+            protein: 0,
+            carbs: 0,
+            fat: 0,
           })),
         })),
       };
 
       const response = await postNutritionLog(payload).unwrap();
       if (response.success || response.status === "success") {
-        toast.success("Nutrition data logged successfully!");
+        toast.success("Nutrition data logged successfully!", { id: "log-status" });
         onSave();
       } else {
-        toast.error(response.message || "Failed to log nutrition data.");
+        toast.error(response.message || "Failed to log nutrition data.", { id: "log-status" });
       }
     } catch (err: any) {
       console.error("Nutrition log submission error:", err);
-
-      const errorData = err.data || {};
-      const errorMessage = (errorData.message || "").toLowerCase();
-      const exception = (errorData.exception || "").toLowerCase();
-
-      if (
-        err.status === 409 ||
-        err.status === 500 ||
-        exception.includes("uniqueconstraintviolationexception") ||
-        errorMessage.includes("duplicate entry") ||
-        errorMessage.includes("already logged")
-      ) {
-        toast.error("You have already logged nutrition for today.");
-      } else {
-        toast.error(
-          errorData.message ||
-            "An error occurred while saving. Please try again.",
-        );
-      }
+      toast.error("An error occurred while saving.", { id: "log-status" });
     }
   };
 
@@ -592,13 +691,15 @@ export default function FoodLogView({ onSave, onBack }: FoodLogViewProps) {
               key={meal.id}
               className={cn(
                 "p-6 rounded-2xl border-2",
-                MEAL_TYPES.find((m) => m.value === meal.type)?.color || "",
+                meal.id === "dynamic-1"
+                  ? "bg-teal-50 border-teal-300"
+                  : MEAL_TYPES.find((m) => m.value === meal.type)?.color || "",
               )}
             >
               <div className="flex items-center justify-between mb-4">
                 <div>
                   <h4 className="text-[16px] font-bold text-[#1F2D2E] capitalize">
-                    {meal.type}
+                    {meal.id === "dynamic-1" ? "Food List" : meal.type}
                   </h4>
                   <p className="text-xs text-gray-600">{meal.time}</p>
                 </div>
@@ -776,108 +877,20 @@ export default function FoodLogView({ onSave, onBack }: FoodLogViewProps) {
                     </div>
                     <div className="flex items-end">
                       <button
-                        onClick={fetchAiCalories}
-                        disabled={loadingAiCalories}
-                        className="w-full px-3 py-2 bg-[#3A86FF] text-white rounded-lg text-sm font-semibold hover:bg-opacity-90 transition-all disabled:opacity-50"
+                        onClick={() => addFoodToMeal(meal.id)}
+                        className="w-full px-3 py-2 bg-[#0FA4A9] text-white rounded-lg text-sm font-semibold hover:bg-opacity-90 transition-all transition-all"
                       >
-                        {loadingAiCalories ? "Loading..." : "Get Calories"}
+                        Add Food
                       </button>
                     </div>
                   </div>
 
-                  {/* AI Result Display */}
-                  {aiCalorieResult && (
+                  {/* AI Result Display Removed for direct logging flow */}
+                  {/* {aiCalorieResult && (
                     <div className="p-4 bg-green-50 border border-green-200 rounded-lg space-y-3">
-                      <p className="text-sm font-semibold text-green-900">
-                        ✓ Nutritional Info Retrieved from AI
-                      </p>
-
-                      {/* Main Ingredients */}
-                      {aiCalorieResult.mainIngredients &&
-                        aiCalorieResult.mainIngredients.length > 0 && (
-                          <div>
-                            <p className="text-xs font-semibold text-gray-700 mb-1">
-                              Main Ingredients:
-                            </p>
-                            <p className="text-xs text-gray-600">
-                              {aiCalorieResult.mainIngredients.join(", ")}
-                            </p>
-                          </div>
-                        )}
-
-                      {/* Macro Summary */}
-                      <div className="grid grid-cols-4 gap-2 text-center text-xs">
-                        <div>
-                          <p className="text-gray-600">Calories</p>
-                          <p className="font-bold text-green-700">
-                            {aiCalorieResult.calories}
-                          </p>
-                        </div>
-                        <div>
-                          <p className="text-gray-600">Protein</p>
-                          <p className="font-bold text-green-700">
-                            {aiCalorieResult.protein.toFixed(1)}g
-                          </p>
-                        </div>
-                        <div>
-                          <p className="text-gray-600">Carbs</p>
-                          <p className="font-bold text-green-700">
-                            {aiCalorieResult.carbs.toFixed(1)}g
-                          </p>
-                        </div>
-                        <div>
-                          <p className="text-gray-600">Fat</p>
-                          <p className="font-bold text-green-700">
-                            {aiCalorieResult.fat.toFixed(1)}g
-                          </p>
-                        </div>
-                      </div>
-
-                      {/* Macro Sources */}
-                      <div className="space-y-2 pt-2 border-t border-green-200">
-                        {aiCalorieResult.proteinSources &&
-                          aiCalorieResult.proteinSources.length > 0 && (
-                            <div>
-                              <p className="text-xs font-semibold text-gray-700">
-                                Protein from:
-                              </p>
-                              <p className="text-xs text-gray-600">
-                                {aiCalorieResult.proteinSources.join(", ")}
-                              </p>
-                            </div>
-                          )}
-                        {aiCalorieResult.carbSources &&
-                          aiCalorieResult.carbSources.length > 0 && (
-                            <div>
-                              <p className="text-xs font-semibold text-gray-700">
-                                Carbs from:
-                              </p>
-                              <p className="text-xs text-gray-600">
-                                {aiCalorieResult.carbSources.join(", ")}
-                              </p>
-                            </div>
-                          )}
-                        {aiCalorieResult.fatSources &&
-                          aiCalorieResult.fatSources.length > 0 && (
-                            <div>
-                              <p className="text-xs font-semibold text-gray-700">
-                                Fat from:
-                              </p>
-                              <p className="text-xs text-gray-600">
-                                {aiCalorieResult.fatSources.join(", ")}
-                              </p>
-                            </div>
-                          )}
-                      </div>
-
-                      <button
-                        onClick={() => addFoodToMeal(meal.id)}
-                        className="w-full px-3 py-2 bg-[#0FA4A9] text-white rounded-lg text-sm font-semibold hover:bg-opacity-90 transition-all"
-                      >
-                        Confirm & Add
-                      </button>
+                      ...
                     </div>
-                  )}
+                  )} */}
                 </div>
               )}
             </div>
@@ -891,11 +904,11 @@ export default function FoodLogView({ onSave, onBack }: FoodLogViewProps) {
                 onClick={() => addNewMeal(mealType.value as MealType)}
                 className={cn(
                   "px-4 py-2 rounded-lg font-semibold text-sm border-2 transition-all",
-                  meals.some((m) => m.type === mealType.value)
+                  meals.some((m) => m.id !== "dynamic-1" && m.type === mealType.value)
                     ? "opacity-50 cursor-default"
                     : "border-gray-300 hover:border-gray-400",
                 )}
-                disabled={meals.some((m) => m.type === mealType.value)}
+                disabled={meals.some((m) => m.id !== "dynamic-1" && m.type === mealType.value)}
               >
                 <Plus size={16} className="inline mr-2" />
                 Add {mealType.label}

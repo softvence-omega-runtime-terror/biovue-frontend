@@ -148,44 +148,45 @@ export default function FaqManagementPage() {
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        <Card className="border-none shadow-sm bg-[#F4FBFA]">
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
+        <Card className="border border-slate-100 shadow-md bg-white hover:shadow-lg transition-shadow duration-200">
+          <CardContent className="pt-5 pb-4 px-5">
+            <div className="flex items-center justify-between gap-3">
               <div>
-                <p className="text-sm font-medium text-gray-500">Total FAQs</p>
-                <h3 className="text-2xl font-bold text-[#1F2D2E]">{faqs.length}</h3>
+                <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">Total FAQs</p>
+                <h3 className="text-3xl font-bold text-slate-900">{faqs.length}</h3>
+                <p className="text-sm text-slate-500 mt-1">All FAQs in repository</p>
               </div>
-              <div className="p-3 bg-white rounded-xl text-[#0FA4A9]">
+              <div className="p-3 rounded-xl bg-teal-50 text-teal-600">
                 <HelpCircle size={24} />
               </div>
             </div>
           </CardContent>
         </Card>
-        <Card className="border-none shadow-sm bg-[#E4EFFF]">
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
+
+        <Card className="border border-slate-100 shadow-md bg-white hover:shadow-lg transition-shadow duration-200">
+          <CardContent className="pt-5 pb-4 px-5">
+            <div className="flex items-center justify-between gap-3">
               <div>
-                <p className="text-sm font-medium text-gray-500">Active FAQs</p>
-                <h3 className="text-2xl font-bold text-[#3A86FF]">
-                  {faqs.filter((f: any) => f.is_active).length}
-                </h3>
+                <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">Active FAQs</p>
+                <h3 className="text-3xl font-bold text-slate-900">{faqs.filter((f: any) => f.is_active).length}</h3>
+                <p className="text-sm text-slate-500 mt-1">Visible to end users</p>
               </div>
-              <div className="p-3 bg-white rounded-xl text-[#3A86FF]">
+              <div className="p-3 rounded-xl bg-blue-50 text-blue-600">
                 <Eye size={24} />
               </div>
             </div>
           </CardContent>
         </Card>
-        <Card className="border-none shadow-sm bg-gray-50">
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
+
+        <Card className="border border-slate-100 shadow-md bg-white hover:shadow-lg transition-shadow duration-200">
+          <CardContent className="pt-5 pb-4 px-5">
+            <div className="flex items-center justify-between gap-3">
               <div>
-                <p className="text-sm font-medium text-gray-500">Inactive FAQs</p>
-                <h3 className="text-2xl font-bold text-gray-600">
-                  {faqs.filter((f: any) => !f.is_active).length}
-                </h3>
+                <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">Inactive FAQs</p>
+                <h3 className="text-3xl font-bold text-slate-900">{faqs.filter((f: any) => !f.is_active).length}</h3>
+                <p className="text-sm text-slate-500 mt-1">Draft or hidden items</p>
               </div>
-              <div className="p-3 bg-white rounded-xl text-gray-400">
+              <div className="p-3 rounded-xl bg-slate-100 text-slate-500">
                 <EyeOff size={24} />
               </div>
             </div>

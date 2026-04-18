@@ -44,8 +44,29 @@ export interface PaymentSummaryResponse {
   }>;
 }
 
+export interface Plan {
+  id: number;
+  name: string;
+  plan_type: string;
+  billing_cycle: string;
+  duration: number | null;
+  member_limit: number | null;
+  features: string[];
+  status: boolean;
+  price: string;
+}
+
+export interface PlansResponse {
+  success: boolean;
+  data: Plan[];
+}
+
 export const paymentApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
+    getSubscriptionPlans: builder.query<PlansResponse, { billing: string; type: string }>({
+      query: ({ billing, type }) => `/plans?billing=${billing}&type=${type}`,
+      providesTags: ["Plans"],
+    }),
     processPayment: builder.mutation<PaymentProcessResponse, { plan_id: number; billing: string }>({
       query: (body) => ({
         url: "/payment/process",
@@ -55,11 +76,19 @@ export const paymentApi = baseApi.injectEndpoints({
     }),
     getPaymentSummary: builder.query<PaymentSummaryResponse, void>({
       query: () => "/payment/show",
+      providesTags: ["PaymentSummary"],
+    }),
+    cancelSubscription: builder.mutation<{ success: boolean; message: string }, void>({
+      query: () => ({
+        url: "/payment/cancel",
+        method: "POST",
+      }),
+      invalidatesTags: ["PaymentSummary", "Plans", "Profile"],
     }),
   }),
   overrideExisting: false,
 });
 
-export const { useProcessPaymentMutation, useGetPaymentSummaryQuery } = paymentApi;
+export const { useGetSubscriptionPlansQuery, useProcessPaymentMutation, useGetPaymentSummaryQuery, useCancelSubscriptionMutation } = paymentApi;
 
 export default paymentApi;

@@ -21,14 +21,12 @@ import {
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 
-type ProjectionItem = ProjectionGalleryResponse["projections"][0];
+type ProjectionItem = ProjectionGalleryResponse["data"][0];
 
 const getFullUrl = (url?: string) => {
   if (!url) return "";
-  if (url.startsWith("http")) return url;
-  const base = "https://ai.biovuedigitalwellness.com";
-  const normalizedUrl = url.startsWith("/") ? url : `/${url}`;
-  return `${base}${normalizedUrl}`;
+  // Remove double slashes but preserve protocol (https://)
+  return url.replace(/([^:]\/)\/+/g, "$1");
 };
 
 const formatDate = (dateString: string) => {
@@ -76,7 +74,7 @@ export default function ProjectionGallery() {
     );
   }
 
-  const rawProjections = data?.projections || [];
+  const rawProjections = data?.data || [];
 
   // if (rawProjections.length === 0) {
   //   return null; // Don't show the gallery section if there are no projections yet
@@ -131,12 +129,10 @@ export default function ProjectionGallery() {
             </thead>
             <tbody className="divide-y divide-gray-50">
               {projections.map((proj, idx) => {
-                const thumbnailUrl =
-                  proj.source_image ||
-                  proj.projections?.current_lifestyle?.projection_url;
+                const thumbnailUrl = proj.input_image;
                 return (
                   <tr
-                    key={proj.projection_id}
+                    key={proj.id}
                     className="hover:bg-gray-50/50 transition-colors"
                   >
                     <td className="px-6 py-4 text-sm text-[#041228] font-medium">
@@ -154,10 +150,11 @@ export default function ProjectionGallery() {
                     <td className="px-6 py-4">
                       {thumbnailUrl ? (
                         <div className="relative w-12 h-12 rounded-lg overflow-hidden border border-gray-200">
-                          <img
+                          <Image
                             src={getFullUrl(thumbnailUrl)}
                             alt="Thumbnail"
-                            className="object-cover w-full h-full"
+                            fill
+                            className="object-cover"
                           />
                         </div>
                       ) : (
@@ -187,7 +184,7 @@ export default function ProjectionGallery() {
       {/* Projection Modal */}
       <AnimatePresence>
         {selectedProjection && (
-          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -230,131 +227,142 @@ export default function ProjectionGallery() {
 
               {/* Modal Body */}
               <div className="flex-1 overflow-y-auto p-6 md:p-8">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                  {/* Current Lifestyle Column */}
-                  <div className="flex flex-col gap-6">
-                    <div className="text-center pb-4 border-b border-gray-100">
-                      <h4 className="text-[#8B5CF6] font-bold text-[15px] uppercase tracking-wider">
-                        Current Lifestyle Route
-                      </h4>
-                    </div>
+                {selectedProjection && (() => {
+                  const projData = (selectedProjection as any).projections || (selectedProjection as any).projections_data;
+                  const current = projData?.current_lifestyle;
+                  const future = projData?.future_goal;
 
-                    <div className="w-full h-auto bg-gray-50 rounded-xl border border-gray-100 overflow-hidden shadow-inner flex items-center justify-center">
-                      <img
-                        src={getFullUrl(
-                          selectedProjection.projections?.current_lifestyle
-                            ?.projection_url,
-                        )}
-                        alt="Current Lifestyle Projection"
-                        className="w-full object-contain max-h-[400px]"
-                      />
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-3">
-                      <div className="bg-[#E1F9F0] text-[#10B981] p-3 rounded-lg flex flex-col items-center justify-center border border-[#10B981]/20">
-                        <span className="text-[10px] font-bold uppercase mb-1 flex items-center gap-1">
-                          <Activity size={10} /> EST. BMI
-                        </span>
-                        <span className="font-bold text-lg">
-                          {selectedProjection.projections?.current_lifestyle
-                            ?.est_bmi || "N/A"}
-                        </span>
+                  if (!current || !future) {
+                    return (
+                      <div className="flex flex-col items-center justify-center py-12 text-[#5F6F73]">
+                        <Activity size={48} className="mb-4 opacity-20" />
+                        <p>No projection details available for this record.</p>
                       </div>
-                      <div className="bg-[#E4EFFF] text-[#3A86FF] p-3 rounded-lg flex flex-col items-center justify-center border border-[#3A86FF]/20">
-                        <span className="text-[10px] font-bold uppercase mb-1">
-                          EST. WEIGHT
-                        </span>
-                        <span className="font-bold text-lg">
-                          {selectedProjection.projections?.current_lifestyle
-                            ?.est_weight || "N/A"}
-                        </span>
+                    );
+                  }
+
+                  return (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                      {/* Current Lifestyle Column */}
+                      <div className="flex flex-col gap-6">
+                        <div className="text-center pb-4 border-b border-gray-100">
+                          <h4 className="text-[#8B5CF6] font-bold text-[15px] uppercase tracking-wider">
+                            {current.label || "Current Lifestyle Route"}
+                          </h4>
+                        </div>
+
+                        <div className="w-full h-auto bg-gray-50 rounded-xl border border-gray-100 overflow-hidden shadow-inner flex items-center justify-center">
+                          <Image
+                            src={getFullUrl(current.image || (current as any).projection_url)}
+                            alt="Current Lifestyle Projection"
+                            width={500}
+                            height={400}
+                            className="w-full object-contain max-h-96"
+                          />
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-3">
+                          <div className="bg-[#E1F9F0] text-[#10B981] p-3 rounded-lg flex flex-col items-center justify-center border border-[#10B981]/20">
+                            <span className="text-[10px] font-bold uppercase mb-1 flex items-center gap-1">
+                              <Activity size={10} /> EST. BMI
+                            </span>
+                            <span className="font-bold text-lg">
+                              {current.est_bmi || "N/A"}
+                            </span>
+                          </div>
+                          <div className="bg-[#E4EFFF] text-[#3A86FF] p-3 rounded-lg flex flex-col items-center justify-center border border-[#3A86FF]/20">
+                            <span className="text-[10px] font-bold uppercase mb-1">
+                              EST. WEIGHT
+                            </span>
+                            <span className="font-bold text-lg">
+                              {current.est_weight || "N/A"}
+                            </span>
+                          </div>
+                        </div>
+
+                        <div className="bg-[#F8FAFF] p-5 rounded-xl border border-gray-100">
+                          <h5 className="font-bold text-[#041228] text-sm mb-3">
+                            Expected Changes:
+                          </h5>
+                          <ul className="space-y-3">
+                            {current.expected_changes?.map(
+                              (change: string, i: number) => (
+                                <li key={i} className="flex gap-2.5 items-start">
+                                  <CheckCircle2
+                                    size={14}
+                                    className="text-[#8B5CF6] shrink-0 mt-0.5"
+                                  />
+                                  <span className="text-sm text-[#5F6F73] leading-relaxed">
+                                    {change}
+                                  </span>
+                                </li>
+                              ),
+                            )}
+                          </ul>
+                        </div>
+                      </div>
+
+                      {/* Future Goal Column */}
+                      <div className="flex flex-col gap-6">
+                        <div className="text-center pb-4 border-b border-gray-100">
+                          <h4 className="text-[#0FA4A9] font-bold text-[15px] uppercase tracking-wider">
+                            {future.label || "Future Goal Route"}
+                          </h4>
+                        </div>
+
+                        <div className="w-full h-auto bg-gray-50 rounded-xl border border-gray-100 overflow-hidden shadow-inner flex items-center justify-center">
+                          <Image
+                            src={getFullUrl(future.image || (future as any).projection_url)}
+                            alt="Future Goal Projection"
+                            width={500}
+                            height={400}
+                            className="w-full object-contain max-h-96"
+                          />
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-3">
+                          <div className="bg-[#E1F9F0] text-[#10B981] p-3 rounded-lg flex flex-col items-center justify-center border border-[#10B981]/20">
+                            <span className="text-[10px] font-bold uppercase mb-1 flex items-center gap-1">
+                              <Activity size={10} /> EST. BMI
+                            </span>
+                            <span className="font-bold text-lg">
+                              {future.est_bmi || "N/A"}
+                            </span>
+                          </div>
+                          <div className="bg-[#E4EFFF] text-[#3A86FF] p-3 rounded-lg flex flex-col items-center justify-center border border-[#3A86FF]/20">
+                            <span className="text-[10px] font-bold uppercase mb-1">
+                              EST. WEIGHT
+                            </span>
+                            <span className="font-bold text-lg">
+                              {future.est_weight || "N/A"}
+                            </span>
+                          </div>
+                        </div>
+
+                        <div className="bg-[#E6F6F6] p-5 rounded-xl border border-[#BDE8E8]/50">
+                          <h5 className="font-bold text-[#041228] text-sm mb-3">
+                            Expected Changes:
+                          </h5>
+                          <ul className="space-y-3">
+                            {future.expected_changes?.map(
+                              (change: string, i: number) => (
+                                <li key={i} className="flex gap-2.5 items-start">
+                                  <CheckCircle2
+                                    size={14}
+                                    className="text-[#0FA4A9] shrink-0 mt-0.5"
+                                  />
+                                  <span className="text-sm text-[#5F6F73] leading-relaxed">
+                                    {change}
+                                  </span>
+                                </li>
+                              ),
+                            )}
+                          </ul>
+                        </div>
                       </div>
                     </div>
-
-                    <div className="bg-[#F8FAFF] p-5 rounded-xl border border-gray-100">
-                      <h5 className="font-bold text-[#041228] text-sm mb-3">
-                        Expected Changes:
-                      </h5>
-                      <ul className="space-y-3">
-                        {selectedProjection.projections?.current_lifestyle?.expected_changes?.map(
-                          (change, i) => (
-                            <li key={i} className="flex gap-2.5 items-start">
-                              <CheckCircle2
-                                size={14}
-                                className="text-[#8B5CF6] shrink-0 mt-0.5"
-                              />
-                              <span className="text-sm text-[#5F6F73] leading-relaxed">
-                                {change}
-                              </span>
-                            </li>
-                          ),
-                        )}
-                      </ul>
-                    </div>
-                  </div>
-
-                  {/* Future Goal Column */}
-                  <div className="flex flex-col gap-6">
-                    <div className="text-center pb-4 border-b border-gray-100">
-                      <h4 className="text-[#0FA4A9] font-bold text-[15px] uppercase tracking-wider">
-                        Future Goal Route
-                      </h4>
-                    </div>
-
-                    <div className="w-full h-auto bg-gray-50 rounded-xl border border-gray-100 overflow-hidden shadow-inner flex items-center justify-center">
-                      <img
-                        src={getFullUrl(
-                          selectedProjection.projections?.future_goal
-                            ?.projection_url,
-                        )}
-                        alt="Future Goal Projection"
-                        className="w-full object-contain max-h-[400px]"
-                      />
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-3">
-                      <div className="bg-[#E1F9F0] text-[#10B981] p-3 rounded-lg flex flex-col items-center justify-center border border-[#10B981]/20">
-                        <span className="text-[10px] font-bold uppercase mb-1 flex items-center gap-1">
-                          <Activity size={10} /> EST. BMI
-                        </span>
-                        <span className="font-bold text-lg">
-                          {selectedProjection.projections?.future_goal
-                            ?.est_bmi || "N/A"}
-                        </span>
-                      </div>
-                      <div className="bg-[#E4EFFF] text-[#3A86FF] p-3 rounded-lg flex flex-col items-center justify-center border border-[#3A86FF]/20">
-                        <span className="text-[10px] font-bold uppercase mb-1">
-                          EST. WEIGHT
-                        </span>
-                        <span className="font-bold text-lg">
-                          {selectedProjection.projections?.future_goal
-                            ?.est_weight || "N/A"}
-                        </span>
-                      </div>
-                    </div>
-
-                    <div className="bg-[#E6F6F6] p-5 rounded-xl border border-[#BDE8E8]/50">
-                      <h5 className="font-bold text-[#041228] text-sm mb-3">
-                        Expected Changes:
-                      </h5>
-                      <ul className="space-y-3">
-                        {selectedProjection.projections?.future_goal?.expected_changes?.map(
-                          (change, i) => (
-                            <li key={i} className="flex gap-2.5 items-start">
-                              <CheckCircle2
-                                size={14}
-                                className="text-[#0FA4A9] shrink-0 mt-0.5"
-                              />
-                              <span className="text-sm text-[#5F6F73] leading-relaxed">
-                                {change}
-                              </span>
-                            </li>
-                          ),
-                        )}
-                      </ul>
-                    </div>
-                  </div>
-                </div>
+                  );
+                })()}
               </div>
             </motion.div>
           </div>

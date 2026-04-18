@@ -1,23 +1,59 @@
 "use client";
 
 import NotificationBell from "../dashboard/NotificationBell";
-import Image from "next/image";
+import ProfileDropdown from "../dashboard/ProfileDropdown";
+import Link from "next/link";
+import { Crown } from "lucide-react";
+import { usePathname } from "next/navigation";
+import React, { useState, useEffect } from "react";
 
 export default function NutritionistNavbar() {
+  const pathname = usePathname();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const getPageTitle = () => {
+    if (!mounted) return "Dashboard";
+    const path = pathname?.toLowerCase();
+    if (path === "/nutritionist-dashboard") return "Dashboard";
+    if (path.includes("/nutritionist-dashboard/upgrade")) return "Upgrade";
+    if (path.includes("/nutritionist-dashboard/settings")) return "Settings";
+    if (path.includes("/nutritionist-dashboard/clients")) return "My Clients";
+    if (path.includes("/nutritionist-dashboard/messages")) return "Messages";
+    if (path.includes("/nutritionist-dashboard/notifications")) return "Notifications";
+    if (path.includes("/nutritionist-dashboard/overview")) return "Overview";
+    return "Dashboard";
+  };
+
   return (
-    <header className="ml-6 py-5 bg-white px-6 flex items-center justify-between shadow-sm border-b border-gray-100">
-      <h1 className="text-sm font-semibold text-gray-700">Dashboard</h1>
+    <header className="sticky top-0 z-20 flex items-center justify-between py-4 bg-white border-b border-gray-100 px-6 w-full shrink-0">
+      <div className="flex flex-col">
+        <h1 className="text-xl font-semibold text-[#1F2D2E]">
+          {getPageTitle()}
+        </h1>
+      </div>
 
-      <div className="flex items-center gap-4">
-        <NotificationBell iconSize={20} />
+      <div className="flex items-center gap-6">
+        <NotificationBell iconSize={22} />
+        
+        {/* Divider */}
+        <div className="h-8 w-[1px] bg-gray-100 hidden sm:block"></div>
 
-        <Image
-          src="/images/avatar.png"
-          alt="Nutritionist"
-          width={36}
-          height={36}
-          className="rounded-full shadow-sm"
+        {/* Unified Profile Dropdown */}
+        <ProfileDropdown 
+          roleLabel="Nutritionist" 
+          settingsHref="/nutritionist-dashboard/settings" 
         />
+
+        <Link href="/nutritionist-dashboard/upgrade">
+          <button className="flex items-center gap-2 bg-[#0FA4A9] text-white px-4 py-2 rounded-lg font-medium hover:bg-opacity-90 transition-all text-sm cursor-pointer shadow-sm shadow-[#0FA4A9]/20 active:scale-95">
+            <Crown size={18} fill="currentColor" />
+            Upgrade
+          </button>
+        </Link>
       </div>
     </header>
   );

@@ -1,4 +1,4 @@
-import { projectionApi } from "./projectionApi";
+import { baseApi } from "../../baseApi";
 
 export interface IndividualProjection {
   projection_url: string;
@@ -10,36 +10,39 @@ export interface IndividualProjection {
 }
 
 export interface CombinedProjectionResponse {
-  projection_id: string;
-  user_id: string;
-  timeframe: string;
-  resolution: string;
-  created_at: string;
-  projections: {
-    current_lifestyle: IndividualProjection;
-    future_goal: IndividualProjection;
-  };
-  summary: {
-    total_latency_sec: number;
-    total_cost_usd: number;
-    total_token_cost_usd: number;
-    total_image_cost_usd: number;
-    total_tokens_input: number;
-    total_tokens_output: number;
+  success: boolean;
+  data: {
+    projection_id: string;
+    user_id: number;
+    input_image: string;
+    timeframe: string;
+    resolution: string;
+    projections_data: {
+      current_lifestyle: IndividualProjection;
+      future_goal: IndividualProjection;
+    };
+    summary_data: {
+      total_latency_sec: number;
+      total_cost_usd: number;
+      total_token_cost_usd: number;
+      total_image_cost_usd: number;
+      total_tokens_input: number;
+      total_tokens_output: number;
+    };
+    updated_at: string;
+    created_at: string;
+    id: number;
   };
 }
 
 export interface CombinedProjectionRequest {
-  user_id: string;
+  user_id: string | number;
   image: File;
-  duration: string;
-  resolution?: string;
-  use_default_goal?: boolean;
-  goal?: string;
-  goal_description?: string;
+  timeframe: string;
+  resolution: string;
 }
 
-export const combinedProjectionApi = projectionApi.injectEndpoints({
+export const combinedProjectionApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     combinedProjection: builder.mutation<
       CombinedProjectionResponse,
@@ -47,23 +50,13 @@ export const combinedProjectionApi = projectionApi.injectEndpoints({
     >({
       query: (data) => {
         const formData = new FormData();
-        formData.append("user_id", data.user_id);
+        formData.append("user_id", data.user_id.toString());
         formData.append("image", data.image, data.image.name);
-        formData.append("duration", data.duration);
-
-        if (data.resolution) formData.append("resolution", data.resolution);
-        
-        formData.append(
-          "use_default_goal",
-          String(data.use_default_goal ?? true)
-        );
-
-        if (data.goal) formData.append("goal", data.goal);
-        if (data.goal_description)
-          formData.append("goal_description", data.goal_description);
+        formData.append("timeframe", data.timeframe);
+        formData.append("resolution", data.resolution);
 
         return {
-          url: "/projection/combined/",
+          url: "/generate/projections",
           method: "POST",
           body: formData,
         };

@@ -24,25 +24,27 @@ import { useSelector } from "react-redux";
 import { selectCurrentUser } from "@/redux/features/slice/authSlice";
 import LogTodayModal from "@/components/dashboard/LogTodayModal";
 import ChangeSourceModal from "@/components/dashboard/ChangeSourceModal";
-import NotificationBell from "@/components/dashboard/NotificationBell";
 import ChartsNutrition from "@/components/UserDashboard/Dashboard/ChartsNutrition";
-import { useGetCardDataQuery } from "@/redux/features/api/userDashboard/habit";
-import { useGetInsightsQuery } from "@/redux/features/api/userDashboard/insightsApi";
+import DashboardBanner from "@/components/UserDashboard/Dashboard/DashboardBanner";
+import { useGetProfileQuery } from "@/redux/features/api/profileApi";
+import { useGetHealthReportQuery } from "@/redux/features/api/userDashboard/dashboard/health-report";
+import { useGetAiCurrentInsightsQuery } from "@/redux/features/api/userDashboard/Projection/AIInsightsAPI";
 import { useGetUserOverviewChartQuery } from "@/redux/features/api/userDashboard/dashboardApi";
 
 // --- Main Page ---
 const UserDashboard = () => {
   const currentUser = useSelector(selectCurrentUser);
-  const userName = currentUser?.name || "User";
+  const { data: profileResponse } = useGetProfileQuery(currentUser?.id, { skip: !currentUser?.id });
+  const userName = profileResponse?.data?.name || currentUser?.name || "User";
+  console.log(currentUser, "currentUser");
 
   const [showLogModal, setShowLogModal] = useState(false);
   const [showSourceModal, setShowSourceModal] = useState(false);
-  const [isNotificationOpen, setIsNotificationOpen] = useState(false);
   const [dataSource, setDataSource] = useState<"device" | "manual">("device");
   const [days, setDays] = useState(7);
   
-  const { data: cardData, isLoading: isCardLoading } = useGetCardDataQuery();
-  const { data: insightsData, isLoading: isInsightsLoading } = useGetInsightsQuery({});
+  const { data: healthReport, isLoading: isHealthLoading } = useGetHealthReportQuery();
+  const { data: insightsData, isLoading: isInsightsLoading } = useGetAiCurrentInsightsQuery(currentUser?.id, { skip: !currentUser?.id });
   const { data: chartResponse, isLoading: isChartLoading } = useGetUserOverviewChartQuery(days);
 
   const [habitData, setHabitData] = useState({
@@ -60,7 +62,7 @@ const UserDashboard = () => {
     water: "",
   });
 
-  if (isCardLoading) {
+  if (isHealthLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <Loader2 className="w-10 h-10 animate-spin text-[#0FA4A9]" />
@@ -68,38 +70,19 @@ const UserDashboard = () => {
     );
   }
 
-  const rawData = cardData?.data;
+  const rawData = healthReport?.data;
   const summary = rawData?.summary;
   const healthOverview = rawData?.health_overview;
   const chartData = chartResponse?.charts;
+  const dynamicInsights = (insightsData?.insights || insightsData?.data) || [];
 
   return (
     <div className="flex flex-col min-h-screen">
-      {/* Header - Only for Dashboard Overview */}
-      <header className="sticky top-0 z-20 flex items-center justify-between py-4 bg-white border-b border-gray-100 px-6 w-full">
-        <h1 className="text-xl font-semibold text-[#1F2D2E]">Dashboard</h1>
-        <div className="flex items-center gap-4 ml-auto">
-          <NotificationBell />
-          <div className="flex items-center gap-3 pr-2">
-            <Image
-              src="/images/avatar.png"
-              alt="User Profile"
-              width={40}
-              height={40}
-              className="rounded-full border-2 border-[#F4FBFA] cursor-pointer"
-            />
-          </div>
-          <Link href="/user-dashboard/upgrade">
-            <button className="flex items-center gap-2 bg-[#0FA4A9] text-white px-4 py-2 rounded-lg font-medium hover:bg-opacity-90 transition-all text-sm cursor-pointer">
-              <Crown size={18} fill="currentColor" />
-              Upgrade
-            </button>
-          </Link>
-        </div>
-      </header>
-
       {/* Main Content Area with Padding */}
       <div className="flex flex-col gap-6 py-6 container mx-auto pb-12">
+        {/* Top Banner - Mirrored from Landing Page */}
+        <DashboardBanner />
+
         {/* Welcome Message */}
         <div className="bg-white rounded-xl p-4 md:p-6 border border-gray-100 shadow-[0_2px_12px_rgba(0,0,0,0.02)]">
           <h2 className="text-lg font-bold text-[#1F2D2E] mb-1">
@@ -152,15 +135,15 @@ const UserDashboard = () => {
               </span>
               <div className="flex items-baseline gap-1">
                 <span className="text-3xl font-bold text-[#1F2D2E]">
-                  {summary?.wellness_score?.value || 0}
+                  {summary?.wellness_score || 0}
                 </span>
                 <span className="text-[#5F6F73] text-sm font-medium">
-                  / {summary?.wellness_score?.max || 100}
+                  / 100
                 </span>
               </div>
-              <span className="text-[#2DD4BF] text-[10px] font-medium flex items-center gap-1 mt-1">
+              {/* <span className="text-[#2DD4BF] text-[10px] font-medium flex items-center gap-1 mt-1">
                 <Plus size={10} /> {summary?.wellness_score?.trend || "N/A"}
-              </span>
+              </span> */}
             </div>
             <div className="w-16 h-16 rounded-full border-[1.5px] border-[#3A86FF] border-t-transparent flex items-center justify-center transform group-hover:rotate-12 transition-transform">
               <Activity size={24} className="text-[#3A86FF]" />
@@ -175,14 +158,11 @@ const UserDashboard = () => {
               </span>
               <div className="flex items-baseline gap-1">
                 <span className="text-3xl font-bold text-[#1F2D2E]">
-                  {summary?.days_active?.current || 0}
-                </span>
-                <span className="text-[#5F6F73] text-sm font-medium">
-                  / {summary?.days_active?.total || 7}
+                  {summary?.days_active || 0}
                 </span>
               </div>
               <span className="text-[#2DD4BF] text-[10px] font-medium flex items-center gap-1 mt-1">
-                {summary?.days_active?.status || "Keep it up!"}
+                Keep it up!
               </span>
             </div>
             <div className="w-16 h-16 rounded-xl bg-[#E4EFFF] flex items-center justify-center group-hover:bg-blue-100 transition-colors">
@@ -198,11 +178,11 @@ const UserDashboard = () => {
               </span>
               <div className="flex items-baseline gap-1">
                 <span className="text-3xl font-bold text-[#1F2D2E]">
-                  {summary?.data_logged?.count || 0}
+                  {summary?.data_logged_entries || 0}
                 </span>
               </div>
               <span className="text-[#2DD4BF] text-[10px] font-medium flex items-center gap-1 mt-1">
-                {summary?.data_logged?.label || "Entries this week"}
+                Entries total
               </span>
             </div>
             <div className="w-16 h-16 rounded-xl bg-[#E4EFFF] flex items-center justify-center group-hover:bg-blue-100 transition-colors">
@@ -216,13 +196,13 @@ const UserDashboard = () => {
           <h2 className="text-xl font-bold text-[#1F2D2E]">
             Current Health Overview
           </h2>
-          <button
+          {/* <button
             onClick={() => setShowLogModal(true)}
             className="flex items-center gap-2 bg-[#0FA4A9] text-white px-4 py-2 rounded-lg font-medium hover:bg-opacity-90 transition-all text-sm group cursor-pointer"
           >
             <Plus size={18} />
             Log today&apos;s data
-          </button>
+          </button> */}
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -230,50 +210,58 @@ const UserDashboard = () => {
             {
               label: "Current Weight",
               value: healthOverview?.weight?.current || "N/A",
-              unit: healthOverview?.weight?.unit || "lbs",
-              status: healthOverview?.weight?.diff_label || "N/A",
-              desc: healthOverview?.weight?.insight || "N/A",
+              unit: summary?.unit_system === "imperial" ? "lbs" : "kg",
+              status: healthOverview?.weight?.status || "N/A",
+              desc: `Target: ${healthOverview?.weight?.coach_target || "N/A"}`,
               color: "text-[#3A86FF]",
             },
             {
               label: "BMI",
-              value: healthOverview?.bmi?.score || "N/A",
+              value: healthOverview?.bmi?.current || "N/A",
               unit: "",
-              status: `Range: ${healthOverview?.bmi?.range || "N/A"}`,
-              desc: healthOverview?.bmi?.status || "N/A",
+              status: healthOverview?.bmi?.status || "N/A",
+              desc: `Ideal Range: ${healthOverview?.bmi?.ideal_range || "N/A"}`,
               color: "text-[#F59E0B]",
             },
             {
-              label: "Nutrition Quality",
-              value: `${healthOverview?.nutrition?.score || "N/A"}/100`,
-              unit: "",
-              status: healthOverview?.nutrition?.status || "N/A",
-              desc: healthOverview?.nutrition?.message || "N/A",
+              label: "Nutrition",
+              value: healthOverview?.nutrition?.protein_servings || 0,
+              unit: "protein serv.",
+              status: healthOverview?.nutrition?.last_meal_balance || "N/A",
+              desc: healthOverview?.nutrition?.note || "N/A",
               color: "text-[#2DD4BF]",
             },
             {
-              label: "Weekly Workouts",
-              value: healthOverview?.workouts?.completed || 0,
-              unit: "session",
-              status: `Goal: ${healthOverview?.workouts?.goal || "N/A"}`,
-              desc: healthOverview?.workouts?.insight || "N/A",
-              color: "text-[#EF4444]",
-            },
-            {
               label: "Daily Steps",
-              value: healthOverview?.steps?.current || 0,
+              value: healthOverview?.daily_steps?.current || 0,
               unit: "",
-              status: `Goal: ${healthOverview?.steps?.goal || "N/A"}`,
-              desc: healthOverview?.steps?.insight || "N/A",
+              status: "Coach Plan",
+              desc: healthOverview?.daily_steps?.coach_plan || "N/A",
               color: "text-[#EF4444]",
             },
             {
               label: "Sleep Hours",
-              value: healthOverview?.sleep?.avg || 0,
+              value: healthOverview?.sleep_hours?.current || 0,
               unit: "hrs",
-              status: `Goal: ${healthOverview?.sleep?.goal || "N/A"}`,
-              desc: healthOverview?.sleep?.insight || "N/A",
+              status: "Coach Plan",
+              desc: healthOverview?.sleep_hours?.coach_plan || "N/A",
               color: "text-[#3A86FF]",
+            },
+            {
+              label: "Hydration",
+              value: healthOverview?.hydration?.current_glasses || 0,
+              unit: "Ounces",
+              status: "Target",
+              desc: (healthOverview?.hydration?.target || "N/A").replace(/glasses/gi, "Ounces"),
+              color: "text-[#3A86FF]",
+            },
+            {
+              label: "Stress & Mood",
+              value: healthOverview?.stress_and_mood?.avg_stress_level || 0,
+              unit: "/ 10",
+              status: "Latest Mood",
+              desc: healthOverview?.stress_and_mood?.latest_mood || "N/A",
+              color: "text-[#F59E0B]",
             },
           ].map((metric, i) => (
             <div
@@ -285,7 +273,12 @@ const UserDashboard = () => {
               </span>
               <div className="flex items-baseline gap-1">
                 <span className={cn("text-3xl font-bold", metric.color)}>
-                  {metric.value}
+                  {metric.value === "N/A" ? "N/A" : 
+                    typeof metric.value === "number"
+                      ? Number.isInteger(metric.value)
+                        ? metric.value
+                        : metric.value.toFixed(2)
+                     : metric.value}
                 </span>
                 <span className="text-[#5F6F73] text-sm font-medium">
                   {metric.unit}
@@ -367,7 +360,7 @@ const UserDashboard = () => {
               <div className="col-span-2 flex items-center justify-center py-12">
                 <Loader2 className="w-6 h-6 animate-spin text-[#0FA4A9]" />
               </div>
-            ) : (insightsData?.data || []).slice(0, 2).map((insight: any, i: number) => {
+            ) : dynamicInsights.slice(0, 2).map((insight: any, i: number) => {
               const cat = insight.category?.toLowerCase() || "";
               const categoryIcon = cat.includes("nutrition") ? <Zap size={20} className="text-[#1F2D2E]" />
                 : cat.includes("cardio") || cat.includes("heart") ? <HeartPulse size={20} className="text-[#1F2D2E]" />
@@ -407,20 +400,20 @@ const UserDashboard = () => {
                 </div>
               );
             })}
-            {!isInsightsLoading && (!insightsData?.data || insightsData.data.length === 0) && (
+            {!isInsightsLoading && dynamicInsights.length === 0 && (
               <>
                 {[
                   {
-                    title: "Improve Diet Quality",
-                    desc: '"Based on logged meals and nutrition quality"',
-                    icon: <Repeat size={20} className="text-[#3A86FF]" />,
+                    title: "URGENT BIOMETRIC DATA VERIFICATION",
+                    desc: '"The recorded height (432.0cm) and weight (91.0 lbs) result in a BMI of 2.2, which is physiologically impossible. This data suggests a major entry error."',
+                    icon: <Scale size={20} className="text-[#3A86FF]" />,
                     badge: "HIGH PRIORITY",
                     iconBg: "bg-[#E4EFFF]",
                   },
                   {
-                    title: "Optimize Sleep Duration",
-                    desc: '"Better recovery and mental clarity"',
-                    icon: <Moon size={20} className="text-[#3A86FF]" />,
+                    title: "ADDRESS ANXIETY RISK FACTORS",
+                    desc: '"Anxiety is identified as your primary health risk, which can impact sleep quality, recovery, and overall metabolic health."',
+                    icon: <HeartPulse size={20} className="text-[#3A86FF]" />,
                     badge: "HIGH PRIORITY",
                     iconBg: "bg-[#E4EFFF]",
                   },

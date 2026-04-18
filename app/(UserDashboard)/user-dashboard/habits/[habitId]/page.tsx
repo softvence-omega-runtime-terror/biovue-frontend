@@ -5,7 +5,8 @@ import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { ArrowLeft, BarChart2, CheckCircle2, Bed, Apple, Footprints, Frown, Droplets, Plus, Activity as ActivityIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useGetCardDataQuery, useGetHabitsQuery } from "@/redux/features/api/userDashboard/habit";
+import { useGetCardDataQuery } from "@/redux/features/api/userDashboard/habit";
+import { useGetAiSavedHabitsQuery } from "@/redux/features/api/userDashboard/Projection/AIHabitsAPI";
 import { Loader2 } from "lucide-react";
 import LogHabitModal from "@/components/dashboard/LogHabitModal";
 import LogNutritionModal from "@/components/dashboard/LogNutritionModal";
@@ -19,6 +20,7 @@ import { useGetActivityReportQuery } from "@/redux/features/api/userDashboard/ac
 import { useGetStressReportQuery } from "@/redux/features/api/userDashboard/stresslog";
 import { useGetHydrationReportQuery } from "@/redux/features/api/userDashboard/hydration";
 import { useGetNutritionReportQuery } from "@/redux/features/api/userDashboard/nutrition";
+import { useGetAiSuggestedTargetQuery } from "@/redux/features/api/userDashboard/nutritionAiApi";
 
 
 const HABIT_DETAILS: Record<string, any> = {
@@ -81,8 +83,8 @@ const HABIT_DETAILS: Record<string, any> = {
     status: "Need Attention",
     statusBg: "bg-pink-100 text-pink-500",
     why: "adequate water intake is crucial for cellular function and metabolism.",
-    target: "8 Glasses",
-    avg: "4 Glasses",
+    target: "64 ounces",
+    avg: "45 ounces",
     consistency: "14%",
     daysLogged: "1/7",
     logType: "Hydration"
@@ -97,13 +99,14 @@ export default function HabitDetailPage() {
   const userId = currentUser?.id || currentUser?.user_id;
 
   const { data: cardData, isLoading: isCardLoading } = useGetCardDataQuery();
-  const { data: habitData, isLoading: isHabitLoading } = useGetHabitsQuery(userId, { skip: !userId });
+  const { data: habitData, isLoading: isHabitLoading } = useGetAiSavedHabitsQuery(userId, { skip: !userId });
 
   const { data: sleepReport, isLoading: isSleepLoading } = useGetSleepReportQuery(7, { skip: habitId !== 'sleep' });
   const { data: activityReport, isLoading: isActivityLoading } = useGetActivityReportQuery(7, { skip: habitId !== 'activity' });
   const { data: stressReport, isLoading: isStressLoading } = useGetStressReportQuery(7, { skip: habitId !== 'stress' });
   const { data: hydrationReport, isLoading: isHydrationLoading } = useGetHydrationReportQuery(7, { skip: habitId !== 'hydration' });
   const { data: nutritionReport, isLoading: isNutritionLoading } = useGetNutritionReportQuery(7, { skip: habitId !== 'nutrition' });
+  const { data: aiNutritionData } = useGetAiSuggestedTargetQuery(userId, { skip: habitId !== 'nutrition' || !userId });
 
   const isAnyLoading = isCardLoading || isHabitLoading || isSleepLoading || isActivityLoading || isStressLoading || isHydrationLoading || isNutritionLoading;
 
@@ -190,8 +193,36 @@ export default function HabitDetailPage() {
     ...(insight ? {
       why: insight.why_this_matters,
       biovueInsights: insight.biovue_insights
-    } : {})
+    } : {}),
+    ...(habitId === 'nutrition' && aiNutritionData?.target_nutrition ? {
+      target: `${aiNutritionData.target_nutrition.calories.value} ${aiNutritionData.target_nutrition.calories.unit}`,
+      aiTarget: aiNutritionData.target_nutrition,
+      isAiSuggestion: true
+    } : {
+      isAiSuggestion: false
+    })
   };
+
+  // Final cleanup for units from API based on habit type
+  if (habitId === 'hydration') {
+    if (typeof habit.avg === 'string') {
+      habit.avg = habit.avg.replace(/glasses|gls/gi, "Ounces");
+    }
+    if (typeof habit.target === 'string') {
+      habit.target = habit.target.replace(/glasses|gls/gi, "Ounces");
+    }
+  } else if (habitId === 'nutrition') {
+    if (typeof habit.avg === 'string') {
+      habit.avg = habit.avg.replace(/glasses|gls/gi, "kcal").replace(/kcal\s+kcal/gi, "kcal").trim();
+      // If the result is just a number or "0 kcal", ensure it looks professional
+      if (habit.avg === "0" || habit.avg === "0 kcal") {
+        habit.avg = "0 kcal";
+      }
+    }
+    if (typeof habit.target === 'string') {
+       habit.target = habit.target.replace(/glasses|gls/gi, "kcal").replace(/kcal\s+kcal/gi, "kcal").trim();
+    }
+  }
 
   const handleLogClick = () => {
     if (habitId === 'nutrition' || habitId === 'stress') {
@@ -294,12 +325,40 @@ export default function HabitDetailPage() {
             <div className="flex flex-col gap-6">
               
               {/* Suggested Target */}
-              <div className="border border-gray-100 rounded-[16px] p-8 flex flex-col items-center justify-center text-center gap-3 bg-white shadow-sm">
-                <div className="text-[#94A3B8] font-bold text-[11px] uppercase tracking-widest">SUGGESTED TARGET</div>
+              <div className="border border-gray-100 rounded-[16px] p-8 flex flex-col items-center justify-center text-center gap-3 bg-white shadow-sm relative overflow-hidden">
+                {habit.isAiSuggestion && (
+                  <div className="absolute top-0 right-0 px-3 py-1 bg-[#3A86FF]/10 text-[#3A86FF] text-[8px] font-bold uppercase tracking-wider rounded-bl-lg">
+                    AI POWERED
+                  </div>
+                )}
+                <div className="text-[#94A3B8] font-bold text-[11px] uppercase tracking-widest leading-relaxed">
+                  {habit.isAiSuggestion ? "AI SUGGESTED TARGET" : "SUGGESTED TARGET"}
+                </div>
                 <div className="text-[32px] font-bold text-[#1F2D2E] leading-none my-1">{habit.target}</div>
-                <div className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-widest text-[#1F2D2E]">
-                  <div className="w-2.5 h-2.5 rounded-full bg-[#10B981]" />
-                  COACH SUGGESTS ADJUSTMENT
+                
+                {/* {habit.isAiSuggestion && habit.aiTarget?.macros && (
+                  <div className="grid grid-cols-3 gap-4 w-full mt-4 pt-4 border-t border-gray-50">
+                    <div className="flex flex-col">
+                      <span className="text-[10px] text-[#94A3B8] font-bold uppercase tracking-tight mb-1">PROT</span>
+                      <span className="text-[14px] font-bold text-[#1F2D2E]">{habit.aiTarget.macros.protein.value}{habit.aiTarget.macros.protein.unit}</span>
+                    </div>
+                    <div className="flex flex-col">
+                      <span className="text-[10px] text-[#94A3B8] font-bold uppercase tracking-tight mb-1">CARB</span>
+                      <span className="text-[14px] font-bold text-[#1F2D2E]">{habit.aiTarget.macros.carbs.value}{habit.aiTarget.macros.carbs.unit}</span>
+                    </div>
+                    <div className="flex flex-col">
+                      <span className="text-[10px] text-[#94A3B8] font-bold uppercase tracking-tight mb-1">FAT</span>
+                      <span className="text-[14px] font-bold text-[#1F2D2E]">{habit.aiTarget.macros.fat.value}{habit.aiTarget.macros.fat.unit}</span>
+                    </div>
+                  </div>
+                )} */}
+
+                <div className={cn(
+                  "flex items-center gap-2 text-[11px] font-bold uppercase tracking-widest mt-2",
+                  habit.isAiSuggestion ? "text-[#3A86FF]" : "text-[#1F2D2E]"
+                )}>
+                  <div className={cn("w-2.5 h-2.5 rounded-full", habit.isAiSuggestion ? "bg-[#3A86FF] animate-pulse shadow-[0_0_8px_rgba(58,134,255,0.4)]" : "bg-[#10B981]")} />
+                  {habit.isAiSuggestion ? "AI SUGGESTS" : "COACH SUGGESTS ADJUSTMENT"}
                 </div>
               </div>
 
